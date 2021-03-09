@@ -1,0 +1,36 @@
+{
+  "name": "lodash-fp-ex",
+  "version": "1.0.0",
+  "description": "lodash/fp extensions",
+  "keywords": [
+    "lodash",
+    "lodash-extensions",
+    "lodash-fp",
+    "lodash/fp"
+  ],
+  "license": "ISC",
+  "author": "ledzefflin",
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "babel": "babel lib -d ./ && cd -"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.10",
+    "@babel/core": "^7.13.10",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-proposal-export-default-from": "^7.12.13",
+    "@babel/plugin-proposal-export-namespace-from": "^7.12.13",
+    "@babel/plugin-proposal-object-rest-spread": "^7.13.8",
+    "@babel/plugin-transform-async-to-generator": "^7.13.0",
+    "@babel/plugin-transform-exponentiation-operator": "^7.12.13",
+    "@babel/preset-env": "^7.13.10",
+    "babel-plugin-module-resolver": "^4.1.0"
+  }
+}
