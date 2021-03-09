@@ -1,25 +1,22 @@
 {
   "name": "lodash-fp-ex",
-  "version": "1.0.0",
+  "version": "1.0.9",
   "description": "lodash/fp extensions",
   "keywords": [
     "lodash",
     "lodash-extensions",
     "lodash-fp",
-    "lodash/fp"
+    "lodash/fp",
+    "lodashFp"
   ],
-  "license": "ISC",
-  "author": "ledzefflin",
+  "license": "MIT",
+  "author": "ledzefflin <ledzefflin@gmail.com>",
   "main": "index.js",
   "files": [
     "index.js"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "babel": "babel lib -d ./ && cd -"
-  },
-  "dependencies": {
-    "lodash": "^4.17.21"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.10",
@@ -31,6 +28,16 @@
     "@babel/plugin-transform-async-to-generator": "^7.13.0",
     "@babel/plugin-transform-exponentiation-operator": "^7.12.13",
     "@babel/preset-env": "^7.13.10",
-    "babel-plugin-module-resolver": "^4.1.0"
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "@rollup/plugin-url": "^6.0.0",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-terser": "^7.0.2"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }
