@@ -1,6 +1,6 @@
 {
   "name": "lodash-fp-ex",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "lodash/fp extensions",
   "keywords": [
     "lodash",
@@ -12,6 +12,7 @@
   ],
   "license": "MIT",
   "author": "ledzefflin <ledzefflin@gmail.com>",
+  "homepage": "https://github.com/ledzefflin/lodash-fp-ex",
   "main": "index.js",
   "files": [
     "index.js"
@@ -37,8 +38,8 @@
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@rollup/plugin-url": "^6.0.0",
     "babel-plugin-module-resolver": "^4.1.0",
-    "chai": "^4.3.3",
-    "mocha": "^8.3.1",
+    "chai": "^4.3.4",
+    "mocha": "^8.3.2",
     "prettier": "npm:@btmills/prettier",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
