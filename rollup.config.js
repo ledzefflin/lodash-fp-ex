@@ -9,47 +9,48 @@ import babel from 'rollup-plugin-babel';
 import pkg from './package.json';
 import { terser } from 'rollup-plugin-terser';
 
-const input = 'lib/index.js';
 const extensions = ['.js'];
-const globals = { 'lodash/fp': '_' };
 const external = ['lodash/fp'];
+const globals = { 'lodash/fp': '_' };
 
 export default [
-	{
-		input,
-		output: [
-			{
-				sourcemap: true,
-				file: `dist/${pkg.name}.cjs.js`,
-				format: 'cjs'
-			},
-			{
-				sourcemap: true,
-				file: `dist/${pkg.name}.es.js`,
-				format: 'esm'
-			},
-			{
-				sourcemap: true,
-				file: pkg.main,
-				format: 'umd',
-				name: pkg.name,
-				globals
-			}
-		],
-		external,
-		plugins: [
-			resolve({ extensions }),
+  {
+    input: 'lib/index.js',
+    output: [
+      {
+        sourcemap: true,
+        file: `dist/${pkg.name}.cjs.js`,
+        format: 'cjs',
+        globals
+      },
+      {
+        sourcemap: true,
+        file: `dist/${pkg.name}.es.js`,
+        format: 'esm',
+        globals
+      },
+      {
+        sourcemap: true,
+        file: pkg.main,
+        format: 'umd',
+        globals,
+        name: pkg.name
+      }
+    ],
+    external,
+    plugins: [
+      resolve({ extensions }),
       babel({
         extensions,
         runtimeHelpers: true,
         include: ['lib/**/*'],
-				exclude: 'node_modules/**',
-			}),
-			commonjs({ include: 'node_modules/**' }),
-			url(),
-			peerDepsExternal(),
+        exclude: 'node_modules/**'
+      }),
+      commonjs({ include: 'node_modules/**' }),
+      url(),
+      peerDepsExternal(),
       sourcemaps(),
       terser()
-		]
-	}
+    ]
+  }
 ];

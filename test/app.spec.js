@@ -190,3 +190,421 @@ describe('# _.finally test', () => {
     expect(isLoading).to.be.a('boolean', false);
   });
 });
+
+describe('# _.isPromise test', () => {
+  const p = Promise.resolve(1);
+  const fn = () => 1;
+  const str = '1';
+  const num = 1;
+
+  it('Promise should return true', () => {
+    expect(_.promisify(p)).to.be.a('Promise');
+  });
+
+  it('Any other type also should return true', () => {
+    expect(_.promisify(fn)).to.be.a('Promise');
+    expect(_.promisify(str)).to.be.a('Promise');
+    expect(_.promisify(num)).to.be.a('Promise');
+    expect(_.promisify(null)).to.be.a('Promise');
+    expect(_.promisify(undefined)).to.be.a('Promise');
+  });
+});
+
+describe('# _.isNotEmpty test', () => {
+  it('empty array, empty object, number, empty string, null, undefined should return "false"', () => {
+    expect(_.isNotEmpty([])).to.be.false;
+    expect(_.isNotEmpty({})).to.be.false;
+    expect(_.isNotEmpty(1)).to.be.false;
+    expect(_.isNotEmpty('')).to.be.false;
+    expect(_.isNotEmpty(null)).to.be.false;
+    expect(_.isNotEmpty(undefined)).to.be.false;
+  });
+});
+
+describe('# _.isNotNil test', () => {
+  it('null, undefined should return "false"', () => {
+    expect(_.isNotNil(null)).to.be.false;
+    expect(_.isNotNil(undefined)).to.be.false;
+  });
+  it('should return "true" except null and undefined', () => {
+    expect(_.isNotNil(1)).to.be.true;
+    expect(_.isNotNil({})).to.be.true;
+    expect(_.isNotNil(() => 1)).to.be.true;
+  });
+});
+
+describe('# _.isJson test', () => {
+  it('JSON string should return "true"', () => {
+    expect(_.isJson('{ "test": "value" }')).to.be.true;
+  });
+
+  it('Should return "false" except JSON string', () => {
+    expect(_.isJson('test')).to.be.false;
+    expect(_.isJson({ test: 'value' })).to.be.false;
+  });
+});
+
+describe('# _.notEquals test', () => {
+  it('Should return result that compare each other deeply', () => {
+    expect(_.notEquals({ a: 1 }, { a: 1 })).to.be.false;
+    expect(_.notEquals([1, 2, 3], [1, 2, 3])).to.be.false;
+
+    expect(_.isNotEqual([1, 2, 3], [2, 3, 4])).to.be.true;
+    expect(_.isNotEqual('string', 'number')).to.be.true;
+    expect(_.isNotEqual(1, 2)).to.be.true;
+  });
+});
+
+describe('# _.isVal test', () => {
+  it('null, undefined, Boolean, Number, String type should return true', () => {
+    expect(_.isVal(null)).to.be.true;
+    expect(_.isVal(undefined)).to.be.true;
+    expect(_.isVal(false)).to.be.true;
+    expect(_.isVal(1)).to.be.true;
+    expect(_.isVal('string')).to.be.true;
+
+    expect(_.isVal([])).to.be.false;
+    expect(_.isVal({})).to.be.false;
+    expect(_.isVal(() => {})).to.be.false;
+  });
+});
+
+describe('# _.isRef test', () => {
+  it('null, Array, Object, Function type should return true', () => {
+    expect(_.isRef(null)).to.be.false;
+    expect(_.isRef(undefined)).to.be.false;
+    expect(_.isRef(false)).to.be.false;
+    expect(_.isRef(1)).to.be.false;
+    expect(_.isRef('string')).to.be.false;
+
+    expect(_.isRef([])).to.be.true;
+    expect(_.isRef({})).to.be.true;
+    expect(_.isRef(() => {})).to.be.true;
+  });
+});
+
+describe('# _.not test', () => {
+  it('Should return opposite boolean value from input', () => {
+    expect(_.not(0)).to.be.true;
+
+    expect(_.not(true)).to.be.false;
+    expect(_.not(1)).to.be.false;
+    expect(_.not({})).to.be.false;
+  });
+});
+
+describe('# _.notIncludes test', () => {
+  it('Should return opposite result from _.includes', () => {
+    expect(_.notIncludes(1, [1, 2, 3])).to.be.false;
+    expect(_.notIncludes('s', 'string')).to.be.false;
+  });
+});
+
+describe('# _.toBool test', () => {
+  it('Argument should transform to Boolean type', () => {
+    expect(_.toBool(1)).to.be.true;
+    expect(_.toBool(0)).to.be.false;
+    expect(_.toBool(null)).to.be.false;
+    expect(_.toBool(undefined)).to.be.false;
+    expect(_.toBool('true')).to.be.true;
+    expect(_.toBool('false')).to.be.false;
+  });
+});
+
+describe('# _.deepFreeze test', () => {
+  const shallowFrozen = Object.freeze({
+    a: {
+      b: []
+    }
+  });
+  const deepFrozen = _.deepFreeze({
+    a: {
+      b: [],
+      c: () => {}
+    }
+  });
+
+  it('nested referece type properties should also be freeze', () => {
+    expect(Object.isFrozen(shallowFrozen)).to.be.true;
+    expect(Object.isFrozen(shallowFrozen.a)).to.be.false;
+    expect(Object.isFrozen(shallowFrozen.a.b)).to.be.false;
+
+    expect(Object.isFrozen(deepFrozen)).to.be.true;
+    expect(Object.isFrozen(deepFrozen.a)).to.be.true;
+    expect(Object.isFrozen(deepFrozen.a.b)).to.be.true;
+    expect(Object.isFrozen(deepFrozen.a.c)).to.be.true;
+  });
+});
+
+describe('# _.key test', () => {
+  const obj = { a: 1 };
+  const obj1 = { a: 1, b: 1, c: 1 };
+
+  it('Should return last property name of value', () => {
+    expect(_.key(1, obj)).to.be.a('String', 'a');
+    expect(_.keyByVal(1, obj1)).to.be.a('String', 'c');
+  });
+});
+
+describe('# _.transformObjectKey test', () => {
+  const obj = { obj_key: 1 };
+  const obj1 = { 'obj-key': 1, obj_key: 2 };
+
+  it('Should transform by input function', () => {
+    const kebabKeyObj = _.transformObjectKey(_.kebabCase, obj);
+    expect(_.keys(kebabKeyObj)).to.eqls(['obj-key']);
+  });
+
+  it('If transformed keys are duplicated, should throw error', () => {
+    const errFn = () => _.transformObjectKey(_.kebabCase, obj1);
+    expect(errFn).to.throw(
+      Error,
+      `${_.pipe(
+        _.keys,
+        _.head,
+        _.kebabCase
+      )(obj1)} already exist. duplicated property name is not supported.`
+    );
+  });
+});
+
+describe('# _.toCamelKey test', () => {
+  const obj = { obj_key: 1 };
+  const obj1 = { 'obj-key': 1, obj_key: 2 };
+
+  it('Object property names are converted to camelcase', () => {
+    const camelcaseObj = _.toCamelKey(obj);
+    expect(_.keys(camelcaseObj)).to.eqls(['objKey']);
+  });
+
+  it('If transformed keys are duplicated, should throw error', () => {
+    const errFn = () => _.toCamelKey(obj1);
+    expect(errFn).to.throw(
+      Error,
+      `${_.pipe(
+        _.keys,
+        _.head,
+        _.camelCase
+      )(obj1)} already exist. duplicated property name is not supported.`
+    );
+  });
+});
+
+describe('# _.toSnakeKey test', () => {
+  const obj = { objKey: 1 };
+  const obj1 = { objKey: 1, 'obj key': 2 };
+
+  it('Object property names are converted to snakecase', () => {
+    const snakecaseObj = _.toSnakeKey(obj);
+    expect(_.keys(snakecaseObj)).to.eqls(['obj_key']);
+  });
+
+  it('If transformed keys are duplicated, should throw error', () => {
+    const errFn = () => _.toSnakeKey(obj1);
+    expect(errFn).to.throw(
+      Error,
+      `${_.pipe(
+        _.keys,
+        _.head,
+        _.snakeCase
+      )(obj1)} already exist. duplicated property name is not supported.`
+    );
+  });
+});
+
+describe('# _.pascalCase test', () => {
+  it('Should transform to Pascalcase', () => {
+    const isAllSame = _.every(
+      _.equals('FooBar'),
+      _.map(_.pascalCase, ['__Foo_Bar__', 'FOO BAR', 'fooBar', 'foo_bar', 'foo-bar'])
+    );
+    expect(isAllSame).to.be.true;
+  });
+});
+
+describe('# _.isDateString test', () => {
+  it('Should return true with valid datetime string', () => {
+    const datetimeStrings = [
+      'Aug 9, 1995',
+      'Wed, 09 Aug 1995 00:00:00 GMT',
+      'Wed, 09 Aug 1995 00:00:00',
+      '2021/03/14',
+      '2021-03-14',
+      '2021/03/14 14:21:00',
+      '2021-03-14 14:21:00',
+      '6 Mar 17 21:22 UT',
+      '6 Mar 17 21:22:23 UT',
+      '6 Mar 2017 21:22:23 GMT',
+      '06 Mar 2017 21:22:23 Z',
+      'Mon 06 Mar 2017 21:22:23 z',
+      'Mon, 06 Mar 2017 21:22:23 +0000'
+    ];
+
+    const invalidDatetimeStrings = ['21:22:23', '20210314'];
+
+    expect(_.every(_.pipe(_.isDateString, _.equals(true)), datetimeStrings)).to.be.true;
+    expect(_.every(_.pipe(_.isDateString, _.equals(false)), invalidDatetimeStrings)).to.be.true;
+  });
+});
+
+describe('# _.ap test', () => {
+  it('Should return valid value', () => {
+    const includesWithAp = _.pipe(_.includes, _.ap('string'));
+    const forEachWithAp = _.pipe(_.reduce, _.ap(['f', 'o', 'o']));
+
+    expect(includesWithAp('i')).to.be.true;
+    expect(forEachWithAp((acc, v) => `${acc}${v}`, '')).to.eql('foo');
+  });
+});
+
+describe('# _.instanceOf test', () => {
+  class Car {
+    constructor(make, model, year) {
+      this.make = make;
+      this.model = model;
+      this.year = year;
+    }
+  }
+  class C {}
+  class D {}
+  const auto = new Car('Honda', 'Accord', 1998);
+
+  it('Should return true', () => {
+    expect(_.instanceOf(Car, auto)).to.be.true;
+    expect(_.instanceOf(Object, auto)).to.be.true;
+
+    expect(_.instanceOf(C, new C())).to.be.true;
+    expect(_.instanceOf(C, new D())).to.be.false;
+
+    expect(_.instanceOf(String, 'string')).to.be.false;
+    expect(_.instanceOf(String, new String('string'))).to.be.true;
+
+    expect(_.instanceOf(Object, {})).to.be.true;
+  });
+});
+
+describe('# _.ternary test', () => {
+  const YorN = _.ternary('Y', 'N');
+
+  it('If argument is true, should return Y, else return N', () => {
+    expect(YorN(true)).to.eql('Y');
+    expect(YorN(false)).to.eql('N');
+    expect(_.pipe(_.isEmpty, YorN)(['a'])).to.eql('N');
+  });
+});
+
+describe('# _.ifT test', () => {
+  const getYifT = _.ifT(_.isEmpty, () => 'Y');
+  const ifNotEmptyAppendString = _.ifT(_.isNotEmpty, (str) => `${str}-paddString`);
+
+  it('if argument is empty, should return Y else return argument', () => {
+    expect(getYifT([])).to.eql('Y');
+    expect(getYifT('str')).to.be.a('String', 'str');
+  });
+
+  it('if argument is not empty, should pad string, else return argument', () => {
+    expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
+    expect(ifNotEmptyAppendString('')).to.eql('');
+
+    expect(ifNotEmptyAppendString([])).to.eql([]);
+    expect(ifNotEmptyAppendString(['s', 't', 'r'])).to.eql('s,t,r-paddString');
+  });
+});
+
+describe('# _.ifF test', () => {
+  const ifNotEmptyN = _.ifF(_.isEmpty, () => 'N');
+  const ifNotEmptyAppendString = _.ifF(_.isEmpty, (str) => `${str}-paddString`);
+
+  it('if argument is not empty, should return N else return argument', () => {
+    expect(ifNotEmptyN([])).to.eql([]);
+    expect(ifNotEmptyN('str')).to.be.a('String', 'N');
+  });
+
+  it('if argument is not empty, should pad string, else return argument', () => {
+    expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
+    expect(ifNotEmptyAppendString('')).to.eql('');
+
+    expect(ifNotEmptyAppendString([])).to.eql([]);
+    expect(ifNotEmptyAppendString(['s', 't', 'r'])).to.eql('s,t,r-paddString');
+  });
+});
+
+describe('# _.removeByIndex test', () => {
+  const arr = [1, 2, 3];
+  const secondRemoved = _.removeByIndex(1, arr);
+
+  it('Should argument array is not mutated', () => {
+    expect(arr).to.eqls([1, 2, 3]);
+  });
+
+  it('argument index element Should be removed', () => {
+    expect(secondRemoved).to.eqls([1, 3]);
+  });
+});
+
+describe('# _.removeLast test', () => {
+  const arr = [1, 2, 3];
+  const secondRemoved = _.removeLast(arr);
+
+  it('Should argument array is not mutated', () => {
+    expect(arr).to.eqls([1, 2, 3]);
+  });
+
+  it('argument index element Should be removed', () => {
+    expect(secondRemoved).to.eqls([1, 2]);
+  });
+});
+
+describe('# _.append test', () => {
+  const arr = [1];
+
+  it('Should argument array is not mutated', () => {
+    _.append(arr, 34);
+    expect(arr).to.eqls([1]);
+  });
+
+  it('Should append argment', () => {
+    expect(_.append(arr, 2)).to.eqls([1, 2]);
+    expect(_.append(arr, [2, 3, 4])).to.eqls([1, 2, 3, 4]);
+  });
+});
+
+describe('# _.prepend test', () => {
+  const arr = [1];
+
+  it('Should argument array is not mutated', () => {
+    _.prepend(arr, 55);
+    expect(arr).to.eqls([1]);
+  });
+
+  it('Should prepend argment', () => {
+    expect(_.prepend(arr, 2)).to.eqls([2, 1]);
+    expect(_.prepend(arr, [2, 3, 4])).to.eqls([2, 3, 4, 1]);
+  });
+});
+
+describe('# _.mapWithKey test', () => {
+  const arr = [3, 4, 5];
+  const getIdxs = _.mapWithKey((v, i) => i);
+
+  it('Should return indexs', () => {
+    expect(getIdxs(arr)).to.eqls([0, 1, 2]);
+  });
+
+  it('Should return keys', () => {
+    expect(getIdxs({ a: 1, b: 2 })).to.eqls(['a', 'b']);
+  });
+});
+
+describe('# _.reduceWithKey test', () => {
+  const arr = [3, 4, 5];
+  const getIdxs = _.reduceWithKey((acc, v, i) => _.concat(acc, i), []);
+
+  it('Should return indexs', () => {
+    expect(getIdxs(arr)).to.eqls([0, 1, 2]);
+  });
+
+  it('Should return keys', () => {
+    expect(getIdxs({ a: 1, b: 2 })).to.eqls(['a', 'b']);
+  });
+});
