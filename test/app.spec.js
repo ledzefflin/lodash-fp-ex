@@ -53,7 +53,7 @@ describe('# _.filterAsync test', () => {
     const asyncFilter = (a) =>
       new Promise((resolve) => {
         setTimeout(() => {
-          resolve(!(0 === a % 2));
+          resolve(!_.equals(0, a % 2));
         }, 5);
       });
     const results = await _.filterAsync(asyncFilter, arr);
