@@ -299,6 +299,7 @@ describe('# _.notIncludes test', () => {
   it('Should return opposite result from _.includes', () => {
     expect(_.notIncludes(1, [1, 2, 3])).to.be.false;
     expect(_.notIncludes('s', 'string')).to.be.false;
+    expect(_.notIncludes(1, { a: 1, b: 2 })).to.be.false;
   });
 });
 
@@ -352,10 +353,20 @@ describe('# _.key test', () => {
 describe('# _.transformObjectKey test', () => {
   const obj = { obj_key: 1 };
   const obj1 = { 'obj-key': 1, obj_key: 2 };
+  const nestedObj = {
+    objKey: {
+      nestedKey: {
+        anotherKey: [3]
+      }
+    }
+  };
 
   it('Should transform by input function', () => {
     const kebabKeyObj = _.transformObjectKey(_.kebabCase, obj);
+    const kebabKeyObj1 = _.transformObjectKey(_.kebabCase, nestedObj);
+    console.log(kebabKeyObj1);
     expect(_.keys(kebabKeyObj)).to.eqls(['obj-key']);
+    expect(kebabKeyObj1).to.eqls({ 'obj-key': { 'nested-key': { 'another-key': [3] } } });
   });
 
   it('If transformed keys are duplicated, should throw error', () => {
