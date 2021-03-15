@@ -26,5 +26,4 @@ package-lock.json
 *.log
 .log-audit
 
-/lib
 .idea
