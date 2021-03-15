@@ -44,7 +44,9 @@ describe('# _.mapAsync test', () => {
       });
 
     const results = await _.mapAsync(asyncMapper, arr);
+    const results1 = await _.mapAsync(asyncMapper, { a: 1, b: 2, c: 3 });
     expect(results).to.eqls([2, 4, 6, 8, 10]);
+    expect(results1).to.eqls([2, 4, 6]);
   });
 });
 
@@ -303,10 +305,11 @@ describe('# _.notIncludes test', () => {
 describe('# _.toBool test', () => {
   it('Argument should transform to Boolean type', () => {
     expect(_.toBool(1)).to.be.true;
+    expect(_.toBool('true')).to.be.true;
+
     expect(_.toBool(0)).to.be.false;
     expect(_.toBool(null)).to.be.false;
     expect(_.toBool(undefined)).to.be.false;
-    expect(_.toBool('true')).to.be.true;
     expect(_.toBool('false')).to.be.false;
   });
 });
@@ -422,7 +425,7 @@ describe('# _.pascalCase test', () => {
   });
 });
 
-describe('# _.isDateString test', () => {
+describe('# _.isDatetimeString test', () => {
   it('Should return true with valid datetime string', () => {
     const datetimeStrings = [
       'Aug 9, 1995',
@@ -442,18 +445,18 @@ describe('# _.isDateString test', () => {
 
     const invalidDatetimeStrings = ['21:22:23', '20210314'];
 
-    expect(_.every(_.pipe(_.isDateString, _.equals(true)), datetimeStrings)).to.be.true;
-    expect(_.every(_.pipe(_.isDateString, _.equals(false)), invalidDatetimeStrings)).to.be.true;
+    expect(_.every(_.pipe(_.isDatetimeString, _.equals(true)), datetimeStrings)).to.be.true;
+    expect(_.every(_.pipe(_.isDatetimeString, _.equals(false)), invalidDatetimeStrings)).to.be.true;
   });
 });
 
 describe('# _.ap test', () => {
   it('Should return valid value', () => {
     const includesWithAp = _.pipe(_.includes, _.ap('string'));
-    const forEachWithAp = _.pipe(_.reduce, _.ap(['f', 'o', 'o']));
+    const reduceWithAp = _.pipe(_.reduce, _.ap(['f', 'o', 'o']));
 
     expect(includesWithAp('i')).to.be.true;
-    expect(forEachWithAp((acc, v) => `${acc}${v}`, '')).to.eql('foo');
+    expect(reduceWithAp((acc, v) => `${acc}${v}`, '')).to.eql('foo');
   });
 });
 
@@ -490,6 +493,13 @@ describe('# _.ternary test', () => {
     expect(YorN(true)).to.eql('Y');
     expect(YorN(false)).to.eql('N');
     expect(_.pipe(_.isEmpty, YorN)(['a'])).to.eql('N');
+    expect(
+      _.ternary(
+        () => 'y',
+        () => 'n',
+        true
+      )
+    ).to.eql('y');
   });
 });
 
@@ -557,10 +567,11 @@ describe('# _.removeLast test', () => {
 
 describe('# _.append test', () => {
   const arr = [1];
+  const appended = _.append(arr, 34);
 
   it('Should argument array is not mutated', () => {
-    _.append(arr, 34);
     expect(arr).to.eqls([1]);
+    expect(appended).to.eqls([1, 34]);
   });
 
   it('Should append argment', () => {
