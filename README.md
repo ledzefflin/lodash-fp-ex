@@ -559,9 +559,9 @@ _.key(object)
   const obj = { a: 1 };
   const obj1 = { a: 1, b: 1, c: 1 };
 
-  console.log(_.key(1, obj));
+  console.log(_.key(obj, 1));
   // => a
-  console.log(_.key(1, obj1));
+  console.log(_.key(obj1, 1));
   // => c
 })();
 ```

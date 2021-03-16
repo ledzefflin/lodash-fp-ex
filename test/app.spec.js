@@ -345,8 +345,8 @@ describe('# _.key test', () => {
   const obj1 = { a: 1, b: 1, c: 1 };
 
   it('Should return last property name of value', () => {
-    expect(_.key(1, obj)).to.be.a('String', 'a');
-    expect(_.keyByVal(1, obj1)).to.be.a('String', 'c');
+    expect(_.key(obj, 1)).to.be.a('String', 'a');
+    expect(_.keyByVal(obj1, 1)).to.be.a('String', 'c');
   });
 });
 
