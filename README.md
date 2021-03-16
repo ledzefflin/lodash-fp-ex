@@ -552,7 +552,7 @@ _.deepFreeze(value)
 ### key
 **alias:** keyByVal
 ```
-_.key(object)
+_.key(object, value)
 ```
 ```javascript
 (() => {
