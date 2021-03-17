@@ -529,6 +529,7 @@ describe('# _.ifT test', () => {
 
     expect(ifNotEmptyAppendString([])).to.eql([]);
     expect(ifNotEmptyAppendString(['s', 't', 'r'])).to.eql('s,t,r-paddString');
+    expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
   });
 });
 
@@ -547,6 +548,7 @@ describe('# _.ifF test', () => {
 
     expect(ifNotEmptyAppendString([])).to.eql([]);
     expect(ifNotEmptyAppendString(['s', 't', 'r'])).to.eql('s,t,r-paddString');
+    expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
   });
 });
 

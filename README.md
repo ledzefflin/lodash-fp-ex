@@ -1,7 +1,7 @@
 # lodash-fp-ex
 
 ## Overview
-functions to add in lodash-mixin
+functions to add in lodash.mixin
 
 ## Install
 ```bash
@@ -125,9 +125,8 @@ _.filterAsync(thenablePredicate, collection)
 ```
 
 ### reduceAsync
-reduceAsync works different way from mapAsync, filterAsync.   
-reduceAsync works with Promise.resolve.    
-So if you more important function order, reduceAsync will be suitable.
+reduceAsync works different way from mapAsync and filterAsync, it works with Promise.resolve.    
+So if you more important function order than performance, reduceAsync is suitable.
 ```
 _.reduceAsync(thenableIteratee, thenableAccumulator, collection)
 ```
@@ -187,7 +186,8 @@ _.findAsync(thenablePredicate, collection)
 
 ### promisify
 wrap argument with Promise   
-**Note: _.promisify is not curried to accept Function on first argument. functionArguments can be applied only case that first argument is function.**
+**Note: Promisify is not curried to accept Function on first argument. Only when first argument is function, other arguments can be applied.**
+
 ```
 _.promisify(value, functionArguments)
 ```
@@ -315,7 +315,7 @@ _.isPromise(value)
 ```
 
 ### isNotEmpty
-opposite of _.isEmpty
+opposite of lodash.isEmpty
 ```
 _.isNotEmpty(value)
 ```
@@ -339,7 +339,7 @@ _.isNotEmpty(value)
 ```
 
 ### isNotNil
-opposite of _.isNil
+opposite of lodash.isNil
 ```
 _.isNotNil(value)
 ```
@@ -377,7 +377,7 @@ _.isJson(string)
 
 ### notEquals
 **alias:** isNotEqual   
-opposite of _.isEqual
+opposite of lodash.isEqual
 ```
 _.notEquals(value, other)
 ```
@@ -454,6 +454,7 @@ _.isRef(value)
 ```
 
 ### not
+Apply **!** operator to argument.
 ```
 _.not(value)
 ```
@@ -476,6 +477,7 @@ _.not(value)
 ```
 
 ### notIncludes
+Opposite of lodash.includes
 ```
 _.notIncludes(value, collection)
 ```
@@ -491,6 +493,7 @@ _.notIncludes(value, collection)
 ```
 
 ### toBool
+ 'true' and 'false' string and other argument convert to Boolean type.
 ```
 _.toBool(value)
 ```
@@ -513,7 +516,7 @@ _.toBool(value)
 ```
 
 ### deepFreeze
-Freeze reference type target deeply.
+Reference type target freeze deeply.
 ```
 _.deepFreeze(value)
 ```
@@ -550,6 +553,7 @@ _.deepFreeze(value)
 ```
 
 ### key
+Get key string of object by value.
 **alias:** keyByVal
 ```
 _.key(object, value)
@@ -567,7 +571,7 @@ _.key(object, value)
 ```
 
 ### transformObjectKey
-Transform argument object key with argument case transform function
+Argument object key transform with case transform function.
 ```
 _.transformObjectKey(caseTransformer, object)
 ```
@@ -595,7 +599,7 @@ _.transformObjectKey(caseTransformer, object)
 
 ### _.toCamelKey 
 **alias:** toCamelcase   
-Same with transformObjectKey(_.camelCase)
+Same with transformObjectKey(lodash.camelCase)
 ```
 _.toCamelKey(object)
 ```
@@ -614,7 +618,7 @@ _.toCamelKey(object)
 
 ### _.toSnakeKey 
 **alias:** toSnakecase   
-Same with transformObjectKey(_.snakeCase)
+Same with transformObjectKey(lodash.snakeCase)
 ```
 _.toSnakeKey(object)
 ```
@@ -750,6 +754,7 @@ _.ternary(trueHandlerOrVal, falseHandlerOrVal, value)
 })();
 ```
 ### _.ifT
+If evaluator(value) return true,  return trueHandler(value) result otherwise return value.
 ```
 _.ifT(evaluator, trueHandler, value)
 ```
@@ -775,6 +780,7 @@ _.ifT(evaluator, trueHandler, value)
 ```
 
 ### _.ifF
+If evaluator(value) return false, return falseHandler(value) result otherwise return value.
 ```
 _.ifF(evaluator, falseHandler, value)
 ```
