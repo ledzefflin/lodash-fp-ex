@@ -31,7 +31,7 @@ export default [
       },
       {
         sourcemap: true,
-        file: pkg.main,
+        file: pkg.module,
         format: 'umd',
         globals,
         name: pkg.name
