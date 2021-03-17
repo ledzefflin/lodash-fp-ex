@@ -493,7 +493,7 @@ _.notIncludes(value, collection)
 ```
 
 ### toBool
- 'true' and 'false' string and other argument convert to Boolean type.
+ 'true', 'false' string and other argument convert to Boolean type.
 ```
 _.toBool(value)
 ```
@@ -553,7 +553,7 @@ _.deepFreeze(value)
 ```
 
 ### key
-Get key string of object by value.
+Get key string of object by value.   
 **alias:** keyByVal
 ```
 _.key(object, value)
