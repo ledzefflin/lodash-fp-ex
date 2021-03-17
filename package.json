@@ -13,16 +13,14 @@
   "license": "MIT",
   "author": "ledzefflin <ledzefflin@gmail.com>",
   "homepage": "https://github.com/ledzefflin/lodash-fp-ex",
-  "main": "index.js",
+  "module": "index.js",
   "files": [
     "index.js"
   ],
   "scripts": {
     "test": "mocha --require @babel/register"
   },
-  "dependencies": {
-    "lodash": "^4.17.21"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.13.10",
     "@babel/core": "^7.13.10",
@@ -47,6 +45,6 @@
     "rollup-plugin-terser": "^7.0.2"
   },
   "peerDependencies": {
-    "lodash": "4.x"
+    "lodash": "^4.17.21"
   }
 }
