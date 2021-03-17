@@ -18,7 +18,8 @@
     "index.js"
   ],
   "scripts": {
-    "test": "mocha --require @babel/register"
+    "test": "mocha --require @babel/register",
+    "clean": "rimraf ./node_modules && rimraf dist && rimraf index.js index.js.map"
   },
   "dependencies": {},
   "devDependencies": {
@@ -39,6 +40,7 @@
     "chai": "^4.3.4",
     "mocha": "^8.3.2",
     "prettier": "npm:@btmills/prettier",
+    "rimraf": "^3.0.2",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-sourcemaps": "^0.6.3",
