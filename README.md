@@ -184,6 +184,52 @@ _.findAsync(thenablePredicate, collection)
 })();
 ```
 
+### forEachAsync
+```
+_.forEachAsync(thenableIteratee, collection)
+```
+
+```javascript
+(async () => {
+  const asyncMapper = (v, i) =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(i > 0 ? v * i : v);
+      }, 5);
+    });
+
+  const results = await _.forEachAsync(async (v, i) => {
+    const nextVal = await asyncMapper(v, i);
+    return nextVal;
+  }, [1, 2, 3, 4, 5]);
+  console.log(results);
+  // => [1, 2, 6, 12, 20]
+})();
+
+(async () => {
+  const asyncMapper1 = (v, k) =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(`${v} ${k}`);
+      });
+    }, 5);
+
+  const results1 = await _.forEachAsync(
+    async (v, k) => {
+      const nextVal = await asyncMapper1(v, k);
+      return nextVal;
+    },
+    {
+      key: 'val',
+      hello: 'world',
+      'led zeppelin': 'stairway to heaven'
+    }
+  );
+  console.log(results1);
+  // => ['val key', 'world hello', 'stairway to heaven led zeppelin']
+})()
+```
+
 ### promisify
 wrap argument with Promise   
 **Note: Promisify is not curried to accept Function on first argument. Only when first argument is function, other arguments can be applied.**
@@ -597,7 +643,7 @@ _.transformObjectKey(caseTransformer, object)
 })();
 ```
 
-### _.toCamelKey 
+### toCamelKey 
 **alias:** toCamelcase   
 Same with transformObjectKey(lodash.camelCase)
 ```
@@ -616,7 +662,7 @@ _.toCamelKey(object)
 })();
 ```
 
-### _.toSnakeKey 
+### toSnakeKey 
 **alias:** toSnakecase   
 Same with transformObjectKey(lodash.snakeCase)
 ```
@@ -634,7 +680,7 @@ _.toSnakeKey(object)
   // => obj_key already exist. duplicated property name is not supported.
 })();
 ```
-### _.pascalCase
+### pascalCase
 Argument string transform to pascal case.
 ```
 _.pascalCase(string)
@@ -648,7 +694,7 @@ _.pascalCase(string)
 })();
 ```
 
-### _.isDatetimeString
+### isDatetimeString
 Check argument string can parse with Date.parse function.
 ```
 _.isDatetimeString(string)
@@ -680,7 +726,7 @@ _.isDatetimeString(string)
 })();
 ```
 
-### _.ap
+### ap
 Inspired by https://github.com/monet/monet.js/blob/master/docs/MAYBE.md#ap
 ```
 _.ap(value, curriedFunction)
@@ -700,7 +746,7 @@ _.ap(value, curriedFunction)
 })();
 ```
 
-### _.instanceOf
+### instanceOf
 ```
 _.instanceOf(value)
 ```
@@ -735,7 +781,7 @@ _.instanceOf(value)
 })();
 ```
 
-### _.ternary
+### ternary
 ```
 _.ternary(trueHandlerOrVal, falseHandlerOrVal, value)
 ```
@@ -753,7 +799,7 @@ _.ternary(trueHandlerOrVal, falseHandlerOrVal, value)
   // => y
 })();
 ```
-### _.ifT
+### ifT
 If evaluator(value) return true,  return trueHandler(value) result otherwise return value.
 ```
 _.ifT(evaluator, trueHandler, value)
@@ -779,7 +825,7 @@ _.ifT(evaluator, trueHandler, value)
 })();
 ```
 
-### _.ifF
+### ifF
 If evaluator(value) return false, return falseHandler(value) result otherwise return value.
 ```
 _.ifF(evaluator, falseHandler, value)
@@ -805,7 +851,7 @@ _.ifF(evaluator, falseHandler, value)
 })();
 ```
 
-### _.removeByIndex
+### removeByIndex
 **alias:** removeByIdx
 ```
 _.removeByIndex(index, array);
@@ -823,7 +869,7 @@ _.removeByIndex(index, array);
 })();
 ```
 
-### _.removeLast
+### removeLast
 ```
 _.removeLast(array);
 ```
@@ -840,7 +886,7 @@ _.removeLast(array);
 })();
 ```
 
-### _.append
+### append
 **alias:** concat
 
 ```
@@ -861,7 +907,7 @@ _.append(array, [values])
   // => [1, 2, 3, 4]
 })();
 ```
-### _.prepend
+### prepend
 ```
 _.prepend(array, [values])
 ```
@@ -880,7 +926,7 @@ _.prepend(array, [values])
 })();
 ```
 
-### _.mapWithKey
+### mapWithKey
 **alias:** mapWithIdx   
 Same with _.map.convert({ cap: false})
 ```
@@ -898,7 +944,7 @@ _.mapWithKey(iteratee, collection)
 })();
 ```
 
-### _.reduceWithKey
+### reduceWithKey
 **alias:** reduceWithIdx   
 Same with _.reduce.convert({ cap: false })
 ```

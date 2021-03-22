@@ -111,6 +111,44 @@ describe('# _.findAsync test', () => {
   });
 });
 
+describe('# _.forEachAsync test', () => {
+  it('should return all values mulplied by array index', async () => {
+    const asyncMapper = (v, i) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(i > 0 ? v * i : v * 1);
+        }, 5);
+      });
+    const asyncMapper1 = (v, k) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(`${v} ${k}`);
+        });
+      }, 5);
+
+    const results = await _.forEachAsync(async (v, i) => {
+      const nextVal = await asyncMapper(v, i);
+      return nextVal;
+    }, arr);
+
+    const results1 = await _.forEachAsync(
+      async (v, k) => {
+        const nextVal = await asyncMapper1(v, k);
+        return nextVal;
+      },
+      {
+        key: 'val',
+        hello: 'world',
+        'led zeppelin': 'stairway to heaven'
+      }
+    );
+
+    expect(results).not.empty;
+    expect(results).to.eqls([1, 2, 6, 12, 20]);
+    expect(results1).to.eql(['val key', 'world hello', 'stairway to heaven led zeppelin']);
+  });
+});
+
 describe('# _.promisify test', () => {
   it('should return array [128, 128, 128]', async () => {
     const result = await _.promisify(128);
