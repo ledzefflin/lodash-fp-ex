@@ -537,8 +537,12 @@ describe('# _.instanceOf test', () => {
 
 describe('# _.ternary test', () => {
   const YorN = _.ternary('Y', 'N');
+  const paddingYorN = _.ternary(
+    (a) => `${a}-Y`,
+    (a) => `${a}-N`
+  );
 
-  it('If argument is true, should return Y, else return N', () => {
+  it('If argument is true, should return Y else return N', () => {
     expect(YorN(true)).to.eql('Y');
     expect(YorN(false)).to.eql('N');
     expect(_.pipe(_.isEmpty, YorN)(['a'])).to.eql('N');
@@ -549,6 +553,15 @@ describe('# _.ternary test', () => {
         true
       )
     ).to.eql('y');
+  });
+
+  it('If arguement is not one of false, null, undefined, empty string, padding "-Y" else padding "-N"', () => {
+    expect(paddingYorN('True')).to.eql('True-Y');
+
+    expect(paddingYorN('')).to.eql('-N');
+    expect(paddingYorN(null)).to.eql('null-N');
+    expect(paddingYorN(undefined)).to.eql('undefined-N');
+    expect(paddingYorN(false)).to.eql('false-N');
   });
 });
 

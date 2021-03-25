@@ -788,6 +788,11 @@ _.ternary(trueHandlerOrVal, falseHandlerOrVal, value)
 ```javascript
 (() => {
   const YorN = _.ternary('Y', 'N');
+  const getYorN = _.ternary(() => 'y', () => 'n');
+  const paddingYorN = _.ternary(
+    (a) => `${a}-Y`,
+    (a) => `${a}-N`
+  );
 
   console.log(YorN(true));
   // => Y
@@ -795,8 +800,19 @@ _.ternary(trueHandlerOrVal, falseHandlerOrVal, value)
   // => N
   console.log(_.pipe(_.isEmpty, YorN)(['a']));
   // => N
-  console.log(_.ternary(() => 'y', () => 'n', true))
+  console.log(_.getYorN(true))
   // => y
+
+  console.log(paddingYorN('True'));
+  // => True-Y
+  console.log(paddingYorN(false));
+  // => false-N
+  console.log(paddingYorN(''));
+  // => -N
+  console.log(paddingYorN(null));
+  // null-N
+  console.log(paddingYorN(undefined));
+  // undefined-N
 })();
 ```
 ### ifT
