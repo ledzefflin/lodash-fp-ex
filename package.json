@@ -1,6 +1,6 @@
 {
   "name": "lodash-fp-ex",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "lodash/fp extensions",
   "keywords": [
     "lodash",
@@ -21,7 +21,6 @@
     "test": "mocha --require @babel/register",
     "clean": "rimraf ./node_modules && rimraf dist && rimraf index.js index.js.map"
   },
-  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.13.10",
     "@babel/core": "^7.13.10",
