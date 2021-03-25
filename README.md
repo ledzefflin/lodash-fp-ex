@@ -24,6 +24,7 @@ All functions are curried except promisify.
 * `filterAsync`
 * `reduceAsync`
 * `findAsync`
+* `forEachAsync`
 * `promisify`
 * `then`
   * `andThen`
