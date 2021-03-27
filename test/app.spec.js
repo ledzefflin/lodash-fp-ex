@@ -536,8 +536,9 @@ describe('# _.instanceOf test', () => {
 });
 
 describe('# _.ternary test', () => {
-  const YorN = _.ternary('Y', 'N');
+  const YorN = _.ternary(null, 'Y', 'N');
   const paddingYorN = _.ternary(
+    null,
     (a) => `${a}-Y`,
     (a) => `${a}-N`
   );
@@ -548,6 +549,7 @@ describe('# _.ternary test', () => {
     expect(_.pipe(_.isEmpty, YorN)(['a'])).to.eql('N');
     expect(
       _.ternary(
+        null,
         () => 'y',
         () => 'n',
         true
@@ -562,6 +564,22 @@ describe('# _.ternary test', () => {
     expect(paddingYorN(null)).to.eql('null-N');
     expect(paddingYorN(undefined)).to.eql('undefined-N');
     expect(paddingYorN(false)).to.eql('false-N');
+  });
+
+  it('If argments has true, return Y else N', () => {
+    const hasTrue = (args) => _.includes(true, args);
+    const ternaryByHandler = _.ternary(
+      hasTrue,
+      () => 'Y',
+      () => 'N'
+    );
+    const ternaryByValue = _.ternary(hasTrue, 'y', 'n');
+
+    expect(ternaryByHandler([false, 'N', null, undefined])).to.eql('N');
+    expect(ternaryByHandler([true])).to.eql('Y');
+
+    expect(ternaryByValue([false, 'N', null, undefined])).to.eql('n');
+    expect(ternaryByValue([true])).to.eql('y');
   });
 });
 

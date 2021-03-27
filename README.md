@@ -784,16 +784,25 @@ _.instanceOf(value)
 
 ### ternary
 ```
-_.ternary(trueHandlerOrVal, falseHandlerOrVal, value)
+_.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value)
 ```
 ```javascript
 (() => {
-  const YorN = _.ternary('Y', 'N');
-  const getYorN = _.ternary(() => 'y', () => 'n');
+  const YorN = _.ternary(null, 'Y', 'N');
+  const getYorN = _.ternary(null, () => 'y', () => 'n');
   const paddingYorN = _.ternary(
+    null,
     (a) => `${a}-Y`,
     (a) => `${a}-N`
   );
+
+  const hasTrue = (args) => _.includes(true, args);
+  const ternaryWithEvaluatorByHandler = _.ternary(
+      hasTrue,
+      () => 'Y',
+      () => 'N'
+    );
+  const ternaryWithEvaluatorByValue = _.ternary(hasTrue, 'y', 'n');
 
   console.log(YorN(true));
   // => Y
@@ -814,6 +823,15 @@ _.ternary(trueHandlerOrVal, falseHandlerOrVal, value)
   // null-N
   console.log(paddingYorN(undefined));
   // undefined-N
+
+  console.log(ternaryWithEvaluatorByHandler([false, 'N', null, undefined]));
+  // => N
+  console.log(ternaryWithEvaluatorByHandler([true]));
+  // => Y
+  console.log(ternaryWithEvaluatorByValue([false, 'N', null, undefined]));
+  // => n
+  console.log(ternaryWithEvaluatorByValue([true]));
+  // => y
 })();
 ```
 ### ifT
