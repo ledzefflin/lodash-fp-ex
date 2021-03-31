@@ -29,6 +29,7 @@ All functions are curried except promisify.
 * `then`
   * `andThen`
 * `otherwise`
+  * `catch`
 * `finally`
 
 * `isPromise`
@@ -278,6 +279,7 @@ _.then(successHandler, thenable)
 ```
 
 ### otherwise
+**alias:** catch   
 Make Promise.catch work with _.pipe.
 ```
 _.otherwise(failureHandler, thenable)
@@ -294,7 +296,7 @@ _.otherwise(failureHandler, thenable)
         }
       });
     });
-  const composer = _.pipe(p, _.then(_.identity), _.otherwise(_.identity));
+  const composer = _.pipe(p, _.then(_.identity), _.catch(_.identity));
   const result1 = await composer(1);
   console.log(result1);
   // 1
@@ -325,7 +327,7 @@ _.finally(handler, thenable)
   const composer = _.pipe(
     p,
     _.then(_.identity),
-    _.otherwise(_.identity),
+    _.catch(_.identity),
     _.finally(() => (isLoading = false))
   );
 

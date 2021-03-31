@@ -191,7 +191,7 @@ describe('# _.otherwise test', () => {
         }
       });
     });
-  const composer = _.pipe(p, _.then(_.identity), _.otherwise(_.identity));
+  const composer = _.pipe(p, _.then(_.identity), _.catch(_.identity));
   it('should return "wrong" text', async () => {
     const result = await composer(2);
 
