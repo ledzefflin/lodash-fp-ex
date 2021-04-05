@@ -580,6 +580,8 @@ describe('# _.ternary test', () => {
 
     expect(ternaryByValue([false, 'N', null, undefined])).to.eql('n');
     expect(ternaryByValue([true])).to.eql('y');
+    expect(_.ternary(hasTrue, () => 'Y', 'n', [true])).to.eql('Y');
+    expect(_.ternary(hasTrue, () => 'Y', 'n', [false])).to.eql('n');
   });
 });
 
