@@ -388,6 +388,16 @@ describe('# _.key test', () => {
   });
 });
 
+describe('# _.key arguments order does not matter', () => {
+  const obj = { a: 1 };
+  const obj1 = { a: 1, b: 1, c: 1 };
+
+  it('Should return last property name of value', () => {
+    expect(_.key(1, obj)).to.be.a('String', 'a');
+    expect(_.keyByVal(1, obj1)).to.be.a('String', 'c');
+  });
+});
+
 describe('# _.transformObjectKey test', () => {
   const obj = { obj_key: 1 };
   const obj1 = { 'obj-key': 1, obj_key: 2 };
