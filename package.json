@@ -15,7 +15,8 @@
   "homepage": "https://github.com/ledzefflin/lodash-fp-ex",
   "module": "index.js",
   "files": [
-    "index.js"
+    "index.js",
+    "index.js.map"
   ],
   "scripts": {
     "test": "mocha --require @babel/register",
