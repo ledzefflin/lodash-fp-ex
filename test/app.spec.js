@@ -381,20 +381,13 @@ describe('# _.deepFreeze test', () => {
 describe('# _.key test', () => {
   const obj = { a: 1 };
   const obj1 = { a: 1, b: 1, c: 1 };
+  const obj2 = { a: { b: { k: 1 } } };
 
   it('Should return last property name of value', () => {
     expect(_.key(obj, 1)).to.be.a('String', 'a');
     expect(_.keyByVal(obj1, 1)).to.be.a('String', 'c');
-  });
-});
-
-describe('# _.key arguments order does not matter', () => {
-  const obj = { a: 1 };
-  const obj1 = { a: 1, b: 1, c: 1 };
-
-  it('Should return last property name of value', () => {
-    expect(_.key(1, obj)).to.be.a('String', 'a');
-    expect(_.keyByVal(1, obj1)).to.be.a('String', 'c');
+    expect(_.key(obj2, { b: { k: 1 } })).eql('a');
+    expect(_.key(obj2, { b: { k: 2 } })).eql(undefined)
   });
 });
 

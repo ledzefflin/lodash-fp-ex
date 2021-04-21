@@ -611,11 +611,16 @@ _.key(object, value)
 (() => {
   const obj = { a: 1 };
   const obj1 = { a: 1, b: 1, c: 1 };
+  const obj2 = { a: { b: { k: 1 }}};
 
   console.log(_.key(obj, 1));
   // => a
   console.log(_.key(obj1, 1));
   // => c
+  console.log(_.key(objs, { b: { k: 1 }}));
+  // => a 
+  console.log(_.key(obj2, { b: { k: 2 } }));
+  // => undefined
 })();
 ```
 
