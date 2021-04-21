@@ -617,7 +617,7 @@ _.key(object, value)
   // => a
   console.log(_.key(obj1, 1));
   // => c
-  console.log(_.key(objs, { b: { k: 1 }}));
+  console.log(_.key(obj2, { b: { k: 1 }}));
   // => a 
   console.log(_.key(obj2, { b: { k: 2 } }));
   // => undefined
