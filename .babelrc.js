@@ -13,7 +13,7 @@ module.exports = {
   plugins: [
     '@babel/plugin-proposal-export-default-from',
     '@babel/plugin-proposal-export-namespace-from',
-    ['@babel/plugin-proposal-class-properties', { loose: true }],
+    ['@babel/plugin-proposal-class-properties'],
     '@babel/transform-async-to-generator',
     '@babel/transform-exponentiation-operator',
     '@babel/plugin-proposal-object-rest-spread',
