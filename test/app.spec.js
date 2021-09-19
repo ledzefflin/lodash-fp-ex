@@ -706,3 +706,38 @@ describe('# _.reduceWithKey test', () => {
     expect(getIdxs({ a: 1, b: 2 })).to.eqls(['a', 'b']);
   });
 });
+
+describe('# _.isFalsy test', () => {
+  const falsies = [undefined, null, 0, -0, NaN, false, ''];
+  const notFalsy = [[], '0', 'false', {}, () => { }];
+  const composer = _.pipe(
+    _.map(_.isFalsy),
+    _.every(_.equals(true))
+  );
+
+  it('Should return true', () => {
+    expect(composer(falsies)).to.eqls(true);
+  });
+
+  it('Should return false', () => {
+    expect(composer(notFalsy)).to.eqls(false);
+  });
+});
+
+describe('# _.isTruthy test', () => {
+  const falsies = [undefined, null, 0, -0, NaN, false, ''];
+  const notFalsy = [[], '0', 'false', {}, () => { }];
+
+  const composer = _.pipe(
+    _.map(_.isTruthy),
+    _.every(_.equals(false))
+  );
+
+  it('Should return true', () => {
+    expect(composer(falsies)).to.eqls(true);
+  });
+
+  it('Should return false', () => {
+    expect(composer(notFalsy)).to.eqls(false);
+  });
+});
