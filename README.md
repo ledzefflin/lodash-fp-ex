@@ -23,7 +23,7 @@ _.mixin(lodashFpEx);
 
 All functions are curried except promisify.
 
-* `mapASync`
+* [`mapASync`](#mapAsync)
 * `filterAsync`
 * `reduceAsync`
 * `findAsync`
@@ -81,7 +81,7 @@ All functions are curried except promisify.
 * `isFalsy`
 * `isTrusy`
 
-### mapAsync
+<a id='mapAsync'></a>### mapAsync
 
 mapAsync works with Promise.all
 
@@ -271,6 +271,7 @@ _.promisify(value, functionArguments)
 ### then
 
 **alias:** andThen
+
 Make Promise.then work with _.pipe
 
 ```javascript
@@ -302,6 +303,7 @@ _.then(successHandler, thenable)
 ### otherwise
 
 **alias:** catch
+
 Make Promise.catch work with _.pipe.
 
 ```javascript
@@ -468,6 +470,7 @@ _.isJson(string)
 ### notEquals
 
 **alias:** isNotEqual
+
 opposite of lodash.isEqual
 
 ```javascript
@@ -493,6 +496,7 @@ _.notEquals(value, other)
 ### isVal
 
 **alias:** isPrimitive
+
 Check agument is primitive type.
 
 ```javascript
@@ -524,6 +528,7 @@ _.isVal(value)
 ### isRef
 
 **alias:** isReference
+
 Check agument is reference type.
 
 ```javascript
@@ -665,8 +670,9 @@ _.deepFreeze(value)
 
 ### key
 
-Get key string of object by value.
 **alias:** keyByVal
+
+Get key string of object by value.
 
 ```javascript
 _.key(object, value)
@@ -722,6 +728,7 @@ _.transformObjectKey(caseTransformer, object)
 ### toCamelKey
 
 **alias:** toCamelcase
+
 Same with transformObjectKey(lodash.camelCase)
 
 ```javascript
@@ -744,6 +751,7 @@ _.toCamelKey(object)
 ### toSnakeKey
 
 **alias:** toSnakecase
+
 Same with transformObjectKey(lodash.snakeCase)
 
 ```javascript
@@ -1073,6 +1081,7 @@ _.prepend(array, [values])
 ### mapWithKey
 
 **alias:** mapWithIdx
+
 Same with _.map.convert({ cap: false})
 
 ```javascript
@@ -1094,6 +1103,7 @@ _.mapWithKey(iteratee, collection)
 ### reduceWithKey
 
 **alias:** reduceWithIdx
+
 Same with _.reduce.convert({ cap: false })
 
 ```javascript
