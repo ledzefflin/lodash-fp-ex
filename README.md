@@ -81,7 +81,9 @@ All functions are curried except promisify.
 * `isFalsy`
 * `isTrusy`
 
-<a id='mapAsync'></a>### mapAsync
+<a id='mapAsync'></a>
+
+### mapAsync
 
 mapAsync works with Promise.all
 
