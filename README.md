@@ -14,7 +14,7 @@ $npm i lodash lodash-fp-ex
 
 ```javascript
 import _ from 'lodash/fp';
-import lodashFpEx from 'lodash-fp-ex'
+import lodashFpEx from 'lodash-fp-ex';
 
 _.mixin(lodashFpEx);
 ```
@@ -23,78 +23,20 @@ _.mixin(lodashFpEx);
 
 All functions are curried except promisify.
 
-* [`mapASync`](#mapAsync)
-* `filterAsync`
-* `reduceAsync`
-* `findAsync`
-* `forEachAsync`
-* `promisify`
-* `then`
-  * `andThen`
-* `otherwise`
-  * `catch`
-* `finally`
-
-* `isPromise`
-* `isNotEmpty`
-* `isNotNil`
-* `isJson`
-* `notEquals`
-  * `isNotEqual`
-* `isVal`
-  * `isPrimitive`
-* `isRef`
-  * `isReference`
-* `not`
-* `notIncludes`
-* `toBool`
-
-* `deepFreeze`
-* `key`
-  * `keyByVal`
-  
-* `transformObjectKey`
-* `toCamelcase`
-  * `toCamelKey`
-* `toSnakecase`
-  * `toSnakeKey`
-* `pascalCase`
-* `isDatetimeString`
-
-* `ap`
-* `instanceOf`
-
-* `ternary`
-* `ifT`
-* `ifF`
-  
-* `removeByIndex`
-  * `removeByIdx`
-* `removeLast`
-* `append`
-* `prepend`
-
-* `mapWithKey`
-  * `mapWithIdx`
-* `reduceWithKey`
-  * `reduceWithIdx`
-* `isFalsy`
-* `isTrusy`
-
-<a id='mapAsync'></a>
+[`mapASync`](#mapasync), [`filterAsync`](#filterasync), [`reduceAsync`](#reduceasync), [`findAsync`](#findasync), [`forEachAsync`](#foreachasync), [`promisify`](#promisify), [`then`](#then)(`andThen`), [`otherwise`](#otherwise)(`catch`), [`finally`](#finally), [`isPromise`](#ispromise), [`isNotEmpty`](#isnotempty), [`isNotNil`](#isnotnil), [`isJson`](#isjson), [`notEquals`](#notequals)(`isNotEqual`), [`isVal`](#isval)(`isPrimitive`), [`isRef`](#isref)(`isReference`), [`not`](#not), [`notIncludes`](#notincludes), [`toBool`](#tobool), [`deepFreeze`](#deepfreeze), [`key`](#key)(`keyByVal`), [`transformObjectKey`](#transformobjectkey), [`toCamelcase`](#tocamelcase)(`toCamelKey`), [`toSnakecase`](#tosnakecase)(`toSnakeKey`), [`pascalCase`](#pascalcase), [`isDatetimeString`](#isdatetimestring), [`ap`](#ap), [`instanceOf`](#instanceof), [`ternary`](#ternary), [`ifT`](#ift), [`ifF`](#iff), [`removeByIndex`](#removebyindex)(`removeByIdx`), [`removeLast`](#removelast), [`append`](#append), [`prepend`](#prepend), [`mapWithKey`](#mapwithkey)(`mapWithIdx`), [`reduceWithKey`](#reducewithkey)(`reduceWithIdx`), [`isFalsy`](#isfalsy), [`isTruthy`](#istruthy)
 
 ### mapAsync
 
 mapAsync works with Promise.all
 
 ```javascript
-_.mapAsync(thenableIteratee, collection)
+_.mapAsync(thenableIteratee, collection);
 ```
 
 ```javascript
 (async () => {
   const arr = [1, 2, 3, 4, 5];
-  const obj = { a: 1, b: 2, c: 3 }
+  const obj = { a: 1, b: 2, c: 3 };
   const asyncMapper = (a) =>
     new Promise((resolve) => {
       setTimeout(() => {
@@ -116,7 +58,7 @@ _.mapAsync(thenableIteratee, collection)
 filterAsync works with Promise.all
 
 ```javascript
-_.filterAsync(thenablePredicate, collection)
+_.filterAsync(thenablePredicate, collection);
 ```
 
 ```javascript
@@ -128,7 +70,7 @@ _.filterAsync(thenablePredicate, collection)
         resolve(!_.equals(0, a % 2));
       }, 5);
     });
-  
+
   // => it takes about 5ms + alpha.
   const results = await _.filterAsync(asyncFilter, arr);
   console.log(_.isEmpty(results));
@@ -144,7 +86,7 @@ reduceAsync works different way from mapAsync and filterAsync, it works with Pro
 So if you more important function order than performance, reduceAsync is suitable.
 
 ```javascript
-_.reduceAsync(thenableIteratee, thenableAccumulator, collection)
+_.reduceAsync(thenableIteratee, thenableAccumulator, collection);
 ```
 
 ```javascript
@@ -166,7 +108,7 @@ _.reduceAsync(thenableIteratee, thenableAccumulator, collection)
       return acc;
     },
     [],
-    arr
+    arr,
   );
 
   console.log(_.isEmpty(result));
@@ -174,13 +116,12 @@ _.reduceAsync(thenableIteratee, thenableAccumulator, collection)
   console.log(results);
   // => [2, 4, 6, 8, 10]
 })();
-
 ```
 
 ### findAsync
 
 ```javascript
-_.findAsync(thenablePredicate, collection)
+_.findAsync(thenablePredicate, collection);
 ```
 
 ```javascript
@@ -188,7 +129,7 @@ _.findAsync(thenablePredicate, collection)
   const arr = [
     { name: 'hi', age: 21 },
     { name: 'hello', age: 22 },
-    { name: 'alo', age: 23 }
+    { name: 'alo', age: 23 },
   ];
   const asyncFilter = (a) =>
     new Promise((resolve) => {
@@ -206,7 +147,7 @@ _.findAsync(thenablePredicate, collection)
 ### forEachAsync
 
 ```javascript
-_.forEachAsync(thenableIteratee, collection)
+_.forEachAsync(thenableIteratee, collection);
 ```
 
 ```javascript
@@ -218,10 +159,13 @@ _.forEachAsync(thenableIteratee, collection)
       }, 5);
     });
 
-  const results = await _.forEachAsync(async (v, i) => {
-    const nextVal = await asyncMapper(v, i);
-    return nextVal;
-  }, [1, 2, 3, 4, 5]);
+  const results = await _.forEachAsync(
+    async (v, i) => {
+      const nextVal = await asyncMapper(v, i);
+      return nextVal;
+    },
+    [1, 2, 3, 4, 5],
+  );
   console.log(results);
   // => [1, 2, 6, 12, 20]
 })();
@@ -242,21 +186,21 @@ _.forEachAsync(thenableIteratee, collection)
     {
       key: 'val',
       hello: 'world',
-      'led zeppelin': 'stairway to heaven'
-    }
+      'led zeppelin': 'stairway to heaven',
+    },
   );
   console.log(results1);
   // => ['val key', 'world hello', 'stairway to heaven led zeppelin']
-})()
+})();
 ```
 
 ### promisify
 
-wrap argument with Promise
+wrap argument with Promise\
 **Note: Promisify is not curried to accept Function on first argument. Only when first argument is function, other arguments can be applied.**
 
 ```javascript
-_.promisify(value, functionArguments)
+_.promisify(value, functionArguments);
 ```
 
 ```javascript
@@ -274,10 +218,10 @@ _.promisify(value, functionArguments)
 
 **alias:** andThen
 
-Make Promise.then work with _.pipe
+Make Promise.then work with \_.pipe
 
 ```javascript
-_.then(successHandler, thenable)
+_.then(successHandler, thenable);
 ```
 
 ```javascript
@@ -294,7 +238,7 @@ _.then(successHandler, thenable)
   const result2 = await _.then(_.identity, p(64));
   const result3 = await _.pipe(
     p,
-    _.then((x) => x / 2)
+    _.then((x) => x / 2),
   )(128);
 
   console.log(result1, result2, result3);
@@ -306,10 +250,10 @@ _.then(successHandler, thenable)
 
 **alias:** catch
 
-Make Promise.catch work with _.pipe.
+Make Promise.catch work with \_.pipe.
 
 ```javascript
-_.otherwise(failureHandler, thenable)
+_.otherwise(failureHandler, thenable);
 ```
 
 ```javascript
@@ -336,10 +280,10 @@ _.otherwise(failureHandler, thenable)
 
 ### finally
 
-Make Promise.finally work with _.pipe.
+Make Promise.finally work with \_.pipe.
 
 ```javascript
-_.finally(handler, thenable)
+_.finally(handler, thenable);
 ```
 
 ```javascript
@@ -359,7 +303,7 @@ _.finally(handler, thenable)
     p,
     _.then(_.identity),
     _.catch(_.identity),
-    _.finally(() => (isLoading = false))
+    _.finally(() => (isLoading = false)),
   );
 
   await composer(1);
@@ -373,7 +317,7 @@ _.finally(handler, thenable)
 Check argument is promise.
 
 ```javascript
-_.isPromise(value)
+_.isPromise(value);
 ```
 
 ```javascript
@@ -403,7 +347,7 @@ _.isPromise(value)
 opposite of lodash.isEmpty
 
 ```javascript
-_.isNotEmpty(value)
+_.isNotEmpty(value);
 ```
 
 ```javascript
@@ -422,7 +366,7 @@ _.isNotEmpty(value)
   // => false
   console.log(_.isNotEmpty(undefined));
   // => false
-})()
+})();
 ```
 
 ### isNotNil
@@ -430,7 +374,7 @@ _.isNotEmpty(value)
 opposite of lodash.isNil
 
 ```javascript
-_.isNotNil(value)
+_.isNotNil(value);
 ```
 
 ```javascript
@@ -440,13 +384,13 @@ _.isNotNil(value)
   console.log(_.isNotNil(undefined));
   // => false
 
-  console.log(_.isNotNil(1));  
+  console.log(_.isNotNil(1));
   // => true
   console.log(_.isNotNil({}));
   // => true
   console.log(_.isNotNil(() => {}));
   // => true
-})()
+})();
 ```
 
 ### isJson
@@ -454,7 +398,7 @@ _.isNotNil(value)
 Check argument is json string.
 
 ```javascript
-_.isJson(string)
+_.isJson(string);
 ```
 
 ```javascript
@@ -466,7 +410,7 @@ _.isJson(string)
   // => false
   console.log({ test: 'value' });
   // => false
-})()
+})();
 ```
 
 ### notEquals
@@ -476,17 +420,17 @@ _.isJson(string)
 opposite of lodash.isEqual
 
 ```javascript
-_.notEquals(value, other)
+_.notEquals(value, other);
 ```
 
 ```javascript
 (() => {
-  console.log(_.notEquals({ a: 1}, {a: 1}));
+  console.log(_.notEquals({ a: 1 }, { a: 1 }));
   // => false
-  console.log(_.notEquals([1,2,3], [1,2,3]));
+  console.log(_.notEquals([1, 2, 3], [1, 2, 3]));
   // => false
 
-  console.log(_.notEquals([1,2,3], [2,3,4]));
+  console.log(_.notEquals([1, 2, 3], [2, 3, 4]));
   // => true
   console.log(_.notEquals('string', 'number'));
   // => true
@@ -502,7 +446,7 @@ _.notEquals(value, other)
 Check agument is primitive type.
 
 ```javascript
-_.isVal(value)
+_.isVal(value);
 ```
 
 ```javascript
@@ -534,7 +478,7 @@ _.isVal(value)
 Check agument is reference type.
 
 ```javascript
-_.isRef(value)
+_.isRef(value);
 ```
 
 ```javascript
@@ -549,7 +493,7 @@ _.isRef(value)
   // => false
   console.log(_.isRef('string'));
   // => false
-  
+
   console.log(_.isRef([]));
   // => true
   console.log(_.isRef({}));
@@ -564,7 +508,7 @@ _.isRef(value)
 Apply **!** operator to argument.
 
 ```javascript
-_.not(value)
+_.not(value);
 ```
 
 ```javascript
@@ -573,7 +517,7 @@ _.not(value)
   // => true
   console.log(_.not(0));
   // => true
-  
+
   console.log(_.not('string'));
   // => false
   console.log(_.not(true));
@@ -590,12 +534,12 @@ _.not(value)
 Opposite of lodash.includes
 
 ```javascript
-_.notIncludes(value, collection)
+_.notIncludes(value, collection);
 ```
 
 ```javascript
 (() => {
-  console.log(_.notIncludes(1, [1,2,3]));
+  console.log(_.notIncludes(1, [1, 2, 3]));
   // => false
   console.log(_.notIncludes('s', 'string'));
   // => false
@@ -606,10 +550,10 @@ _.notIncludes(value, collection)
 
 ### toBool
 
- 'true', 'false' string and other argument convert to Boolean type.
+'true', 'false' string and other argument convert to Boolean type.
 
 ```javascript
-_.toBool(value)
+_.toBool(value);
 ```
 
 ```javascript
@@ -635,21 +579,21 @@ _.toBool(value)
 Reference type target freeze deeply.
 
 ```javascript
-_.deepFreeze(value)
+_.deepFreeze(value);
 ```
 
 ```javascript
 (() => {
-    const shallowFrozen = Object.freeze({
+  const shallowFrozen = Object.freeze({
     a: {
-      b: []
-    }
+      b: [],
+    },
   });
   const deepFrozen = _.deepFreeze({
     a: {
       b: [],
-      c: () => {}
-    }
+      c: () => {},
+    },
   });
 
   console.log(Object.isFrozen(shallowFrozen));
@@ -677,21 +621,21 @@ _.deepFreeze(value)
 Get key string of object by value.
 
 ```javascript
-_.key(object, value)
+_.key(object, value);
 ```
 
 ```javascript
 (() => {
   const obj = { a: 1 };
   const obj1 = { a: 1, b: 1, c: 1 };
-  const obj2 = { a: { b: { k: 1 }}};
+  const obj2 = { a: { b: { k: 1 } } };
 
   console.log(_.key(obj, 1));
   // => a
   console.log(_.key(obj1, 1));
   // => c
-  console.log(_.key(obj2, { b: { k: 1 }}));
-  // => a 
+  console.log(_.key(obj2, { b: { k: 1 } }));
+  // => a
   console.log(_.key(obj2, { b: { k: 2 } }));
   // => undefined
 })();
@@ -702,7 +646,7 @@ _.key(object, value)
 Argument object key transform with case transform function.
 
 ```javascript
-_.transformObjectKey(caseTransformer, object)
+_.transformObjectKey(caseTransformer, object);
 ```
 
 ```javascript
@@ -712,9 +656,9 @@ _.transformObjectKey(caseTransformer, object)
   const nestedObj = {
     objKey: {
       nestedKey: {
-        anotherKey: [3]
-      }
-    }
+        anotherKey: [3],
+      },
+    },
   };
   const kebabKeyObj = _.transformObjectKey(_.kebabCase, obj);
   const kebabKeyObj1 = _.transformObjectKey(_.kebabCase, nestedObj);
@@ -727,48 +671,48 @@ _.transformObjectKey(caseTransformer, object)
 })();
 ```
 
-### toCamelKey
+### toCamelcase
 
-**alias:** toCamelcase
+**alias:** toCamelKey
 
 Same with transformObjectKey(lodash.camelCase)
 
 ```javascript
-_.toCamelKey(object)
+_.toCamelcase(object);
 ```
 
 ```javascript
 (() => {
   const obj = { obj_key: 1 };
   const obj1 = { 'obj-key': 1, obj_key: 2 };
-  const camelKeyObj = _.toCamelKey(obj);
-  
+  const camelKeyObj = _.toCamelcase(obj);
+
   console.log(camelKeyObj);
   // => { objKey: 1 }
-  console.log(_.camelKey(obj1));
+  console.log(_.toCamelcase(obj1));
   // => objKey already exist. duplicated property name is not supported.
 })();
 ```
 
-### toSnakeKey
+### toSnakecase
 
-**alias:** toSnakecase
+**alias:** toSnakeKey
 
 Same with transformObjectKey(lodash.snakeCase)
 
 ```javascript
-_.toSnakeKey(object)
+_.toSnakecase(object);
 ```
 
 ```javascript
 (() => {
   const obj = { objKey: 1 };
   const obj1 = { objKey: 1, 'obj key': 2 };
-  const snakeKeyObj = _.toSnakeKey(obj);
+  const snakeKeyObj = _.toSnakecase(obj);
 
   console.log(snakeKeyObj);
   // => { obj_key: 1}
-  console.log(_.snakeKey(obj1));
+  console.log(_.toSnakecase(obj1));
   // => obj_key already exist. duplicated property name is not supported.
 })();
 ```
@@ -778,13 +722,13 @@ _.toSnakeKey(object)
 Argument string transform to pascal case.
 
 ```javascript
-_.pascalCase(string)
+_.pascalCase(string);
 ```
 
 ```javascript
 (() => {
   const pascals = _.map(_.pascalCase, ['__Foo_Bar__', 'FOO BAR', 'fooBar', 'foo_bar', 'foo-bar']);
-  
+
   console.log(pascals);
   // => [FooBar, FooBar, FooBar, FooBar, FooBar]
 })();
@@ -795,12 +739,12 @@ _.pascalCase(string)
 Check argument string can parse with Date.parse function.
 
 ```javascript
-_.isDatetimeString(string)
+_.isDatetimeString(string);
 ```
 
 ```javascript
 (() => {
-    const datetimeStrings = [
+  const datetimeStrings = [
     'Aug 9, 1995',
     'Wed, 09 Aug 1995 00:00:00 GMT',
     'Wed, 09 Aug 1995 00:00:00',
@@ -813,7 +757,7 @@ _.isDatetimeString(string)
     '6 Mar 2017 21:22:23 GMT',
     '06 Mar 2017 21:22:23 Z',
     'Mon 06 Mar 2017 21:22:23 z',
-    'Mon, 06 Mar 2017 21:22:23 +0000'
+    'Mon, 06 Mar 2017 21:22:23 +0000',
   ];
 
   const invalidDatetimeStrings = ['21:22:23', '20210314'];
@@ -830,18 +774,18 @@ _.isDatetimeString(string)
 Inspired by <https://github.com/monet/monet.js/blob/master/docs/MAYBE.md#ap>
 
 ```javascript
-_.ap(value, curriedFunction)
+_.ap(value, curriedFunction);
 ```
 
 ```javascript
 (() => {
   const includesWithAp = _.pipe(_.includes, _.ap('string'));
   const reduceWithAp = _.pipe(_.reduce, _.ap(['f', 'o', 'o']));
-  
+
   const isIncludeI = includesWithAp('i');
   console.log(isIncludeI);
   // => true
-  
+
   const foo = reduceWithAp((acc, v) => `${acc}${v}`, '');
   console.log(foo);
   // => foo
@@ -851,7 +795,7 @@ _.ap(value, curriedFunction)
 ### instanceOf
 
 ```javascript
-_.instanceOf(value)
+_.instanceOf(value);
 ```
 
 ```javascript
@@ -888,25 +832,29 @@ _.instanceOf(value)
 ### ternary
 
 ```javascript
-_.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value)
+_.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value);
 ```
 
 ```javascript
 (() => {
   const YorN = _.ternary(null, 'Y', 'N');
-  const getYorN = _.ternary(null, () => 'y', () => 'n');
+  const getYorN = _.ternary(
+    null,
+    () => 'y',
+    () => 'n',
+  );
   const paddingYorN = _.ternary(
     null,
     (a) => `${a}-Y`,
-    (a) => `${a}-N`
+    (a) => `${a}-N`,
   );
 
   const hasTrue = (args) => _.includes(true, args);
   const ternaryWithEvaluatorByHandler = _.ternary(
-      hasTrue,
-      () => 'Y',
-      () => 'N'
-    );
+    hasTrue,
+    () => 'Y',
+    () => 'N',
+  );
   const ternaryWithEvaluatorByValue = _.ternary(hasTrue, 'y', 'n');
 
   console.log(YorN(true));
@@ -915,7 +863,7 @@ _.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value)
   // => N
   console.log(_.pipe(_.isEmpty, YorN)(['a']));
   // => N
-  console.log(_.getYorN(true))
+  console.log(_.getYorN(true));
   // => y
 
   console.log(paddingYorN('True'));
@@ -942,10 +890,10 @@ _.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value)
 
 ### ifT
 
-If evaluator(value) return true,  return trueHandler(value) result otherwise return value.
+If evaluator(value) return true, return trueHandler(value) result otherwise return value.
 
 ```javascript
-_.ifT(evaluator, trueHandler, value)
+_.ifT(evaluator, trueHandler, value);
 ```
 
 ```javascript
@@ -960,7 +908,7 @@ _.ifT(evaluator, trueHandler, value)
   console.log(ifNotEmptyAppendString('str'));
   // => 'str-paddString'
   console.log(ifNotEmptyAppendString(''));
-  // => 
+  // =>
   console.log(ifNotEmptyAppendString([]));
   // => []
   console.log(ifNotEmptyAppendString(['s', 't', 'r']));
@@ -973,7 +921,7 @@ _.ifT(evaluator, trueHandler, value)
 If evaluator(value) return false, return falseHandler(value) result otherwise return value.
 
 ```javascript
-_.ifF(evaluator, falseHandler, value)
+_.ifF(evaluator, falseHandler, value);
 ```
 
 ```javascript
@@ -988,7 +936,7 @@ _.ifF(evaluator, falseHandler, value)
   console.log(ifNotEmptyAppendString('str'));
   // => str-paddString
   console.log(ifNotEmptyAppendString(''));
-  // => 
+  // =>
   console.log(ifNotEmptyAppendString([]));
   // => []
   console.log(ifNotEmptyAppendString(['s', 't', 'r']));
@@ -1041,7 +989,7 @@ _.removeLast(array);
 **alias:** concat
 
 ```javascript
-_.append(array, [values])
+_.append(array, [values]);
 ```
 
 ```javascript
@@ -1054,7 +1002,7 @@ _.append(array, [values])
   // => [1]
   console.log(appended);
   // => [1, 34]
-  console.log(_.append(arr, [2,3,4]));
+  console.log(_.append(arr, [2, 3, 4]));
   // => [1, 2, 3, 4]
 })();
 ```
@@ -1062,7 +1010,7 @@ _.append(array, [values])
 ### prepend
 
 ```javascript
-_.prepend(array, [values])
+_.prepend(array, [values]);
 ```
 
 ```javascript
@@ -1070,12 +1018,12 @@ _.prepend(array, [values])
   const arr = [1];
   const prepended = _.prepend(arr, 34);
 
-    // argument array should not be mutated.
+  // argument array should not be mutated.
   console.log(arr);
   // => [1]
   console.log(prepended);
   // => [34, 1]
-  console.log(_.prepend(arr, [2,3,4]));
+  console.log(_.prepend(arr, [2, 3, 4]));
   // => [2, 3, 4, 1]
 })();
 ```
@@ -1084,10 +1032,10 @@ _.prepend(array, [values])
 
 **alias:** mapWithIdx
 
-Same with _.map.convert({ cap: false})
+Same with \_.map.convert({ cap: false})
 
 ```javascript
-_.mapWithKey(iteratee, collection)
+_.mapWithKey(iteratee, collection);
 ```
 
 ```javascript
@@ -1097,7 +1045,7 @@ _.mapWithKey(iteratee, collection)
 
   console.log(getIdxs(arr));
   // => [0, 1, 2]
-  console.log(getIdxs({ a: 1, b: 2}));
+  console.log(getIdxs({ a: 1, b: 2 }));
   // => ['a', 'b']
 })();
 ```
@@ -1106,10 +1054,10 @@ _.mapWithKey(iteratee, collection)
 
 **alias:** reduceWithIdx
 
-Same with _.reduce.convert({ cap: false })
+Same with \_.reduce.convert({ cap: false })
 
 ```javascript
-_.reduceWithKey(iteratee, accumulator, collection)
+_.reduceWithKey(iteratee, accumulator, collection);
 ```
 
 ```javascript
@@ -1127,40 +1075,34 @@ _.reduceWithKey(iteratee, accumulator, collection)
 ### isFalsy
 
 ```javascript
-_.isFalsy(value)
+_.isFalsy(value);
 ```
 
 ```javascript
-(() => {
+() => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
-  const notFales = [[], '0', 'false', {}, () => { }];
-  const composer = _.pipe(
-    _.map(_.isFalsy),
-    _.every(_.equals(true))
-  );
+  const notFales = [[], '0', 'false', {}, () => {}];
+  const composer = _.pipe(_.map(_.isFalsy), _.every(_.equals(true)));
 
   composer(falses);
   // => true
   composer(notFales);
   // => false
-})
+};
 ```
 
 ### isTruthy
 
 ```javascript
-_.isTruthy(value)
+_.isTruthy(value);
 ```
 
 ```javascript
 (() => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
-  const notFales = [[], '0', 'false', {}, () => { }];
+  const notFales = [[], '0', 'false', {}, () => {}];
 
-  const composer = _.pipe(
-    _.map(_.isTruthy),
-    _.every(_.equals(false))
-  );
+  const composer = _.pipe(_.map(_.isTruthy), _.every(_.equals(false)));
 
   composer(falses);
   // => true
