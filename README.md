@@ -164,7 +164,7 @@ _.forEachAsync(thenableIteratee, collection);
       const nextVal = await asyncMapper(v, i);
       return nextVal;
     },
-    [1, 2, 3, 4, 5],
+    [1, 2, 3, 4, 5]
   );
   console.log(results);
   // => [1, 2, 6, 12, 20]
@@ -841,7 +841,7 @@ _.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value);
   const getYorN = _.ternary(
     null,
     () => 'y',
-    () => 'n',
+    () => 'n'
   );
   const paddingYorN = _.ternary(
     null,
@@ -853,7 +853,7 @@ _.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value);
   const ternaryWithEvaluatorByHandler = _.ternary(
     hasTrue,
     () => 'Y',
-    () => 'N',
+    () => 'N'
   );
   const ternaryWithEvaluatorByValue = _.ternary(hasTrue, 'y', 'n');
 
@@ -1081,12 +1081,12 @@ _.isFalsy(value);
 ```javascript
 () => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
-  const notFales = [[], '0', 'false', {}, () => {}];
+  const notFalsies = [[], '0', 'false', {}, () => {}];
   const composer = _.pipe(_.map(_.isFalsy), _.every(_.equals(true)));
 
   composer(falses);
   // => true
-  composer(notFales);
+  composer(notFalsies);
   // => false
 };
 ```
@@ -1100,13 +1100,13 @@ _.isTruthy(value);
 ```javascript
 (() => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
-  const notFales = [[], '0', 'false', {}, () => {}];
+  const notFalsies = [[], '0', 'false', {}, () => {}];
 
   const composer = _.pipe(_.map(_.isTruthy), _.every(_.equals(false)));
 
   composer(falses);
   // => true
-  composer(notFales);
+  composer(notFalsies);
   // => false
 })();
 ```
