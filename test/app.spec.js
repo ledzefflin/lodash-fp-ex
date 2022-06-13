@@ -344,12 +344,10 @@ describe('# _.notIncludes test', () => {
 describe('# _.toBool test', () => {
   it('Argument should transform to Boolean type', () => {
     expect(_.toBool(1)).to.be.true;
-    expect(_.toBool('true')).to.be.true;
 
     expect(_.toBool(0)).to.be.false;
     expect(_.toBool(null)).to.be.false;
     expect(_.toBool(undefined)).to.be.false;
-    expect(_.toBool('false')).to.be.false;
   });
 });
 
@@ -387,7 +385,7 @@ describe('# _.key test', () => {
     expect(_.key(obj, 1)).to.be.a('String', 'a');
     expect(_.keyByVal(obj1, 1)).to.be.a('String', 'c');
     expect(_.key(obj2, { b: { k: 1 } })).eql('a');
-    expect(_.key(obj2, { b: { k: 2 } })).eql(undefined)
+    expect(_.key(obj2, { b: { k: 2 } })).eql(undefined);
   });
 });
 
@@ -709,11 +707,8 @@ describe('# _.reduceWithKey test', () => {
 
 describe('# _.isFalsy test', () => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
-  const notFalsy = [[], '0', 'false', {}, () => { }];
-  const composer = _.pipe(
-    _.map(_.isFalsy),
-    _.every(_.equals(true))
-  );
+  const notFalsy = [[], '0', 'false', {}, () => {}];
+  const composer = _.pipe(_.map(_.isFalsy), _.every(_.equals(true)));
 
   it('Should return true', () => {
     expect(composer(falsies)).to.eqls(true);
@@ -726,12 +721,9 @@ describe('# _.isFalsy test', () => {
 
 describe('# _.isTruthy test', () => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
-  const notFalsy = [[], '0', 'false', {}, () => { }];
+  const notFalsy = [[], '0', 'false', {}, () => {}];
 
-  const composer = _.pipe(
-    _.map(_.isTruthy),
-    _.every(_.equals(false))
-  );
+  const composer = _.pipe(_.map(_.isTruthy), _.every(_.equals(false)));
 
   it('Should return true', () => {
     expect(composer(falsies)).to.eqls(true);

@@ -108,7 +108,7 @@ _.reduceAsync(thenableIteratee, thenableAccumulator, collection);
       return acc;
     },
     [],
-    arr,
+    arr
   );
 
   console.log(_.isEmpty(result));
@@ -129,7 +129,7 @@ _.findAsync(thenablePredicate, collection);
   const arr = [
     { name: 'hi', age: 21 },
     { name: 'hello', age: 22 },
-    { name: 'alo', age: 23 },
+    { name: 'alo', age: 23 }
   ];
   const asyncFilter = (a) =>
     new Promise((resolve) => {
@@ -186,8 +186,8 @@ _.forEachAsync(thenableIteratee, collection);
     {
       key: 'val',
       hello: 'world',
-      'led zeppelin': 'stairway to heaven',
-    },
+      'led zeppelin': 'stairway to heaven'
+    }
   );
   console.log(results1);
   // => ['val key', 'world hello', 'stairway to heaven led zeppelin']
@@ -238,7 +238,7 @@ _.then(successHandler, thenable);
   const result2 = await _.then(_.identity, p(64));
   const result3 = await _.pipe(
     p,
-    _.then((x) => x / 2),
+    _.then((x) => x / 2)
   )(128);
 
   console.log(result1, result2, result3);
@@ -303,7 +303,7 @@ _.finally(handler, thenable);
     p,
     _.then(_.identity),
     _.catch(_.identity),
-    _.finally(() => (isLoading = false)),
+    _.finally(() => (isLoading = false))
   );
 
   await composer(1);
@@ -560,16 +560,12 @@ _.toBool(value);
 (() => {
   console.log(_.toBool(1));
   // => true
-  console.log(_.toBool('true'));
-  // => true
 
   console.log(_.toBool(0));
   // => false
   console.log(_.toBool(null));
   // => false
   console.log(_.toBool(undefined));
-  // => false
-  console.log(_.toBool('false'));
   // => false
 })();
 ```
@@ -586,14 +582,14 @@ _.deepFreeze(value);
 (() => {
   const shallowFrozen = Object.freeze({
     a: {
-      b: [],
-    },
+      b: []
+    }
   });
   const deepFrozen = _.deepFreeze({
     a: {
       b: [],
-      c: () => {},
-    },
+      c: () => {}
+    }
   });
 
   console.log(Object.isFrozen(shallowFrozen));
@@ -656,9 +652,9 @@ _.transformObjectKey(caseTransformer, object);
   const nestedObj = {
     objKey: {
       nestedKey: {
-        anotherKey: [3],
-      },
-    },
+        anotherKey: [3]
+      }
+    }
   };
   const kebabKeyObj = _.transformObjectKey(_.kebabCase, obj);
   const kebabKeyObj1 = _.transformObjectKey(_.kebabCase, nestedObj);
@@ -757,7 +753,7 @@ _.isDatetimeString(string);
     '6 Mar 2017 21:22:23 GMT',
     '06 Mar 2017 21:22:23 Z',
     'Mon 06 Mar 2017 21:22:23 z',
-    'Mon, 06 Mar 2017 21:22:23 +0000',
+    'Mon, 06 Mar 2017 21:22:23 +0000'
   ];
 
   const invalidDatetimeStrings = ['21:22:23', '20210314'];
@@ -846,7 +842,7 @@ _.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value);
   const paddingYorN = _.ternary(
     null,
     (a) => `${a}-Y`,
-    (a) => `${a}-N`,
+    (a) => `${a}-N`
   );
 
   const hasTrue = (args) => _.includes(true, args);
