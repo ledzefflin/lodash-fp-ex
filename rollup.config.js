@@ -11,7 +11,7 @@ import { terser } from 'rollup-plugin-terser';
 
 const extensions = ['.js'];
 const external = ['lodash/fp'];
-const globals = { 'lodash/fp': '_' };
+const globals = { 'lodash/fp': 'fp' };
 
 export default [
   {
