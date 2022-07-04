@@ -22,7 +22,8 @@
     "test": "mocha --require @babel/register",
     "clean": "rimraf ./node_modules && rimraf dist && rimraf index.js index.js.map",
     "update": "yarn upgrade-interactive --latest",
-    "build": "yarn test && rollup -c"
+    "build": "yarn test && rollup -c",
+    "types": "tsc ./lib/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.6",

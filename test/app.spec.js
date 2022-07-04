@@ -1,40 +1,40 @@
 import chai from 'chai';
-import _ from 'lodash/fp';
+import fp from 'lodash/fp';
 import lodashFpEx from '../lib/index';
 
-_.mixin(lodashFpEx);
+fp.mixin(lodashFpEx);
 
 const expect = chai.expect;
 
 const arr = [1, 2, 3, 4, 5];
 
-describe('# _.not test', () => {
-  it('_.not(true) should return false', () => {
-    expect(_.not(true)).to.eqls(false);
+describe('# fp.not test', () => {
+  it('fp.not(true) should return false', () => {
+    expect(fp.not(true)).to.eqls(false);
   });
 
-  it('_.not("str") should return false', () => {
-    expect(_.not('str')).to.eqls(false);
+  it('fp.not("str") should return false', () => {
+    expect(fp.not('str')).to.eqls(false);
   });
 
-  it('_.not(false) should return true', () => {
-    expect(_.not(false)).to.eqls(true);
+  it('fp.not(false) should return true', () => {
+    expect(fp.not(false)).to.eqls(true);
   });
 
-  it('_.not(undefined) should return true', () => {
-    expect(_.not(undefined)).to.eqls(true);
+  it('fp.not(undefined) should return true', () => {
+    expect(fp.not(undefined)).to.eqls(true);
   });
 
-  it('_.not(null) should return true', () => {
-    expect(_.not(null)).to.eqls(true);
+  it('fp.not(null) should return true', () => {
+    expect(fp.not(null)).to.eqls(true);
   });
 
-  it('_.not(0) should return true', () => {
-    expect(_.not(0)).to.eqls(true);
+  it('fp.not(0) should return true', () => {
+    expect(fp.not(0)).to.eqls(true);
   });
 });
 
-describe('# _.mapAsync test', () => {
+describe('# fp.mapAsync test', () => {
   it('should return all values multiplied by 2', async () => {
     const asyncMapper = (a) =>
       new Promise((resolve) => {
@@ -43,28 +43,28 @@ describe('# _.mapAsync test', () => {
         }, 5);
       });
 
-    const results = await _.mapAsync(asyncMapper, arr);
-    const results1 = await _.mapAsync(asyncMapper, { a: 1, b: 2, c: 3 });
+    const results = await fp.mapAsync(asyncMapper, arr);
+    const results1 = await fp.mapAsync(asyncMapper, { a: 1, b: 2, c: 3 });
     expect(results).to.eqls([2, 4, 6, 8, 10]);
     expect(results1).to.eqls([2, 4, 6]);
   });
 });
 
-describe('# _.filterAsync test', () => {
+describe('# fp.filterAsync test', () => {
   it('sholud return odd number only', async () => {
     const asyncFilter = (a) =>
       new Promise((resolve) => {
         setTimeout(() => {
-          resolve(!_.equals(0, a % 2));
+          resolve(!fp.equals(0, a % 2));
         }, 5);
       });
-    const results = await _.filterAsync(asyncFilter, arr);
+    const results = await fp.filterAsync(asyncFilter, arr);
     expect(results).not.empty;
     expect(results).to.eqls([1, 3, 5]);
   });
 });
 
-describe('# _.reduceAsync test', () => {
+describe('# fp.reduceAsync test', () => {
   it('should return all values mulplied by 2', async () => {
     const asyncMapper = (a) =>
       new Promise((resolve) => {
@@ -73,7 +73,7 @@ describe('# _.reduceAsync test', () => {
         }, 5);
       });
 
-    const results = await _.reduceAsync(
+    const results = await fp.reduceAsync(
       async (accP, v) => {
         const acc = await accP;
         const nextVal = await asyncMapper(v);
@@ -90,7 +90,7 @@ describe('# _.reduceAsync test', () => {
   });
 });
 
-describe('# _.findAsync test', () => {
+describe('# fp.findAsync test', () => {
   it('should return object name property "hello"', async () => {
     const arr = [
       { name: 'hi', age: 21 },
@@ -100,18 +100,18 @@ describe('# _.findAsync test', () => {
     const asyncFilter = (a) =>
       new Promise((resolve) => {
         setTimeout(() => {
-          resolve(_.pipe(_.get('name'), _.equals('hello'))(a));
+          resolve(fp.pipe(fp.get('name'), fp.equals('hello'))(a));
         }, 5);
       });
 
-    const result = await _.findAsync(asyncFilter, arr);
+    const result = await fp.findAsync(asyncFilter, arr);
 
     expect(result).to.have.own.property('name', 'hello');
     expect(result).to.eqls({ name: 'hello', age: 22 });
   });
 });
 
-describe('# _.forEachAsync test', () => {
+describe('# fp.forEachAsync test', () => {
   it('should return all values mulplied by array index', async () => {
     const asyncMapper = (v, i) =>
       new Promise((resolve) => {
@@ -126,12 +126,12 @@ describe('# _.forEachAsync test', () => {
         });
       }, 5);
 
-    const results = await _.forEachAsync(async (v, i) => {
+    const results = await fp.forEachAsync(async (v, i) => {
       const nextVal = await asyncMapper(v, i);
       return nextVal;
     }, arr);
 
-    const results1 = await _.forEachAsync(
+    const results1 = await fp.forEachAsync(
       async (v, k) => {
         const nextVal = await asyncMapper1(v, k);
         return nextVal;
@@ -149,17 +149,17 @@ describe('# _.forEachAsync test', () => {
   });
 });
 
-describe('# _.promisify test', () => {
+describe('# fp.promisify test', () => {
   it('should return array [128, 128, 128]', async () => {
-    const result = await _.promisify(128);
-    const result1 = await _.promisify((a, b) => a + b, 64, 64);
-    const result2 = await _.promisify(Promise.resolve(128));
+    const result = await fp.promisify(128);
+    const result1 = await fp.promisify((a, b) => a + b, 64, 64);
+    const result2 = await fp.promisify(Promise.resolve(128));
 
     expect([result, result1, result2]).to.eqls([128, 128, 128]);
   });
 });
 
-describe('# _.then test', () => {
+describe('# fp.then test', () => {
   it('should return 128', async () => {
     const p = (a) =>
       new Promise((resolve) => {
@@ -168,30 +168,30 @@ describe('# _.then test', () => {
         }, 5);
       });
 
-    const composer = _.pipe(p, _.then(_.identity));
+    const composer = fp.pipe(p, fp.then(fp.identity));
     const result1 = await composer(64);
-    const result2 = await _.then(_.identity, p(64));
-    const result3 = await _.pipe(
+    const result2 = await fp.then(fp.identity, p(64));
+    const result3 = await fp.pipe(
       p,
-      _.then((x) => x / 2)
+      fp.then((x) => x / 2)
     )(128);
 
     expect([result1, result2, result3]).to.eqls([128, 128, 128]);
   });
 });
 
-describe('# _.otherwise test', () => {
+describe('# fp.otherwise test', () => {
   const p = (a) =>
     new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (_.equals(a * a, a)) {
+        if (fp.equals(a * a, a)) {
           resolve(a);
         } else {
           reject(new Error('wrong'));
         }
       });
     });
-  const composer = _.pipe(p, _.then(_.identity), _.catch(_.identity));
+  const composer = fp.pipe(p, fp.then(fp.identity), fp.catch(fp.identity));
   it('should return "wrong" text', async () => {
     const result = await composer(2);
 
@@ -205,23 +205,23 @@ describe('# _.otherwise test', () => {
   });
 });
 
-describe('# _.finally test', () => {
+describe('# fp.finally test', () => {
   let isLoading = true;
   const p = (a) =>
     new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (_.equals(a * a, a)) {
+        if (fp.equals(a * a, a)) {
           resolve(a);
         } else {
           reject(new Error('wrong'));
         }
       });
     });
-  const composer = _.pipe(
+  const composer = fp.pipe(
     p,
-    _.then(_.identity),
-    _.otherwise(_.identity),
-    _.finally(() => (isLoading = false))
+    fp.then(fp.identity),
+    fp.otherwise(fp.identity),
+    fp.finally(() => (isLoading = false))
   );
 
   it('loading should be false', async () => {
@@ -231,133 +231,133 @@ describe('# _.finally test', () => {
   });
 });
 
-describe('# _.isPromise test', () => {
+describe('# fp.isPromise test', () => {
   const p = Promise.resolve(1);
   const fn = () => 1;
   const str = '1';
   const num = 1;
 
   it('Promise should return true', () => {
-    expect(_.promisify(p)).to.be.a('Promise');
+    expect(fp.promisify(p)).to.be.a('Promise');
   });
 
   it('Any other type also should return true', () => {
-    expect(_.promisify(fn)).to.be.a('Promise');
-    expect(_.promisify(str)).to.be.a('Promise');
-    expect(_.promisify(num)).to.be.a('Promise');
-    expect(_.promisify(null)).to.be.a('Promise');
-    expect(_.promisify(undefined)).to.be.a('Promise');
+    expect(fp.promisify(fn)).to.be.a('Promise');
+    expect(fp.promisify(str)).to.be.a('Promise');
+    expect(fp.promisify(num)).to.be.a('Promise');
+    expect(fp.promisify(null)).to.be.a('Promise');
+    expect(fp.promisify(undefined)).to.be.a('Promise');
   });
 });
 
-describe('# _.isNotEmpty test', () => {
+describe('# fp.isNotEmpty test', () => {
   it('empty array, empty object, number, empty string, null, undefined should return "false"', () => {
-    expect(_.isNotEmpty([])).to.be.false;
-    expect(_.isNotEmpty({})).to.be.false;
-    expect(_.isNotEmpty(1)).to.be.false;
-    expect(_.isNotEmpty('')).to.be.false;
-    expect(_.isNotEmpty(null)).to.be.false;
-    expect(_.isNotEmpty(undefined)).to.be.false;
+    expect(fp.isNotEmpty([])).to.be.false;
+    expect(fp.isNotEmpty({})).to.be.false;
+    expect(fp.isNotEmpty(1)).to.be.false;
+    expect(fp.isNotEmpty('')).to.be.false;
+    expect(fp.isNotEmpty(null)).to.be.false;
+    expect(fp.isNotEmpty(undefined)).to.be.false;
   });
 });
 
-describe('# _.isNotNil test', () => {
+describe('# fp.isNotNil test', () => {
   it('null, undefined should return "false"', () => {
-    expect(_.isNotNil(null)).to.be.false;
-    expect(_.isNotNil(undefined)).to.be.false;
+    expect(fp.isNotNil(null)).to.be.false;
+    expect(fp.isNotNil(undefined)).to.be.false;
   });
   it('should return "true" except null and undefined', () => {
-    expect(_.isNotNil(1)).to.be.true;
-    expect(_.isNotNil({})).to.be.true;
-    expect(_.isNotNil(() => 1)).to.be.true;
+    expect(fp.isNotNil(1)).to.be.true;
+    expect(fp.isNotNil({})).to.be.true;
+    expect(fp.isNotNil(() => 1)).to.be.true;
   });
 });
 
-describe('# _.isJson test', () => {
+describe('# fp.isJson test', () => {
   it('JSON string should return "true"', () => {
-    expect(_.isJson('{ "test": "value" }')).to.be.true;
+    expect(fp.isJson('{ "test": "value" }')).to.be.true;
   });
 
   it('Should return "false" except JSON string', () => {
-    expect(_.isJson('test')).to.be.false;
-    expect(_.isJson({ test: 'value' })).to.be.false;
+    expect(fp.isJson('test')).to.be.false;
+    expect(fp.isJson({ test: 'value' })).to.be.false;
   });
 });
 
-describe('# _.notEquals test', () => {
+describe('# fp.notEquals test', () => {
   it('Should return result that compare each other deeply', () => {
-    expect(_.notEquals({ a: 1 }, { a: 1 })).to.be.false;
-    expect(_.notEquals([1, 2, 3], [1, 2, 3])).to.be.false;
+    expect(fp.notEquals({ a: 1 }, { a: 1 })).to.be.false;
+    expect(fp.notEquals([1, 2, 3], [1, 2, 3])).to.be.false;
 
-    expect(_.isNotEqual([1, 2, 3], [2, 3, 4])).to.be.true;
-    expect(_.isNotEqual('string', 'number')).to.be.true;
-    expect(_.isNotEqual(1, 2)).to.be.true;
+    expect(fp.isNotEqual([1, 2, 3], [2, 3, 4])).to.be.true;
+    expect(fp.isNotEqual('string', 'number')).to.be.true;
+    expect(fp.isNotEqual(1, 2)).to.be.true;
   });
 });
 
-describe('# _.isVal test', () => {
+describe('# fp.isVal test', () => {
   it('null, undefined, Boolean, Number, String type should return true', () => {
-    expect(_.isVal(null)).to.be.true;
-    expect(_.isVal(undefined)).to.be.true;
-    expect(_.isVal(false)).to.be.true;
-    expect(_.isVal(1)).to.be.true;
-    expect(_.isVal('string')).to.be.true;
+    expect(fp.isVal(null)).to.be.true;
+    expect(fp.isVal(undefined)).to.be.true;
+    expect(fp.isVal(false)).to.be.true;
+    expect(fp.isVal(1)).to.be.true;
+    expect(fp.isVal('string')).to.be.true;
 
-    expect(_.isVal([])).to.be.false;
-    expect(_.isVal({})).to.be.false;
-    expect(_.isVal(() => {})).to.be.false;
+    expect(fp.isVal([])).to.be.false;
+    expect(fp.isVal({})).to.be.false;
+    expect(fp.isVal(() => {})).to.be.false;
   });
 });
 
-describe('# _.isRef test', () => {
+describe('# fp.isRef test', () => {
   it('null, Array, Object, Function type should return true', () => {
-    expect(_.isRef(null)).to.be.false;
-    expect(_.isRef(undefined)).to.be.false;
-    expect(_.isRef(false)).to.be.false;
-    expect(_.isRef(1)).to.be.false;
-    expect(_.isRef('string')).to.be.false;
+    expect(fp.isRef(null)).to.be.false;
+    expect(fp.isRef(undefined)).to.be.false;
+    expect(fp.isRef(false)).to.be.false;
+    expect(fp.isRef(1)).to.be.false;
+    expect(fp.isRef('string')).to.be.false;
 
-    expect(_.isRef([])).to.be.true;
-    expect(_.isRef({})).to.be.true;
-    expect(_.isRef(() => {})).to.be.true;
+    expect(fp.isRef([])).to.be.true;
+    expect(fp.isRef({})).to.be.true;
+    expect(fp.isRef(() => {})).to.be.true;
   });
 });
 
-describe('# _.not test', () => {
+describe('# fp.not test', () => {
   it('Should return opposite boolean value from input', () => {
-    expect(_.not(0)).to.be.true;
+    expect(fp.not(0)).to.be.true;
 
-    expect(_.not(true)).to.be.false;
-    expect(_.not(1)).to.be.false;
-    expect(_.not({})).to.be.false;
+    expect(fp.not(true)).to.be.false;
+    expect(fp.not(1)).to.be.false;
+    expect(fp.not({})).to.be.false;
   });
 });
 
-describe('# _.notIncludes test', () => {
-  it('Should return opposite result from _.includes', () => {
-    expect(_.notIncludes(1, [1, 2, 3])).to.be.false;
-    expect(_.notIncludes('s', 'string')).to.be.false;
-    expect(_.notIncludes(1, { a: 1, b: 2 })).to.be.false;
+describe('# fp.notIncludes test', () => {
+  it('Should return opposite result from fp.includes', () => {
+    expect(fp.notIncludes(1, [1, 2, 3])).to.be.false;
+    expect(fp.notIncludes('s', 'string')).to.be.false;
+    expect(fp.notIncludes(1, { a: 1, b: 2 })).to.be.false;
   });
 });
 
-describe('# _.toBool test', () => {
+describe('# fp.toBool test', () => {
   it('Argument should transform to Boolean type', () => {
-    expect(_.toBool(1)).to.be.true;
+    expect(fp.toBool(1)).to.be.true;
 
-    expect(_.toBool(0)).to.be.false;
-    expect(_.toBool(null)).to.be.false;
-    expect(_.toBool(undefined)).to.be.false;
+    expect(fp.toBool(0)).to.be.false;
+    expect(fp.toBool(null)).to.be.false;
+    expect(fp.toBool(undefined)).to.be.false;
   });
 });
 
-describe('# _.deepFreeze test', () => {
+describe('# fp.deepFreeze test', () => {
   const shallowFrozen = Object.freeze({
     a: {
       b: []
     }
   });
-  const deepFrozen = _.deepFreeze({
+  const deepFrozen = fp.deepFreeze({
     a: {
       b: [],
       c: () => {}
@@ -376,20 +376,20 @@ describe('# _.deepFreeze test', () => {
   });
 });
 
-describe('# _.key test', () => {
+describe('# fp.key test', () => {
   const obj = { a: 1 };
   const obj1 = { a: 1, b: 1, c: 1 };
   const obj2 = { a: { b: { k: 1 } } };
 
   it('Should return last property name of value', () => {
-    expect(_.key(obj, 1)).to.be.a('String', 'a');
-    expect(_.keyByVal(obj1, 1)).to.be.a('String', 'c');
-    expect(_.key(obj2, { b: { k: 1 } })).eql('a');
-    expect(_.key(obj2, { b: { k: 2 } })).eql(undefined);
+    expect(fp.key(obj, 1)).to.be.a('String', 'a');
+    expect(fp.keyByVal(obj1, 1)).to.be.a('String', 'c');
+    expect(fp.key(obj2, { b: { k: 1 } })).eql('a');
+    expect(fp.key(obj2, { b: { k: 2 } })).eql(undefined);
   });
 });
 
-describe('# _.transformObjectKey test', () => {
+describe('# fp.transformObjectKey test', () => {
   const obj = { obj_key: 1 };
   const obj1 = { 'obj-key': 1, obj_key: 2 };
   const nestedObj = {
@@ -401,81 +401,81 @@ describe('# _.transformObjectKey test', () => {
   };
 
   it('Should transform by input function', () => {
-    const kebabKeyObj = _.transformObjectKey(_.kebabCase, obj);
-    const kebabKeyObj1 = _.transformObjectKey(_.kebabCase, nestedObj);
+    const kebabKeyObj = fp.transformObjectKey(fp.kebabCase, obj);
+    const kebabKeyObj1 = fp.transformObjectKey(fp.kebabCase, nestedObj);
     console.log(kebabKeyObj1);
-    expect(_.keys(kebabKeyObj)).to.eqls(['obj-key']);
+    expect(fp.keys(kebabKeyObj)).to.eqls(['obj-key']);
     expect(kebabKeyObj1).to.eqls({ 'obj-key': { 'nested-key': { 'another-key': [3] } } });
   });
 
   it('If transformed keys are duplicated, should throw error', () => {
-    const errFn = () => _.transformObjectKey(_.kebabCase, obj1);
+    const errFn = () => fp.transformObjectKey(fp.kebabCase, obj1);
     expect(errFn).to.throw(
       Error,
-      `${_.pipe(
-        _.keys,
-        _.head,
-        _.kebabCase
+      `${fp.pipe(
+        fp.keys,
+        fp.head,
+        fp.kebabCase
       )(obj1)} already exist. duplicated property name is not supported.`
     );
   });
 });
 
-describe('# _.toCamelKey test', () => {
+describe('# fp.toCamelKey test', () => {
   const obj = { obj_key: 1 };
   const obj1 = { 'obj-key': 1, obj_key: 2 };
 
   it('Object property names are converted to camelcase', () => {
-    const camelcaseObj = _.toCamelKey(obj);
-    expect(_.keys(camelcaseObj)).to.eqls(['objKey']);
+    const camelcaseObj = fp.toCamelKey(obj);
+    expect(fp.keys(camelcaseObj)).to.eqls(['objKey']);
   });
 
   it('If transformed keys are duplicated, should throw error', () => {
-    const errFn = () => _.toCamelKey(obj1);
+    const errFn = () => fp.toCamelKey(obj1);
     expect(errFn).to.throw(
       Error,
-      `${_.pipe(
-        _.keys,
-        _.head,
-        _.camelCase
+      `${fp.pipe(
+        fp.keys,
+        fp.head,
+        fp.camelCase
       )(obj1)} already exist. duplicated property name is not supported.`
     );
   });
 });
 
-describe('# _.toSnakeKey test', () => {
+describe('# fp.toSnakeKey test', () => {
   const obj = { objKey: 1 };
   const obj1 = { objKey: 1, 'obj key': 2 };
 
   it('Object property names are converted to snakecase', () => {
-    const snakecaseObj = _.toSnakeKey(obj);
-    expect(_.keys(snakecaseObj)).to.eqls(['obj_key']);
+    const snakecaseObj = fp.toSnakeKey(obj);
+    expect(fp.keys(snakecaseObj)).to.eqls(['obj_key']);
   });
 
   it('If transformed keys are duplicated, should throw error', () => {
-    const errFn = () => _.toSnakeKey(obj1);
+    const errFn = () => fp.toSnakeKey(obj1);
     expect(errFn).to.throw(
       Error,
-      `${_.pipe(
-        _.keys,
-        _.head,
-        _.snakeCase
+      `${fp.pipe(
+        fp.keys,
+        fp.head,
+        fp.snakeCase
       )(obj1)} already exist. duplicated property name is not supported.`
     );
   });
 });
 
-describe('# _.pascalCase test', () => {
+describe('# fp.pascalCase test', () => {
   it('Should transform to Pascalcase', () => {
-    const isAllSame = _.every(
-      _.equals('FooBar'),
-      _.map(_.pascalCase, ['__Foo_Bar__', 'FOO BAR', 'fooBar', 'foo_bar', 'foo-bar'])
+    const isAllSame = fp.every(
+      fp.equals('FooBar'),
+      fp.map(fp.pascalCase, ['__Foo_Bar__', 'FOO BAR', 'fooBar', 'foo_bar', 'foo-bar'])
     );
     expect(isAllSame).to.be.true;
   });
 });
 
-describe('# _.isDatetimeString test', () => {
+describe('# fp.isDatetimeString test', () => {
   it('Should return true with valid datetime string', () => {
     const datetimeStrings = [
       'Aug 9, 1995',
@@ -495,22 +495,22 @@ describe('# _.isDatetimeString test', () => {
 
     const invalidDatetimeStrings = ['21:22:23', '20210314'];
 
-    expect(_.every(_.pipe(_.isDatetimeString, _.equals(true)), datetimeStrings)).to.be.true;
-    expect(_.every(_.pipe(_.isDatetimeString, _.equals(false)), invalidDatetimeStrings)).to.be.true;
+    expect(fp.every(fp.pipe(fp.isDatetimeString, fp.equals(true)), datetimeStrings)).to.be.true;
+    expect(fp.every(fp.pipe(fp.isDatetimeString, fp.equals(false)), invalidDatetimeStrings)).to.be.true;
   });
 });
 
-describe('# _.ap test', () => {
+describe('# fp.ap test', () => {
   it('Should return valid value', () => {
-    const includesWithAp = _.pipe(_.includes, _.ap('string'));
-    const reduceWithAp = _.pipe(_.reduce, _.ap(['f', 'o', 'o']));
+    const includesWithAp = fp.pipe(fp.includes, fp.ap('string'));
+    const reduceWithAp = fp.pipe(fp.reduce, fp.ap(['f', 'o', 'o']));
 
     expect(includesWithAp('i')).to.be.true;
     expect(reduceWithAp((acc, v) => `${acc}${v}`, '')).to.eql('foo');
   });
 });
 
-describe('# _.instanceOf test', () => {
+describe('# fp.instanceOf test', () => {
   class Car {
     constructor(make, model, year) {
       this.make = make;
@@ -523,22 +523,22 @@ describe('# _.instanceOf test', () => {
   const auto = new Car('Honda', 'Accord', 1998);
 
   it('Should return true', () => {
-    expect(_.instanceOf(Car, auto)).to.be.true;
-    expect(_.instanceOf(Object, auto)).to.be.true;
+    expect(fp.instanceOf(Car, auto)).to.be.true;
+    expect(fp.instanceOf(Object, auto)).to.be.true;
 
-    expect(_.instanceOf(C, new C())).to.be.true;
-    expect(_.instanceOf(C, new D())).to.be.false;
+    expect(fp.instanceOf(C, new C())).to.be.true;
+    expect(fp.instanceOf(C, new D())).to.be.false;
 
-    expect(_.instanceOf(String, 'string')).to.be.false;
-    expect(_.instanceOf(String, new String('string'))).to.be.true;
+    expect(fp.instanceOf(String, 'string')).to.be.false;
+    expect(fp.instanceOf(String, new String('string'))).to.be.true;
 
-    expect(_.instanceOf(Object, {})).to.be.true;
+    expect(fp.instanceOf(Object, {})).to.be.true;
   });
 });
 
-describe('# _.ternary test', () => {
-  const YorN = _.ternary(null, 'Y', 'N');
-  const paddingYorN = _.ternary(
+describe('# fp.ternary test', () => {
+  const YorN = fp.ternary(null, 'Y', 'N');
+  const paddingYorN = fp.ternary(
     null,
     (a) => `${a}-Y`,
     (a) => `${a}-N`
@@ -547,9 +547,9 @@ describe('# _.ternary test', () => {
   it('If argument is true, should return Y else return N', () => {
     expect(YorN(true)).to.eql('Y');
     expect(YorN(false)).to.eql('N');
-    expect(_.pipe(_.isEmpty, YorN)(['a'])).to.eql('N');
+    expect(fp.pipe(fp.isEmpty, YorN)(['a'])).to.eql('N');
     expect(
-      _.ternary(
+      fp.ternary(
         null,
         () => 'y',
         () => 'n',
@@ -568,27 +568,27 @@ describe('# _.ternary test', () => {
   });
 
   it('If argments has true, return Y else N', () => {
-    const hasTrue = (args) => _.includes(true, args);
-    const ternaryByHandler = _.ternary(
+    const hasTrue = (args) => fp.includes(true, args);
+    const ternaryByHandler = fp.ternary(
       hasTrue,
       () => 'Y',
       () => 'N'
     );
-    const ternaryByValue = _.ternary(hasTrue, 'y', 'n');
+    const ternaryByValue = fp.ternary(hasTrue, 'y', 'n');
 
     expect(ternaryByHandler([false, 'N', null, undefined])).to.eql('N');
     expect(ternaryByHandler([true])).to.eql('Y');
 
     expect(ternaryByValue([false, 'N', null, undefined])).to.eql('n');
     expect(ternaryByValue([true])).to.eql('y');
-    expect(_.ternary(hasTrue, () => 'Y', 'n', [true])).to.eql('Y');
-    expect(_.ternary(hasTrue, () => 'Y', 'n', [false])).to.eql('n');
+    expect(fp.ternary(hasTrue, () => 'Y', 'n', [true])).to.eql('Y');
+    expect(fp.ternary(hasTrue, () => 'Y', 'n', [false])).to.eql('n');
   });
 });
 
-describe('# _.ifT test', () => {
-  const getYifT = _.ifT(_.isEmpty, () => 'Y');
-  const ifNotEmptyAppendString = _.ifT(_.isNotEmpty, (str) => `${str}-paddString`);
+describe('# fp.ifT test', () => {
+  const getYifT = fp.ifT(fp.isEmpty, () => 'Y');
+  const ifNotEmptyAppendString = fp.ifT(fp.isNotEmpty, (str) => `${str}-paddString`);
 
   it('if argument is empty, should return Y else return argument', () => {
     expect(getYifT([])).to.eql('Y');
@@ -605,9 +605,9 @@ describe('# _.ifT test', () => {
   });
 });
 
-describe('# _.ifF test', () => {
-  const ifNotEmptyN = _.ifF(_.isEmpty, () => 'N');
-  const ifNotEmptyAppendString = _.ifF(_.isEmpty, (str) => `${str}-paddString`);
+describe('# fp.ifF test', () => {
+  const ifNotEmptyN = fp.ifF(fp.isEmpty, () => 'N');
+  const ifNotEmptyAppendString = fp.ifF(fp.isEmpty, (str) => `${str}-paddString`);
 
   it('if argument is not empty, should return N else return argument', () => {
     expect(ifNotEmptyN([])).to.eql([]);
@@ -624,9 +624,9 @@ describe('# _.ifF test', () => {
   });
 });
 
-describe('# _.removeByIndex test', () => {
+describe('# fp.removeByIndex test', () => {
   const arr = [1, 2, 3];
-  const secondRemoved = _.removeByIndex(1, arr);
+  const secondRemoved = fp.removeByIndex(1, arr);
 
   it('Should argument array is not mutated', () => {
     expect(arr).to.eqls([1, 2, 3]);
@@ -637,9 +637,9 @@ describe('# _.removeByIndex test', () => {
   });
 });
 
-describe('# _.removeLast test', () => {
+describe('# fp.removeLast test', () => {
   const arr = [1, 2, 3];
-  const secondRemoved = _.removeLast(arr);
+  const secondRemoved = fp.removeLast(arr);
 
   it('Should argument array is not mutated', () => {
     expect(arr).to.eqls([1, 2, 3]);
@@ -650,9 +650,9 @@ describe('# _.removeLast test', () => {
   });
 });
 
-describe('# _.append test', () => {
+describe('# fp.append test', () => {
   const arr = [1];
-  const appended = _.append(arr, 34);
+  const appended = fp.append(arr, 34);
 
   it('Should argument array is not mutated', () => {
     expect(arr).to.eqls([1]);
@@ -660,28 +660,28 @@ describe('# _.append test', () => {
   });
 
   it('Should append argment', () => {
-    expect(_.append(arr, 2)).to.eqls([1, 2]);
-    expect(_.append(arr, [2, 3, 4])).to.eqls([1, 2, 3, 4]);
+    expect(fp.append(arr, 2)).to.eqls([1, 2]);
+    expect(fp.append(arr, [2, 3, 4])).to.eqls([1, 2, 3, 4]);
   });
 });
 
-describe('# _.prepend test', () => {
+describe('# fp.prepend test', () => {
   const arr = [1];
 
   it('Should argument array is not mutated', () => {
-    _.prepend(arr, 55);
+    fp.prepend(arr, 55);
     expect(arr).to.eqls([1]);
   });
 
   it('Should prepend argment', () => {
-    expect(_.prepend(arr, 2)).to.eqls([2, 1]);
-    expect(_.prepend(arr, [2, 3, 4])).to.eqls([2, 3, 4, 1]);
+    expect(fp.prepend(arr, 2)).to.eqls([2, 1]);
+    expect(fp.prepend(arr, [2, 3, 4])).to.eqls([2, 3, 4, 1]);
   });
 });
 
-describe('# _.mapWithKey test', () => {
+describe('# fp.mapWithKey test', () => {
   const arr = [3, 4, 5];
-  const getIdxs = _.mapWithKey((v, i) => i);
+  const getIdxs = fp.mapWithKey((v, i) => i);
 
   it('Should return indexs', () => {
     expect(getIdxs(arr)).to.eqls([0, 1, 2]);
@@ -692,9 +692,9 @@ describe('# _.mapWithKey test', () => {
   });
 });
 
-describe('# _.reduceWithKey test', () => {
+describe('# fp.reduceWithKey test', () => {
   const arr = [3, 4, 5];
-  const getIdxs = _.reduceWithKey((acc, v, i) => _.concat(acc, i), []);
+  const getIdxs = fp.reduceWithKey((acc, v, i) => fp.concat(acc, i), []);
 
   it('Should return indexs', () => {
     expect(getIdxs(arr)).to.eqls([0, 1, 2]);
@@ -705,10 +705,10 @@ describe('# _.reduceWithKey test', () => {
   });
 });
 
-describe('# _.isFalsy test', () => {
+describe('# fp.isFalsy test', () => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
   const notFalsy = [[], '0', 'false', {}, () => {}];
-  const composer = _.pipe(_.map(_.isFalsy), _.every(_.equals(true)));
+  const composer = fp.pipe(fp.map(fp.isFalsy), fp.every(fp.equals(true)));
 
   it('Should return true', () => {
     expect(composer(falsies)).to.eqls(true);
@@ -719,11 +719,11 @@ describe('# _.isFalsy test', () => {
   });
 });
 
-describe('# _.isTruthy test', () => {
+describe('# fp.isTruthy test', () => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
   const notFalsy = [[], '0', 'false', {}, () => {}];
 
-  const composer = _.pipe(_.map(_.isTruthy), _.every(_.equals(false)));
+  const composer = fp.pipe(fp.map(fp.isTruthy), fp.every(fp.equals(false)));
 
   it('Should return true', () => {
     expect(composer(falsies)).to.eqls(true);
