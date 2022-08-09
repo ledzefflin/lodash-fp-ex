@@ -1,6 +1,6 @@
 import chai from 'chai';
 import fp from 'lodash/fp';
-import lodashFpEx from '../dist/index';
+import lodashFpEx from '../index';
 
 fp.mixin(lodashFpEx);
 

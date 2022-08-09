@@ -21,8 +21,8 @@
   },
   "license": "MIT",
   "author": "ledzefflin <ledzefflin@gmail.com>",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "module": "index.js",
+  "types": "index.d.ts",
   "files": [
     "/dist",
     "/lib"

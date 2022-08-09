@@ -1,3 +1,4 @@
+/// <reference types="lodash" />
 import fp from 'lodash/fp';
 import { F } from 'ts-toolbelt';
 declare type Tthen = F.Curry<(fn: (response: any) => any, thenable: Promise<unknown>) => Promise<any>>;
