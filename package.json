@@ -31,11 +31,9 @@
   ],
   "scripts": {
     "start": "tsc-watch --onSuccess \"node dist/index.js\" ",
-    "build": "yarn test && rollup -c",
-    "b": "tsc",
+    "build": "pnpm test && tsc",
     "clean": "rimraf ./node_modules && rimraf dist && rimraf index.js index.js.map",
-    "test": "mocha --require @babel/register",
-    "types": "tsc ./lib/index.js --declaration --allowJs --emitDeclarationOnly --outDir types",
+    "test": "mocha --reporter spec --require @babel/register",
     "package:install": "pnpm i && sort-package-json",
     "u": "pnpm up --latest -i && pnpm run package:install",
     "re": "rimraf ./node_modules && rimraf pnpm-lock.yaml && rimraf package-lock.json && rimraf yarn.lock && pnpm i"

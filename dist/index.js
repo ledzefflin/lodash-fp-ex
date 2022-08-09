@@ -50,6 +50,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fp_1 = __importDefault(require("lodash/fp"));
 /**
+ * 대상 문자열이 json형식 문자열인지 여부 조회
+ *
+ * @param {string} jsonStr 조회 대상 문자열
+ * @returns {boolean} json 문자열인지 여부
+ */
+var isJson = function (jsonStr) {
+    var composer = fp_1.default.pipe(fp_1.default.attempt, fp_1.default.isError);
+    var result = fp_1.default.isString(jsonStr) && !composer(function () { return JSON.parse(jsonStr); });
+    return result;
+};
+/**
+ * 원시 타입(primitive) 인지 여부 조회
+ * null, undefined, Boolean, Number, String
+ *
+ * @param {any} arg 조회 대상
+ * @returns {boolean} 원시 타입(primitive) 인지 여부
+ */
+var isVal = function (arg) {
+    var result = fp_1.default.isNil(arg) || fp_1.default.isBoolean(arg) || fp_1.default.isNumber(arg) || fp_1.default.isString(arg);
+    return result;
+};
+/**
+ * 참조 타입(reference) 인지 여부 조회
+ * Array, Object, Function
+ *
+ * @param {any} arg 조회 대상
+ * @returns {boolean} 참조 타입(reference) 인지 여부
+ */
+var isRef = function (arg) {
+    var composer = fp_1.default.pipe(isVal, not);
+    var result = composer(arg);
+    return result;
+};
+/**
  * 대상 인자가 promise(thenable)인지 여부 조회
  *
  * @param {any} x 조회 대상
@@ -163,7 +197,8 @@ var isNotEmpty = function (a) {
 var toBool = function (arg) { return !!arg; };
 /**
  * 삼항식 helper 함수\
- * (isTrue가 true면 t(실행)반환, false면 f(실행)반환)
+ * evaluator의 실행 결과가 true면 trueHandler(실행)반환, false면 falseHandler(실행)반환\
+ * evaluator가 함수가 아니면 arg인자를 boolean으로 변환하여 반환된 값으로 trueHandler 또는 falseHandler 실행
  *
  * @param {(arg: any) => bool | any} evaluator 대상인자가 true 인지여부 조회 함수 또는 boolean을 반환하는 함수 또는 bool로 변환되는 아무값
  * @param {(arg: any) => any | any} trueHandler evaluator가 true를 반환하면,  실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
@@ -182,8 +217,80 @@ var ternary = fp_1.default.curry(function (evaluator, trueHandler, falseHandler,
                 : fp_1.default.identity(f);
         return result;
     });
-    var result = executor(trueHandler, falseHandler, arg, fp_1.default.isFunction(evaluator) ? evaluator(arg) : !!evaluator);
+    var result = executor(trueHandler, falseHandler, arg, fp_1.default.isFunction(evaluator) ? evaluator(arg) : !!arg);
     return result;
+});
+/**
+ * a인자를 인자로, evaluator함수 실행,
+ * true면 trueHandler에 a인자 대입
+ * false면 a 반환
+ *
+ * @param {(a) => boolean} evaluator a를 인자로 하는 평가함수
+ * @param {(a) => any} trueHandler evaluator의 결과가 true인 경우, a를 인자로 실행되는 callback
+ * @param {any} a 대상 인자
+ * @returns {any} evaluator가 true를 반환하는 경우, trueHandler의 결과값, false인 경우 a 반환
+ */
+var ifT = fp_1.default.curry(function (evaluator, trueHandler, arg) {
+    var isValidEvaluator = fp_1.default.isFunction(evaluator) || fp_1.default.isBoolean(evaluator);
+    if (isValidEvaluator) {
+        // evaluator가 함수인 경우
+        if (fp_1.default.isFunction(evaluator)) {
+            if (fp_1.default.pipe(evaluator, fp_1.default.equals(true))(arg)) {
+                return fp_1.default.isFunction(trueHandler) ? trueHandler(arg) : trueHandler;
+            }
+            else {
+                return arg;
+            }
+        }
+        else {
+            // evaluator가 boolean인 경우
+            if (evaluator) {
+                return fp_1.default.isFunction(trueHandler) ? trueHandler(arg) : trueHandler;
+            }
+            else {
+                return arg;
+            }
+        }
+    }
+    else {
+        throw new Error('invalid parameter(s)');
+    }
+});
+/**
+ * a인자를 인자로, evaluator함수 실행,
+ * false면 falseHandler에 a인자 대입
+ * true면 a 반환
+ *
+ * @param {(a) => boolean} evaluator a를 인자로 하는 평가함수
+ * @param {(a) => any} falseHandler evaluator의 결과가 false인 경우, a를 인자로 실행되는 callback
+ * @param {any} a 대상 인자
+ * @returns {any} evaluator가 false를 반환하는 경우, falseHandler의 결과값, true경우 a 반환
+ */
+var ifF = fp_1.default.curry(function (evaluator, falseHandler, arg) {
+    var isValidEvaluator = fp_1.default.isFunction(evaluator) || fp_1.default.isBoolean(evaluator);
+    if (isValidEvaluator) {
+        // evaluator가 함수인 경우
+        if (fp_1.default.isFunction(evaluator)) {
+            if (fp_1.default.pipe(evaluator, fp_1.default.equals(false))(arg)) {
+                return fp_1.default.isFunction(falseHandler) ? falseHandler(arg) : falseHandler;
+            }
+            else {
+                return arg;
+            }
+        }
+        else {
+            // evaluator가 boolean인 경우
+            if (evaluator) {
+                return fp_1.default.isFunction(falseHandler) ? falseHandler(arg) : falseHandler;
+            }
+            else {
+                return arg;
+            }
+        }
+    }
+    else {
+        throw new Error('invalid parameter(s)');
+    }
 });
 /**
  * a인자가 t타입인지 여부 조회
@@ -228,3 +335,440 @@ var mapAsync = fp_1.default.curry(function (asyncMapper, collection) { return __
         }
     });
 }); });
+/**
+ * 비동기 forEach
+ * 실행함수로 비동기 함수를 받아서 처리해준다
+ * 순차실행
+ *
+ * @param {(value: any, key: number | string) => Promise<any>} callbackAsync 비동기 iterator
+ * @param {object|any[]} collection 대상 객체 또는 배열
+ * @returns {Promise<any[]>} 결과 Promise
+ */
+var forEachAsync = fp_1.default.curry(function (callbackAsync, collection) { return __awaiter(void 0, void 0, void 0, function () {
+    var loopResults, entries, _i, entries_1, entry, _a, _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                loopResults = [];
+                entries = fp_1.default.entries(collection);
+                _i = 0, entries_1 = entries;
+                _c.label = 1;
+            case 1:
+                if (!(_i < entries_1.length)) return [3 /*break*/, 4];
+                entry = entries_1[_i];
+                _b = (_a = loopResults).push;
+                return [4 /*yield*/, callbackAsync(entry[1], entry[0])];
+            case 2:
+                _b.apply(_a, [_c.sent()]);
+                _c.label = 3;
+            case 3:
+                _i++;
+                return [3 /*break*/, 1];
+            case 4: return [2 /*return*/, loopResults];
+        }
+    });
+}); });
+/**
+ * (collection) fp.filter의 비동기 함수\
+ * 필터함수로 비동기 함수를 받아서 처리해준다.
+ *
+ * @param {(a) => Promise<bool>} asyncFilter 비동기 필터
+ * @param {object|any[]} collection 대상 object 또는 array
+ * @returns {Promise<any[]>} 결과 array를 resolve하는 promise
+ */
+var filterAsync = fp_1.default.curry(function (asyncFilter, collection) { return __awaiter(void 0, void 0, void 0, function () {
+    var composer, result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                composer = fp_1.default.pipe(mapAsync(function (item) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, asyncFilter(item)];
+                        case 1: return [2 /*return*/, (_a.sent()) ? item : false];
+                    }
+                }); }); }), then(function (response) {
+                    return fp_1.default.filter(fp_1.default.pipe(fp_1.default.equals(false), not))(response);
+                }));
+                return [4 /*yield*/, composer(collection)];
+            case 1:
+                result = _a.sent();
+                return [2 /*return*/, result];
+        }
+    });
+}); });
+/**
+ * (collection) fp.find의 비동기 함수
+ * @param {(a) => Promise<bool>} asyncFilter 비동기 필터
+ * @param {object|any[]} collection 대상 object 또는 array
+ * @returns {Promise<any>} 필터된 단일 결과를 resolve하는 promise
+ */
+var findAsync = fp_1.default.curry(function (asyncFilter, collection) { return __awaiter(void 0, void 0, void 0, function () {
+    var composer, result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                composer = fp_1.default.pipe(filterAsync(asyncFilter), then(function (response) {
+                    return fp_1.default.isEmpty(response) ? undefined : fp_1.default.head(response);
+                }), otherwise(fp_1.default.always(undefined)));
+                return [4 /*yield*/, composer(collection)];
+            case 1:
+                result = _a.sent();
+                return [2 /*return*/, result];
+        }
+    });
+}); });
+/**
+ * asyncFn의 시작은 await accPromise가 되어야 한다.\
+ * 순차적으로 실행된다.\
+ * (ex 300ms이 걸리는 5개의 promise가 있다면, 최소 1500ms+alpah의 시간이 소요된다.\
+ * 상기의 mapAsync의 경우 300+alpah의 시간만 소요된다.(Promise.all과 Promise.resolve의 차이))
+ *
+ * @param {(acc:any, v:any) => Promise<unknown>} asyncFn 비동기 iterator
+ * @param {Promise<any>|any} initAcc 초기 누적기를 반환하는 promise 또는 누적기
+ * @param {object|any[]} collection 대상 객체 또는 배열
+ * @returns {Promise<any>} 결과 Promise
+ */
+var reduceAsync = fp_1.default.curry(function (asyncFn, initAcc, collection) { return __awaiter(void 0, void 0, void 0, function () {
+    var initAccPromise, result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, fp_1.default.pipe(promisify, function (accP) {
+                    return Promise.resolve(accP);
+                })(initAcc)];
+            case 1:
+                initAccPromise = _a.sent();
+                result = fp_1.default.reduce(asyncFn, initAccPromise, collection);
+                return [2 /*return*/, result];
+        }
+    });
+}); });
+/**
+ * value로 object key 조회
+ *
+ * @param {object} obj 대상 객체
+ * @param {string} value 조회 대상 값
+ * @returns {string} 속성명
+ */
+var key = fp_1.default.curry(function (obj, value) {
+    var composer = fp_1.default.pipe(fp_1.default.entries, fp_1.default.find(function (_a) {
+        var k = _a[0], val = _a[1];
+        return fp_1.default.equals(value, val);
+    }), fp_1.default.head);
+    var result = composer(obj);
+    return result;
+});
+/**
+ * shallow freeze 보완
+ * (대상 object의 refence 타입의 properties까지 object.freeze 처리)
+ * @param {object} obj 대상 객체
+ * @returns {object} frozen 처리된 객체
+ */
+var deepFreeze = function (obj) {
+    var freezeRecursively = function (v) {
+        return isRef(v) && !Object.isFrozen(v) ? deepFreeze(v) : v;
+    };
+    var composer = fp_1.default.pipe(Object.freeze, fp_1.default.forOwn(freezeRecursively));
+    var result = composer(obj);
+    return result;
+};
+/**
+ * 대상 객체의 속성명을 transformFn의 결과값으로 변환
+ *
+ * @param {(orignStr) => string} transformFn 변환함수
+ * @param {object} obj 대상 객체
+ * @returns {object} 속성명이 변환된 객체
+ */
+var transformObjectKey = fp_1.default.curry(function (transformFn, obj) {
+    var convertRecursively = function (obj) {
+        var convertTo = function (o) {
+            var composer = fp_1.default.pipe(fp_1.default.entries, fp_1.default.reduce(function (acc, _a) {
+                var k = _a[0], v = _a[1];
+                var cond = function (arg) {
+                    if (fp_1.default.isPlainObject(arg)) {
+                        return convertTo(arg);
+                    }
+                    else if (fp_1.default.isArray(arg)) {
+                        return fp_1.default.map(cond, arg);
+                    }
+                    else {
+                        return fp_1.default.identity(arg);
+                    }
+                };
+                var transformedKey = transformFn(k);
+                if (!fp_1.default.has(transformedKey, acc)) {
+                    var result_1 = fp_1.default.set(transformedKey, cond(v), acc);
+                    return result_1;
+                }
+                else {
+                    throw new Error("".concat(transformedKey, " already exist. duplicated property name is not supported."));
+                }
+            }, {}));
+            var result = composer(o);
+            return result;
+        };
+        var result = convertTo(obj);
+        return result;
+    };
+    var result = fp_1.default.isObject(obj) || fp_1.default.isArray(obj) ? convertRecursively(obj) : obj;
+    return result;
+});
+/**
+ * 대상 object의 property key문자열을 camelcase 문자열로 변환
+ *
+ * @param {object} obj 대상 객체
+ * @returns {object} 속성명이 camel case로 변환된 객체
+ */
+var toCamelcase = transformObjectKey(fp_1.default.camelCase);
+/**
+ * 대상 object의 property key문자열을 snakecase 문자열로 변환
+ *
+ * @param {object} obj 대상 객체
+ * @returns {object} 속성명이 snake case로 변환된 객체
+ */
+var toSnakecase = transformObjectKey(fp_1.default.snakeCase);
+/**
+ * 대상 object의 property key문자열을 camelcase 문자열로 변환
+ *
+ * @param {object} obj 대상 객체
+ * @returns {object} 속성명이 camel case로 변환된 객체
+ */
+var toPascalcase = transformObjectKey(pascalCase);
+/**
+ * date형식 문자열 여부 조회
+ * @param {string} dateStr date형식 문자열
+ * @returns {boolean} date형식 문자열 여부
+ */
+var isDatetimeString = function (dateStr) {
+    return fp_1.default.isString(dateStr) && !isNaN(Date.parse(dateStr));
+};
+/**
+ * applicative functor pattern 구현체
+ * (주로 fp.pipe함수에서 함수의 인자 순서를 변경하기 위해 사용)
+ *
+ * @param {any} arg 대입 인자
+ * @param {function} curried currying된 함수
+ * @returns {any} 결과값
+ */
+var ap = fp_1.default.curry(function (a, curried) { return curried(a); });
+/**
+ * 대상 인자가 undefined 또는 null이 아닌지 여부 조회
+ *
+ * @param {any} arg 대상인자
+ * @returns {boolean} 대상 인자가 undefined 또는 null이 아닌지 여부
+ */
+var isNotNil = fp_1.default.pipe(fp_1.default.isNil, not);
+/**
+ * arr인자 배열에 a인자가 포함되지 않았는지 여부 조회
+ * @param {any} a 대상 인자
+ * @param {any[]} arr 대상 배열
+ * @returns {boolean} arr 배열에 a인자가 포함되지 않았는지 여부
+ */
+var notIncludes = fp_1.default.curry(function (arg, targetArray) {
+    var result = !fp_1.default.includes(arg, targetArray);
+    return result;
+});
+/**
+ * a인자와 b인자가 다른지 여부 (deep equal) 조회
+ * @param {any} a 비교 인자
+ * @param {any} b 비교 인자
+ * @returns {boolean} a인자와 b인자가 다른지 여부 (deep equal)
+ */
+var notEquals = fp_1.default.curry(function (a, b) {
+    var composer = fp_1.default.pipe(fp_1.default.equals(a), not);
+    var result = composer(b);
+    return result;
+});
+/**
+ * arr인자의 idx인자의 index에 해당하는 요소 제거
+ * @param {number|string} index numeric 타입 색인값
+ * @param {any[]} targetArray 대상 배열
+ * @returns {any[]} index에 해당하는 요소 제거된 배열
+ */
+var removeByIndex = fp_1.default.curry(function (index, targetArray) {
+    if (fp_1.default.isArray(targetArray)
+        && fp_1.default.pipe(fp_1.default.size, fp_1.default.curry(function (index, sz) {
+            var num = fp_1.default.toNumber(index);
+            var isAccesable = fp_1.default.isNumber(num) && fp_1.default.lte(num, sz);
+            return isAccesable;
+        })(index))(targetArray)) {
+        var cloned = fp_1.default.cloneDeep(targetArray);
+        cloned.splice(fp_1.default.toNumber(index), 1);
+        return cloned;
+    }
+    return targetArray;
+});
+/**
+ * 인자의 마지막 요소 제거 (immutable)
+ *
+ * @param {string|any[]} target 문자열 또는 배열의 마지막 요소 제거
+ * @returns 마지막 요소 제거된 인자
+ */
+var removeLast = function (target) {
+    if (fp_1.default.isArray(target) || fp_1.default.isString(target)) {
+        var result = fp_1.default.cloneDeep(target);
+        fp_1.default.isArray(target)
+            ? result.pop()
+            : result.substring(0, fp_1.default.size(target) - 1);
+        return result;
+    }
+    return target;
+};
+/**
+ * fp.concat alias
+ *
+ * @param {any[]} array 병합대상 배열
+ * @param {any|any[]} a 병합 인자
+ * @returns {any[]} 병합된 배열
+ */
+var append = fp_1.default.concat;
+/**
+ * array 인자의 (index상)앞쪽에 value인자를 추가
+ *
+ * @param {any[]} targetArray 병합대상 배열
+ * @param {any|any[]} value 병합 인자
+ * @returns {any[]} 병합된 배열
+ */
+var prepend = fp_1.default.curry(function (targetArray, value) {
+    return fp_1.default.isArray(value)
+        ? fp_1.default.concat(value, targetArray)
+        : fp_1.default.concat([value], targetArray);
+});
+/**
+ * key(index)를 포함한 fp.map
+ * @param {(v, k) => any} f value, key(또는 index)를 인자로 갖는 callback
+ * @param {object|any[]} a 대상 collection
+ * @returns {any[]} 결과 배열
+ */
+var mapWithKey = fp_1.default.curry(function (iteratee, collection) {
+    return fp_1.default.map.convert({ cap: false })(iteratee, collection);
+});
+/**
+ * key(index)를 포함한 fp.forEach
+ * @param {(v, k) => any} f value, key(또는 index)를 인자로 갖는 callback
+ * @param {object|any[]} a 대상 collection
+ * @returns {void} 반환값 없음
+ */
+var forEachWithKey = fp_1.default.curry(function (iteratee, collection) {
+    return fp_1.default.forEach.convert({ cap: false })(iteratee, collection);
+});
+/**
+ * key(index)를 포함한 reduce
+ *
+ * @param {(acc, v, k) => any} f accumulator, value, key(또는 index)를 인자로 갖는 callback
+ * @param {any} acc 누적기
+ * @param {object|any[]} 대상 collection
+ * @returns {any} 누적기
+ */
+var reduceWithKey = fp_1.default.curry(function (iteratee, acc, collection) {
+    return fp_1.default.reduce.convert({ cap: false })(iteratee, acc, collection);
+});
+/**
+ * falsy 타입(0, -0, NaN, false, '')인지 여부 조회
+ * @param {any} arg 조회 대상
+ * @returns {boolean} falsy 타입(0, -0, NaN, false, '')인지 여부
+ */
+var isFalsy = function (arg) {
+    return fp_1.default.isNil(arg) || fp_1.default.some(fp_1.default.equals(arg), [0, -0, NaN, false, '']);
+};
+/**
+ * truthy 타입 인지 여부 조회
+ * (falsy타입(0, -0, NaN, false, '')이 아니면 truthy 타입)
+ * @param {any} arg 조회 대상
+ * @returns {boolean} truthy 타입 인지 여부
+ */
+var isTruthy = function (arg) { return !isFalsy(arg); };
+/**
+ * fp.getOr override
+ *
+ * fp.getOr의 반환값이 null인 경우, 기본값 반환되게 수정한 버전
+ * circular dependency 때문에 closure로 작성
+ */
+var getOr = (function (_a) {
+    var curry = _a.curry, getOr = _a.getOr;
+    var _getOr = curry(function (defaultValue, path, target) {
+        return fp_1.default.isNil(target) || fp_1.default.isNil(fp_1.default.get(path, target))
+            ? defaultValue
+            : fp_1.default.get(path, target);
+    });
+    return _getOr;
+})(fp_1.default);
+/**
+ * ms 시간동안 대기
+ *
+ * @param ms 대기시간
+ * @returns Promise
+ */
+var delayAsync = function (ms) { return __awaiter(void 0, void 0, void 0, function () {
+    var exe, result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                exe = function () {
+                    return new Promise(function (resolve) { return setTimeout(function () { return resolve(); }, ms); });
+                };
+                return [4 /*yield*/, exe()];
+            case 1:
+                result = _a.sent();
+                return [2 /*return*/, result];
+        }
+    });
+}); };
+exports.default = {
+    mapAsync: mapAsync,
+    filterAsync: filterAsync,
+    reduceAsync: reduceAsync,
+    findAsync: findAsync,
+    forEachAsync: forEachAsync,
+    promisify: promisify,
+    then: then,
+    andThen: then,
+    otherwise: otherwise,
+    catch: otherwise,
+    finally: _finally,
+    isPromise: isPromise,
+    isNotEmpty: isNotEmpty,
+    isNotNil: isNotNil,
+    isJson: isJson,
+    notEquals: notEquals,
+    isNotEqual: notEquals,
+    isVal: isVal,
+    isPrimitive: isVal,
+    isRef: isRef,
+    isReference: isRef,
+    not: not,
+    notIncludes: notIncludes,
+    toBool: toBool,
+    deepFreeze: deepFreeze,
+    key: key,
+    keyByVal: key,
+    // string
+    transformObjectKey: transformObjectKey,
+    toCamelcase: toCamelcase,
+    toCamelKey: toCamelcase,
+    toSnakecase: toSnakecase,
+    toSnakeKey: toSnakecase,
+    toPascalcase: toPascalcase,
+    pascalCase: pascalCase,
+    isDatetimeString: isDatetimeString,
+    ap: ap,
+    instanceOf: instanceOf,
+    ternary: ternary,
+    ifT: ifT,
+    ifF: ifF,
+    // array
+    removeByIndex: removeByIndex,
+    removeByIdx: removeByIndex,
+    removeLast: removeLast,
+    append: append,
+    prepend: prepend,
+    mapWithKey: mapWithKey,
+    mapWithIdx: mapWithKey,
+    forEachWithKey: forEachWithKey,
+    forEachWithIdx: forEachWithKey,
+    reduceWithKey: reduceWithKey,
+    reduceWithIdx: reduceWithKey,
+    isFalsy: isFalsy,
+    isTruthy: isTruthy,
+    getOr: getOr,
+    delayAsync: delayAsync,
+};
