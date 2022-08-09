@@ -1,6 +1,6 @@
 import chai from 'chai';
 import fp from 'lodash/fp';
-import lodashFpEx from '../lib/index';
+import lodashFpEx from '../dist/index';
 
 fp.mixin(lodashFpEx);
 
@@ -82,7 +82,7 @@ describe('# fp.reduceAsync test', () => {
         return acc;
       },
       [],
-      arr
+      arr,
     );
 
     expect(results).not.empty;
@@ -95,7 +95,7 @@ describe('# fp.findAsync test', () => {
     const arr = [
       { name: 'hi', age: 21 },
       { name: 'hello', age: 22 },
-      { name: 'alo', age: 23 }
+      { name: 'alo', age: 23 },
     ];
     const asyncFilter = (a) =>
       new Promise((resolve) => {
@@ -139,13 +139,17 @@ describe('# fp.forEachAsync test', () => {
       {
         key: 'val',
         hello: 'world',
-        'led zeppelin': 'stairway to heaven'
-      }
+        'led zeppelin': 'stairway to heaven',
+      },
     );
 
     expect(results).not.empty;
     expect(results).to.eqls([1, 2, 6, 12, 20]);
-    expect(results1).to.eql(['val key', 'world hello', 'stairway to heaven led zeppelin']);
+    expect(results1).to.eql([
+      'val key',
+      'world hello',
+      'stairway to heaven led zeppelin',
+    ]);
   });
 });
 
@@ -173,7 +177,7 @@ describe('# fp.then test', () => {
     const result2 = await fp.then(fp.identity, p(64));
     const result3 = await fp.pipe(
       p,
-      fp.then((x) => x / 2)
+      fp.then((x) => x / 2),
     )(128);
 
     expect([result1, result2, result3]).to.eqls([128, 128, 128]);
@@ -221,7 +225,7 @@ describe('# fp.finally test', () => {
     p,
     fp.then(fp.identity),
     fp.otherwise(fp.identity),
-    fp.finally(() => (isLoading = false))
+    fp.finally(() => (isLoading = false)),
   );
 
   it('loading should be false', async () => {
@@ -354,14 +358,14 @@ describe('# fp.toBool test', () => {
 describe('# fp.deepFreeze test', () => {
   const shallowFrozen = Object.freeze({
     a: {
-      b: []
-    }
+      b: [],
+    },
   });
   const deepFrozen = fp.deepFreeze({
     a: {
       b: [],
-      c: () => {}
-    }
+      c: () => {},
+    },
   });
 
   it('nested referece type properties should also be freeze', () => {
@@ -395,9 +399,9 @@ describe('# fp.transformObjectKey test', () => {
   const nestedObj = {
     objKey: {
       nestedKey: {
-        anotherKey: [3]
-      }
-    }
+        anotherKey: [3],
+      },
+    },
   };
 
   it('Should transform by input function', () => {
@@ -405,7 +409,9 @@ describe('# fp.transformObjectKey test', () => {
     const kebabKeyObj1 = fp.transformObjectKey(fp.kebabCase, nestedObj);
     console.log(kebabKeyObj1);
     expect(fp.keys(kebabKeyObj)).to.eqls(['obj-key']);
-    expect(kebabKeyObj1).to.eqls({ 'obj-key': { 'nested-key': { 'another-key': [3] } } });
+    expect(kebabKeyObj1).to.eqls({
+      'obj-key': { 'nested-key': { 'another-key': [3] } },
+    });
   });
 
   it('If transformed keys are duplicated, should throw error', () => {
@@ -415,8 +421,8 @@ describe('# fp.transformObjectKey test', () => {
       `${fp.pipe(
         fp.keys,
         fp.head,
-        fp.kebabCase
-      )(obj1)} already exist. duplicated property name is not supported.`
+        fp.kebabCase,
+      )(obj1)} already exist. duplicated property name is not supported.`,
     );
   });
 });
@@ -437,8 +443,8 @@ describe('# fp.toCamelKey test', () => {
       `${fp.pipe(
         fp.keys,
         fp.head,
-        fp.camelCase
-      )(obj1)} already exist. duplicated property name is not supported.`
+        fp.camelCase,
+      )(obj1)} already exist. duplicated property name is not supported.`,
     );
   });
 });
@@ -459,8 +465,8 @@ describe('# fp.toSnakeKey test', () => {
       `${fp.pipe(
         fp.keys,
         fp.head,
-        fp.snakeCase
-      )(obj1)} already exist. duplicated property name is not supported.`
+        fp.snakeCase,
+      )(obj1)} already exist. duplicated property name is not supported.`,
     );
   });
 });
@@ -469,7 +475,13 @@ describe('# fp.pascalCase test', () => {
   it('Should transform to Pascalcase', () => {
     const isAllSame = fp.every(
       fp.equals('FooBar'),
-      fp.map(fp.pascalCase, ['__Foo_Bar__', 'FOO BAR', 'fooBar', 'foo_bar', 'foo-bar'])
+      fp.map(fp.pascalCase, [
+        '__Foo_Bar__',
+        'FOO BAR',
+        'fooBar',
+        'foo_bar',
+        'foo-bar',
+      ]),
     );
     expect(isAllSame).to.be.true;
   });
@@ -490,13 +502,20 @@ describe('# fp.isDatetimeString test', () => {
       '6 Mar 2017 21:22:23 GMT',
       '06 Mar 2017 21:22:23 Z',
       'Mon 06 Mar 2017 21:22:23 z',
-      'Mon, 06 Mar 2017 21:22:23 +0000'
+      'Mon, 06 Mar 2017 21:22:23 +0000',
     ];
 
     const invalidDatetimeStrings = ['21:22:23', '20210314'];
 
-    expect(fp.every(fp.pipe(fp.isDatetimeString, fp.equals(true)), datetimeStrings)).to.be.true;
-    expect(fp.every(fp.pipe(fp.isDatetimeString, fp.equals(false)), invalidDatetimeStrings)).to.be.true;
+    expect(
+      fp.every(fp.pipe(fp.isDatetimeString, fp.equals(true)), datetimeStrings),
+    ).to.be.true;
+    expect(
+      fp.every(
+        fp.pipe(fp.isDatetimeString, fp.equals(false)),
+        invalidDatetimeStrings,
+      ),
+    ).to.be.true;
   });
 });
 
@@ -539,23 +558,24 @@ describe('# fp.instanceOf test', () => {
 describe('# fp.ternary test', () => {
   const YorN = fp.ternary(null, 'Y', 'N');
   const paddingYorN = fp.ternary(
-    null,
+    fp.isTruthy,
     (a) => `${a}-Y`,
-    (a) => `${a}-N`
+    (a) => `${a}-N`,
   );
 
   it('If argument is true, should return Y else return N', () => {
     expect(YorN(true)).to.eql('Y');
     expect(YorN(false)).to.eql('N');
     expect(fp.pipe(fp.isEmpty, YorN)(['a'])).to.eql('N');
+    // evaluator가 함수가 아니면, evaluator를 boolean으로 변환해서 평가
     expect(
       fp.ternary(
         null,
-        () => 'y',
-        () => 'n',
-        true
-      )
-    ).to.eql('y');
+        (a) => `y-${fp.isNotNil(a)}`,
+        (a) => `n-${fp.isBoolean(a)}`,
+        true,
+      ),
+    ).to.eql('y-true');
   });
 
   it('If arguement is not one of false, null, undefined, empty string, padding "-Y" else padding "-N"', () => {
@@ -572,7 +592,7 @@ describe('# fp.ternary test', () => {
     const ternaryByHandler = fp.ternary(
       hasTrue,
       () => 'Y',
-      () => 'N'
+      () => 'N',
     );
     const ternaryByValue = fp.ternary(hasTrue, 'y', 'n');
 
@@ -588,7 +608,10 @@ describe('# fp.ternary test', () => {
 
 describe('# fp.ifT test', () => {
   const getYifT = fp.ifT(fp.isEmpty, () => 'Y');
-  const ifNotEmptyAppendString = fp.ifT(fp.isNotEmpty, (str) => `${str}-paddString`);
+  const ifNotEmptyAppendString = fp.ifT(
+    fp.isNotEmpty,
+    (str) => `${str}-paddString`,
+  );
 
   it('if argument is empty, should return Y else return argument', () => {
     expect(getYifT([])).to.eql('Y');
@@ -607,7 +630,10 @@ describe('# fp.ifT test', () => {
 
 describe('# fp.ifF test', () => {
   const ifNotEmptyN = fp.ifF(fp.isEmpty, () => 'N');
-  const ifNotEmptyAppendString = fp.ifF(fp.isEmpty, (str) => `${str}-paddString`);
+  const ifNotEmptyAppendString = fp.ifF(
+    fp.isEmpty,
+    (str) => `${str}-paddString`,
+  );
 
   it('if argument is not empty, should return N else return argument', () => {
     expect(ifNotEmptyN([])).to.eql([]);
