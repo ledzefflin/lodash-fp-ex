@@ -36,23 +36,24 @@ describe('# fp.not test', () => {
 
 describe('# fp.mapAsync test', () => {
   it('should return all values multiplied by 2', async () => {
-    const asyncMapper = (a) =>
+    const asyncMapper = (a, k) =>
       new Promise((resolve) => {
         setTimeout(() => {
-          resolve(2 * a);
+          resolve(a + k);
         }, 5);
       });
 
     const results = await fp.mapAsync(asyncMapper, arr);
     const results1 = await fp.mapAsync(asyncMapper, { a: 1, b: 2, c: 3 });
-    expect(results).to.eqls([2, 4, 6, 8, 10]);
-    expect(results1).to.eqls([2, 4, 6]);
+    // key test를 포함하고 있어서 key test 따로 작성 안함
+    expect(results).to.eqls([1, 3, 5, 7, 9]);
+    expect(results1).to.eqls(['1a', '2b', '3c']);
   });
 });
 
 describe('# fp.filterAsync test', () => {
   it('sholud return odd number only', async () => {
-    const asyncFilter = (a) =>
+    const asyncFilter = (a, i) =>
       new Promise((resolve) => {
         setTimeout(() => {
           resolve(!fp.equals(0, a % 2));
@@ -61,6 +62,17 @@ describe('# fp.filterAsync test', () => {
     const results = await fp.filterAsync(asyncFilter, arr);
     expect(results).not.empty;
     expect(results).to.eqls([1, 3, 5]);
+  });
+
+  it('exist keys', async () => {
+    const asyncKeys = (_, i) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(i > 0);
+        }, 1);
+      });
+    const biggerThanZeroList = await fp.filterAsync(asyncKeys, arr);
+    expect(biggerThanZeroList).to.eql([2, 3, 4, 5]);
   });
 });
 
@@ -88,6 +100,24 @@ describe('# fp.reduceAsync test', () => {
     expect(results).not.empty;
     expect(results).to.eqls([2, 4, 6, 8, 10]);
   });
+
+  it('exist keys', async () => {
+    const asyncKeys = (acc, v, i) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(i > 0 ? acc.concat(i) : acc);
+        }, 1);
+      });
+    const biggerThanZeroList = await fp.reduceAsync(
+      async (accP, v, k) => {
+        const acc = await accP;
+        return await asyncKeys(acc, v, k);
+      },
+      [],
+      arr,
+    );
+    expect(biggerThanZeroList).to.eql([1, 2, 3, 4]);
+  });
 });
 
 describe('# fp.findAsync test', () => {
@@ -108,6 +138,17 @@ describe('# fp.findAsync test', () => {
 
     expect(result).to.have.own.property('name', 'hello');
     expect(result).to.eqls({ name: 'hello', age: 22 });
+  });
+
+  it('exist keys', async () => {
+    const asyncKeys = (v, i) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(fp.equals(3, i));
+        }, 1);
+      });
+    const threeKey = await fp.findAsync(asyncKeys, arr);
+    expect(threeKey).to.eql(4);
   });
 });
 
@@ -150,6 +191,17 @@ describe('# fp.forEachAsync test', () => {
       'world hello',
       'stairway to heaven led zeppelin',
     ]);
+  });
+
+  it('exist keys', async () => {
+    const asyncKeys = (v, i) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(i);
+        }, 1);
+      });
+    const keys = await fp.forEachAsync(asyncKeys, arr);
+    expect(keys).to.eql([0, 1, 2, 3, 4]);
   });
 });
 

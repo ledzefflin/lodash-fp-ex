@@ -30,7 +30,7 @@
     "index.js"
   ],
   "scripts": {
-    "start": "tsc-watch --onSuccess \"node dist/index.js\" ",
+    "start": "tsc-watch --onSuccess \"node index.js\" ",
     "build": "pnpm test && tsc",
     "clean": "rimraf ./node_modules && rimraf dist && rimraf index.js index.js.map",
     "test": "mocha --reporter spec --require @babel/register",

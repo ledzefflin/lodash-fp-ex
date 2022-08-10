@@ -322,7 +322,7 @@ var mapAsync = fp_1.default.curry(function (asyncMapper, collection) { return __
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                composer = fp_1.default.pipe(fp_1.default.flatMapDeep(fp_1.default.pipe(asyncMapper, promisify)), function (a) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
+                composer = fp_1.default.pipe(fp_1.default.flatMapDeep.convert({ cap: false })(fp_1.default.pipe(asyncMapper, promisify)), function (a) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0: return [4 /*yield*/, Promise.all(a)];
                         case 1: return [2 /*return*/, _a.sent()];
@@ -357,7 +357,7 @@ var forEachAsync = fp_1.default.curry(function (callbackAsync, collection) { ret
                 if (!(_i < entries_1.length)) return [3 /*break*/, 4];
                 entry = entries_1[_i];
                 _b = (_a = loopResults).push;
-                return [4 /*yield*/, callbackAsync(entry[1], entry[0])];
+                return [4 /*yield*/, callbackAsync(entry[1], (fp_1.default.isArray(collection) ? fp_1.default.toNumber(entry[0]) : entry[0]))];
             case 2:
                 _b.apply(_a, [_c.sent()]);
                 _c.label = 3;
@@ -381,14 +381,12 @@ var filterAsync = fp_1.default.curry(function (asyncFilter, collection) { return
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                composer = fp_1.default.pipe(mapAsync(function (item) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
+                composer = fp_1.default.pipe(mapAsync(function (item, key) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, asyncFilter(item)];
+                        case 0: return [4 /*yield*/, asyncFilter(item, key)];
                         case 1: return [2 /*return*/, (_a.sent()) ? item : false];
                     }
-                }); }); }), then(function (response) {
-                    return fp_1.default.filter(fp_1.default.pipe(fp_1.default.equals(false), not))(response);
-                }));
+                }); }); }), then(function (response) { return fp_1.default.filter(fp_1.default.pipe(fp_1.default.equals(false), not))(response); }));
                 return [4 /*yield*/, composer(collection)];
             case 1:
                 result = _a.sent();
@@ -437,7 +435,7 @@ var reduceAsync = fp_1.default.curry(function (asyncFn, initAcc, collection) { r
                 })(initAcc)];
             case 1:
                 initAccPromise = _a.sent();
-                result = fp_1.default.reduce(asyncFn, initAccPromise, collection);
+                result = fp_1.default.reduce.convert({ cap: false })(asyncFn, initAccPromise, collection);
                 return [2 /*return*/, result];
         }
     });
@@ -481,8 +479,7 @@ var deepFreeze = function (obj) {
 var transformObjectKey = fp_1.default.curry(function (transformFn, obj) {
     var convertRecursively = function (obj) {
         var convertTo = function (o) {
-            var composer = fp_1.default.pipe(fp_1.default.entries, fp_1.default.reduce(function (acc, _a) {
-                var k = _a[0], v = _a[1];
+            var composer = fp_1.default.pipe(fp_1.default.reduce.convert({ cap: false })(function (acc, v, k) {
                 var cond = function (arg) {
                     if (fp_1.default.isPlainObject(arg)) {
                         return convertTo(arg);
@@ -585,8 +582,8 @@ var notEquals = fp_1.default.curry(function (a, b) {
  * @returns {any[]} index에 해당하는 요소 제거된 배열
  */
 var removeByIndex = fp_1.default.curry(function (index, targetArray) {
-    if (fp_1.default.isArray(targetArray)
-        && fp_1.default.pipe(fp_1.default.size, fp_1.default.curry(function (index, sz) {
+    if (fp_1.default.isArray(targetArray) &&
+        fp_1.default.pipe(fp_1.default.size, fp_1.default.curry(function (index, sz) {
             var num = fp_1.default.toNumber(index);
             var isAccesable = fp_1.default.isNumber(num) && fp_1.default.lte(num, sz);
             return isAccesable;
@@ -639,9 +636,7 @@ var prepend = fp_1.default.curry(function (targetArray, value) {
  * @param {object|any[]} a 대상 collection
  * @returns {any[]} 결과 배열
  */
-var mapWithKey = fp_1.default.curry(function (iteratee, collection) {
-    return fp_1.default.map.convert({ cap: false })(iteratee, collection);
-});
+var mapWithKey = fp_1.default.curry(function (iteratee, collection) { return fp_1.default.map.convert({ cap: false })(iteratee, collection); });
 /**
  * key(index)를 포함한 fp.forEach
  * @param {(v, k) => any} f value, key(또는 index)를 인자로 갖는 callback

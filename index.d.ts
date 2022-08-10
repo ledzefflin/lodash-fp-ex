@@ -1,4 +1,3 @@
-/// <reference types="lodash" />
 import fp from 'lodash/fp';
 import { F } from 'ts-toolbelt';
 declare type Tthen = F.Curry<(fn: (response: any) => any, thenable: Promise<unknown>) => Promise<any>>;
@@ -8,22 +7,24 @@ declare type Tternary = F.Curry<(<T>(evaluator: (arg: T) => boolean | any, trueH
 declare type TifT = F.Curry<(<T, R>(evaluator: (arg: T) => boolean | boolean, trueHandler: (arg: T) => R | R, arg: T) => T | R)>;
 declare type TifF = F.Curry<(<T, R>(evaluator: (arg: T) => boolean | boolean, falseHandler: (arg: T) => R | R, arg: T) => T | R)>;
 declare type TinstanceOf = F.Curry<(<T>(t: any, arg: T) => boolean)>;
-declare type ObjectCollection = Record<string, unknown>[];
-declare type TmapAsync = F.Curry<(<TResult>(asyncMapper: (arg: unknown) => Promise<TResult>, collection: unknown[] | ObjectCollection) => Promise<TResult[]>)>;
-declare type TfilterAsync = F.Curry<(<TResult>(asyncFilter: (arg: unknown) => Promise<boolean>, collection: unknown[] | ObjectCollection) => Promise<TResult[]>)>;
-declare type TreduceAsync = F.Curry<(<TResult>(asyncFn: (acc: unknown, arg: unknown) => Promise<TResult>, initAcc: Promise<TResult> | TResult, collection: unknown[] | ObjectCollection) => Promise<TResult>)>;
+declare type TmapAsync = F.Curry<(<T, K extends keyof T, R>(asyncMapper: (arg: T[K], key: K) => Promise<R>, collection: T) => Promise<R[]>)>;
+declare type TfilterAsync = F.Curry<(<T, K extends keyof T, R>(asyncFilter: (arg: T[K], key: K) => Promise<boolean>, collection: T) => Promise<R[]>)>;
+declare type TfindAsync = F.Curry<(<T, K extends keyof T, R>(asyncFilter: (arg: T[K], key: K) => Promise<boolean>, collection: T) => Promise<R>)>;
+declare type TreduceAsync = F.Curry<(<T, K extends keyof T>(asyncFn: (acc: unknown, arg: T[K], key: K) => Promise<unknown>, initAcc: Promise<unknown> | unknown, collection: T) => Promise<unknown>)>;
 declare type Tkey = F.Curry<(obj: object, value: unknown) => string>;
 declare type TtransformObjectKey = F.Curry<(transformFn: (orignStr: string) => string, obj: Record<string, unknown>) => Record<string, unknown>>;
 declare type TnotIncludes = F.Curry<(arg: unknown, targetArray: unknown[]) => boolean>;
 declare type TnotEquals = F.Curry<(a: unknown, b: unknown) => boolean>;
 declare type TremoveByIndex = F.Curry<(<TResult>(index: number | string, targetArray: TResult[]) => TResult[])>;
 declare type Tprepend = F.Curry<(array: unknown[], value: unknown | unknown[]) => unknown[]>;
-declare type TmapWithKey = F.Curry<(<TResult>(iteratee: (value: unknown, key: string | number) => TResult, collection: unknown[] | ObjectCollection) => TResult[])>;
+declare type TmapWithKey = F.Curry<(<T, K extends keyof T, R>(iteratee: (value: T[K], key: K) => R, collection: T) => R[])>;
+declare type TforEachWithKey = F.Curry<(<T, K extends keyof T, R>(iteratee: (value: T[K], key: K) => R, collection: T) => R[])>;
+declare type TreduceWithKey = F.Curry<(<T, K extends keyof T, R>(iteratee: (acc: R, value: T[K], key: K) => R, acc: R, collection: T) => R)>;
 declare const _default: {
     mapAsync: TmapAsync;
     filterAsync: TfilterAsync;
     reduceAsync: TreduceAsync;
-    findAsync: TfilterAsync;
+    findAsync: TfindAsync;
     forEachAsync: (...args: any[]) => any;
     promisify: (a: any, ...args: any[]) => Promise<any>;
     then: Tthen;
@@ -67,10 +68,10 @@ declare const _default: {
     prepend: Tprepend;
     mapWithKey: TmapWithKey;
     mapWithIdx: TmapWithKey;
-    forEachWithKey: (...args: any[]) => any;
-    forEachWithIdx: (...args: any[]) => any;
-    reduceWithKey: (...args: any[]) => any;
-    reduceWithIdx: (...args: any[]) => any;
+    forEachWithKey: TforEachWithKey;
+    forEachWithIdx: TforEachWithKey;
+    reduceWithKey: TreduceWithKey;
+    reduceWithIdx: TreduceWithKey;
     isFalsy: (arg: unknown) => boolean;
     isTruthy: (arg: unknown) => boolean;
     getOr: import("lodash").CurriedFunction3<unknown, string, unknown, any>;

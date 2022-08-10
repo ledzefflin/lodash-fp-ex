@@ -357,15 +357,14 @@ const pascalCase = (str: string): string => {
   return result;
 };
 
-type ObjectCollection = Record<string, unknown>[];
-
 type TmapAsync = F.Curry<
-  <TResult>(
-    asyncMapper: (arg: unknown) => Promise<TResult>,
-    collection: unknown[] | ObjectCollection,
-  ) => Promise<TResult[]>
+  <T, K extends keyof T, R>(
+    asyncMapper: (arg: T[K], key: K) => Promise<R>,
+    collection: T,
+  ) => Promise<R[]>
 >;
 
+interface IFpFlatMapDeepEx extends fp.LodashFlatMapDeep, LodashConvertible {}
 /**
  * (collection) fp.map의 비동기 함수\
  * mapper 함수로 비동기 함수를 받아서 처리해준다.
@@ -375,13 +374,15 @@ type TmapAsync = F.Curry<
  * @returns {Promise<any[]>} 결과 array를 resolve 하는 promise
  */
 const mapAsync: TmapAsync = fp.curry(
-  async <TResult>(
-    asyncMapper: (arg: unknown) => Promise<TResult>,
-    collection: unknown[] | ObjectCollection,
-  ): Promise<TResult[]> => {
+  async <T, K extends keyof T, R>(
+    asyncMapper: (arg: T[K], key: K) => Promise<R>,
+    collection: T,
+  ): Promise<R[]> => {
     const composer = fp.pipe(
-      fp.flatMapDeep(fp.pipe(asyncMapper, promisify)),
-      async (a: Promise<any>[]) => await Promise.all(a),
+      (fp.flatMapDeep as IFpFlatMapDeepEx).convert({ cap: false })(
+        fp.pipe(asyncMapper, promisify),
+      ),
+      async (a: Promise<R>[]) => await Promise.all(a),
     );
     const result = await composer(collection);
 
@@ -390,10 +391,10 @@ const mapAsync: TmapAsync = fp.curry(
 );
 
 type TforEachAsync = F.Curry<
-  <TResult>(
-    callbackAsync: (value: unknown, key: number | string) => Promise<TResult>,
-    collection: unknown[] | ObjectCollection,
-  ) => Promise<TResult[]>
+  <T, K extends keyof T, R>(
+    callbackAsync: (value: T[K], key: K) => Promise<R>,
+    collection: T,
+  ) => Promise<R[]>
 >;
 /**
  * 비동기 forEach
@@ -405,15 +406,20 @@ type TforEachAsync = F.Curry<
  * @returns {Promise<any[]>} 결과 Promise
  */
 const forEachAsync = fp.curry(
-  async <TResult>(
-    callbackAsync: (value: unknown, key: number | string) => Promise<TResult>,
-    collection: unknown[] | ObjectCollection,
-  ): Promise<TResult[]> => {
+  async <T extends object, K extends keyof T, R>(
+    callbackAsync: (value: T[K], key: K) => Promise<R>,
+    collection: T,
+  ): Promise<R[]> => {
     const loopResults = [];
-    const entries = fp.entries(collection);
+    const entries = fp.entries(collection) as [K, T[K]][];
 
     for (const entry of entries) {
-      loopResults.push(await callbackAsync(entry[1], entry[0]));
+      loopResults.push(
+        await callbackAsync(
+          entry[1],
+          (fp.isArray(collection) ? fp.toNumber(entry[0]) : entry[0]) as K,
+        ),
+      );
     }
 
     return loopResults;
@@ -421,10 +427,10 @@ const forEachAsync = fp.curry(
 );
 
 type TfilterAsync = F.Curry<
-  <TResult>(
-    asyncFilter: (arg: unknown) => Promise<boolean>,
-    collection: unknown[] | ObjectCollection,
-  ) => Promise<TResult[]>
+  <T, K extends keyof T, R>(
+    asyncFilter: (arg: T[K], key: K) => Promise<boolean>,
+    collection: T,
+  ) => Promise<R[]>
 >;
 /**
  * (collection) fp.filter의 비동기 함수\
@@ -435,17 +441,15 @@ type TfilterAsync = F.Curry<
  * @returns {Promise<any[]>} 결과 array를 resolve하는 promise
  */
 const filterAsync: TfilterAsync = fp.curry(
-  async <TResult>(
-    asyncFilter: (arg: unknown) => Promise<boolean>,
-    collection: unknown[] | ObjectCollection,
-  ): Promise<TResult[]> => {
+  async <T, K extends keyof T, R>(
+    asyncFilter: (arg: T[K], key: K) => Promise<boolean>,
+    collection: T,
+  ): Promise<R[]> => {
     const composer = fp.pipe(
-      mapAsync(async (item: unknown) =>
-        (await asyncFilter(item)) ? item : false,
+      mapAsync(async (item: T[K], key: K) =>
+        (await asyncFilter(item, key)) ? item : false,
       ),
-      then((response: any): any =>
-        fp.filter(fp.pipe(fp.equals(false), not))(response),
-      ),
+      then((response) => fp.filter(fp.pipe(fp.equals(false), not))(response)),
     );
     const result = await composer(collection);
 
@@ -454,10 +458,10 @@ const filterAsync: TfilterAsync = fp.curry(
 );
 
 type TfindAsync = F.Curry<
-  <TResult>(
-    asyncFilter: (arg: unknown) => Promise<boolean>,
-    collection: unknown[] | ObjectCollection,
-  ) => Promise<TResult>
+  <T, K extends keyof T, R>(
+    asyncFilter: (arg: T[K], key: K) => Promise<boolean>,
+    collection: T,
+  ) => Promise<R>
 >;
 
 /**
@@ -466,14 +470,14 @@ type TfindAsync = F.Curry<
  * @param {object|any[]} collection 대상 object 또는 array
  * @returns {Promise<any>} 필터된 단일 결과를 resolve하는 promise
  */
-const findAsync: TfilterAsync = fp.curry(
-  async <TResult>(
-    asyncFilter: (arg: unknown) => Promise<boolean>,
-    collection: unknown[] | ObjectCollection,
-  ): Promise<TResult> => {
+const findAsync: TfindAsync = fp.curry(
+  async <T, K extends keyof T, R>(
+    asyncFilter: (arg: T[K], key: K) => Promise<boolean>,
+    collection: T,
+  ): Promise<R> => {
     const composer = fp.pipe(
       filterAsync(asyncFilter),
-      then((response: TResult[]): TResult | undefined =>
+      then((response: R[]): R | undefined =>
         fp.isEmpty(response) ? undefined : fp.head(response),
       ),
       otherwise(fp.always(undefined)),
@@ -485,12 +489,13 @@ const findAsync: TfilterAsync = fp.curry(
 );
 
 type TreduceAsync = F.Curry<
-  <TResult>(
-    asyncFn: (acc: unknown, arg: unknown) => Promise<TResult>,
-    initAcc: Promise<TResult> | TResult,
-    collection: unknown[] | ObjectCollection,
-  ) => Promise<TResult>
+  <T, K extends keyof T>(
+    asyncFn: (acc: unknown, arg: T[K], key: K) => Promise<unknown>,
+    initAcc: Promise<unknown> | unknown,
+    collection: T,
+  ) => Promise<unknown>
 >;
+
 /**
  * asyncFn의 시작은 await accPromise가 되어야 한다.\
  * 순차적으로 실행된다.\
@@ -503,15 +508,19 @@ type TreduceAsync = F.Curry<
  * @returns {Promise<any>} 결과 Promise
  */
 const reduceAsync: TreduceAsync = fp.curry(
-  async <TResult>(
-    asyncFn: (acc: unknown, arg: unknown) => Promise<TResult>,
-    initAcc: Promise<TResult> | TResult,
-    collection: unknown[] | ObjectCollection,
-  ): Promise<TResult> => {
-    const initAccPromise: Promise<TResult> = await fp.pipe(promisify, (accP) =>
+  async <T, K extends keyof T>(
+    asyncFn: (acc: unknown, arg: T[K], key: K) => Promise<unknown>,
+    initAcc: Promise<unknown> | unknown,
+    collection: T,
+  ): Promise<unknown> => {
+    const initAccPromise: Promise<unknown> = await fp.pipe(promisify, (accP) =>
       Promise.resolve(accP),
     )(initAcc);
-    const result = fp.reduce(asyncFn, initAccPromise, collection);
+    const result = (fp.reduce as IFpReduceEx).convert({ cap: false })(
+      asyncFn,
+      initAccPromise,
+      collection,
+    );
 
     return result;
   },
@@ -578,30 +587,32 @@ const transformObjectKey: TtransformObjectKey = fp.curry(
         o: Record<string, unknown>,
       ): Record<string, unknown> => {
         const composer = fp.pipe(
-          fp.entries,
-          fp.reduce((acc: Record<string, unknown>, [k, v]) => {
-            const cond = (
-              arg: Record<string, unknown> | unknown[] | any,
-            ): Record<string, unknown> | unknown[] | any => {
-              if (fp.isPlainObject(arg)) {
-                return convertTo(arg);
-              } else if (fp.isArray(arg)) {
-                return fp.map(cond, arg);
-              } else {
-                return fp.identity(arg);
-              }
-            };
+          (fp.reduce as IFpReduceEx).convert({ cap: false })(
+            (acc: Record<string, unknown>, v: unknown, k: string) => {
+              const cond = (
+                arg: Record<string, unknown> | unknown[] | any,
+              ): Record<string, unknown> | unknown[] | any => {
+                if (fp.isPlainObject(arg)) {
+                  return convertTo(arg);
+                } else if (fp.isArray(arg)) {
+                  return fp.map(cond, arg);
+                } else {
+                  return fp.identity(arg);
+                }
+              };
 
-            const transformedKey = transformFn(k);
-            if (!fp.has(transformedKey, acc)) {
-              const result = fp.set(transformedKey, cond(v), acc);
-              return result;
-            } else {
-              throw new Error(
-                `${transformedKey} already exist. duplicated property name is not supported.`,
-              );
-            }
-          }, {}),
+              const transformedKey = transformFn(k);
+              if (!fp.has(transformedKey, acc)) {
+                const result = fp.set(transformedKey, cond(v), acc);
+                return result;
+              } else {
+                throw new Error(
+                  `${transformedKey} already exist. duplicated property name is not supported.`,
+                );
+              }
+            },
+            {},
+          ),
         );
         const result = composer(o);
         return result;
@@ -712,8 +723,8 @@ type TremoveByIndex = F.Curry<
 const removeByIndex: TremoveByIndex = fp.curry(
   <TResult>(index: number | string, targetArray: TResult[]): TResult[] => {
     if (
-      fp.isArray(targetArray)
-      && fp.pipe(
+      fp.isArray(targetArray) &&
+      fp.pipe(
         fp.size,
         fp.curry((index: number | string, sz: number) => {
           const num = fp.toNumber(index);
@@ -777,10 +788,10 @@ const prepend: Tprepend = fp.curry(<T>(targetArray: T[], value: T | T[]): T[] =>
 );
 
 type TmapWithKey = F.Curry<
-  <TResult>(
-    iteratee: (value: unknown, key: string | number) => TResult,
-    collection: unknown[] | ObjectCollection,
-  ) => TResult[]
+  <T, K extends keyof T, R>(
+    iteratee: (value: T[K], key: K) => R,
+    collection: T,
+  ) => R[]
 >;
 
 interface LodashConvertible {
@@ -796,18 +807,17 @@ interface IFpMapEx extends fp.LodashMap, LodashConvertible {}
  * @returns {any[]} 결과 배열
  */
 const mapWithKey: TmapWithKey = fp.curry(
-  <TResult>(
-    iteratee: (value: unknown, key: string | number) => TResult,
-    collection: unknown[] | ObjectCollection,
-  ): TResult[] =>
-    (fp.map as IFpMapEx).convert({ cap: false })(iteratee, collection),
+  <T, K extends keyof T, R>(
+    iteratee: (value: T[K], key: K) => R,
+    collection: T,
+  ): R[] => (fp.map as IFpMapEx).convert({ cap: false })(iteratee, collection),
 );
 
 type TforEachWithKey = F.Curry<
-  <TResult>(
-    iteratee: (value: unknown, key: string | number) => TResult,
-    collection: unknown[] | ObjectCollection,
-  ) => TResult[]
+  <T, K extends keyof T, R>(
+    iteratee: (value: T[K], key: K) => R,
+    collection: T,
+  ) => R[]
 >;
 interface IFpForEachEx extends fp.LodashForEach, LodashConvertible {}
 /**
@@ -816,20 +826,20 @@ interface IFpForEachEx extends fp.LodashForEach, LodashConvertible {}
  * @param {object|any[]} a 대상 collection
  * @returns {void} 반환값 없음
  */
-const forEachWithKey = fp.curry(
-  <TResult>(
-    iteratee: (value: unknown, key: string | number) => TResult,
-    collection: unknown[] | ObjectCollection,
-  ): TResult[] =>
+const forEachWithKey: TforEachWithKey = fp.curry(
+  <T, K extends keyof T, R>(
+    iteratee: (value: T[K], key: K) => R,
+    collection: T,
+  ): R[] =>
     (fp.forEach as IFpForEachEx).convert({ cap: false })(iteratee, collection),
 );
 
 type TreduceWithKey = F.Curry<
-  <TResult>(
-    iteratee: (acc: TResult, value: unknown, key: string | number) => TResult,
-    acc: TResult,
-    collection: unknown[] | ObjectCollection,
-  ) => TResult
+  <T, K extends keyof T, R>(
+    iteratee: (acc: R, value: T[K], key: K) => R,
+    acc: R,
+    collection: T,
+  ) => R
 >;
 
 interface IFpReduceEx extends fp.LodashReduce, LodashConvertible {}
@@ -842,12 +852,12 @@ interface IFpReduceEx extends fp.LodashReduce, LodashConvertible {}
  * @param {object|any[]} 대상 collection
  * @returns {any} 누적기
  */
-const reduceWithKey = fp.curry(
-  <TResult>(
-    iteratee: (acc: TResult, value: unknown, key: string | number) => TResult,
-    acc: TResult,
-    collection: unknown[] | ObjectCollection,
-  ): TResult =>
+const reduceWithKey: TreduceWithKey = fp.curry(
+  <T, K extends keyof T, R>(
+    iteratee: (acc: R, value: T[K], key: K) => R,
+    acc: R,
+    collection: T,
+  ): R =>
     (fp.reduce as IFpReduceEx).convert({ cap: false })(
       iteratee,
       acc,
