@@ -29,8 +29,13 @@ All functions are curried except promisify.
 
 mapAsync works with Promise.all
 
-```javascript
-fp.mapAsync(thenableIteratee, collection);
+```ts
+type MapAsync = F.Curry<
+  <T, K extends keyof T, R>(
+    asyncMapper: (arg: T[K], key: K) => Promise<R>,
+    collection: T,
+  ) => Promise<R[]>
+>;
 ```
 
 ```javascript
@@ -46,7 +51,6 @@ fp.mapAsync(thenableIteratee, collection);
 
   // it takes about 5ms + alpha.
   const results = await fp.mapAsync(asyncMapper, arr);
-  console.log(results);
   // => [2, 4, 6, 8, 10]
   const results1 = await fp.mapAsync(asyncMapper, obj);
   // => [2, 4, 6]
@@ -57,8 +61,13 @@ fp.mapAsync(thenableIteratee, collection);
 
 filterAsync works with Promise.all
 
-```javascript
-fp.filterAsync(thenablePredicate, collection);
+```ts
+type FilterAsync = F.Curry<
+  <T, K extends keyof T, R>(
+    asyncFilter: (arg: T[K], key: K) => Promise<boolean>,
+    collection: T,
+  ) => Promise<R[]>
+>;
 ```
 
 ```javascript
@@ -73,9 +82,6 @@ fp.filterAsync(thenablePredicate, collection);
 
   // => it takes about 5ms + alpha.
   const results = await fp.filterAsync(asyncFilter, arr);
-  console.log(fp.isEmpty(results));
-  // => false
-  console.log(results);
   // => [1,3,5]
 })();
 ```
@@ -85,8 +91,14 @@ fp.filterAsync(thenablePredicate, collection);
 reduceAsync works different way from mapAsync and filterAsync, it works with Promise.resolve.
 So if you more important function order than performance, reduceAsync is suitable.
 
-```javascript
-fp.reduceAsync(thenableIteratee, thenableAccumulator, collection);
+```ts
+type ReduceAsync = F.Curry<
+  <T, K extends keyof T>(
+    asyncFn: (acc: unknown, arg: T[K], key: K) => Promise<unknown>,
+    initAcc: Promise<unknown> | unknown,
+    collection: T,
+  ) => Promise<unknown>
+>;
 ```
 
 ```javascript
@@ -110,18 +122,19 @@ fp.reduceAsync(thenableIteratee, thenableAccumulator, collection);
     [],
     arr,
   );
-
-  console.log(fp.isEmpty(result));
-  // => false
-  console.log(results);
   // => [2, 4, 6, 8, 10]
 })();
 ```
 
 ### findAsync
 
-```javascript
-fp.findAsync(thenablePredicate, collection);
+```ts
+type FindAsync = F.Curry<
+  <T, K extends keyof T, R>(
+    asyncFilter: (arg: T[K], key: K) => Promise<boolean>,
+    collection: T,
+  ) => Promise<R>
+>;
 ```
 
 ```javascript
@@ -146,8 +159,13 @@ fp.findAsync(thenablePredicate, collection);
 
 ### forEachAsync
 
-```javascript
-fp.forEachAsync(thenableIteratee, collection);
+```ts
+type ForEachAsync = F.Curry<
+  <T, K extends keyof T, R>(
+    callbackAsync: (value: T[K], key: K) => Promise<R>,
+    collection: T,
+  ) => Promise<R[]>
+>;
 ```
 
 ```javascript
@@ -166,7 +184,6 @@ fp.forEachAsync(thenableIteratee, collection);
     },
     [1, 2, 3, 4, 5],
   );
-  console.log(results);
   // => [1, 2, 6, 12, 20]
 })();
 
@@ -189,7 +206,6 @@ fp.forEachAsync(thenableIteratee, collection);
       'led zeppelin': 'stairway to heaven',
     },
   );
-  console.log(results1);
   // => ['val key', 'world hello', 'stairway to heaven led zeppelin']
 })();
 ```
@@ -199,18 +215,18 @@ fp.forEachAsync(thenableIteratee, collection);
 wrap argument with Promise\
 **Note: Promisify is not curried to accept Function on first argument. Only when first argument is function, other arguments can be applied.**
 
-```javascript
-fp.promisify(value, functionArguments);
+```ts
+type Promisify = (a: any, ...args: any[]): Promise<any>
 ```
 
 ```javascript
 (async () => {
   const result = await fp.promisify(128);
+  // => 128
   const result1 = await fp.promisify((a, b) => a + b, 64, 64);
+  // => 128
   const result2 = await fp.promisify(Promise.resolve(128));
-
-  console.log(result, result1, result2);
-  // => 128 128 128
+  // => 128
 })();
 ```
 
@@ -220,8 +236,10 @@ fp.promisify(value, functionArguments);
 
 Make Promise.then work with \fp.pipe
 
-```javascript
-fp.then(successHandler, thenable);
+```ts
+type Then = F.Curry<
+  (fn: (response: any) => any, thenable: Promise<unknown>) => Promise<any>
+>;
 ```
 
 ```javascript
@@ -235,14 +253,14 @@ fp.then(successHandler, thenable);
 
   const composer = fp.pipe(p, fp.then(fp.identity));
   const result1 = await composer(64);
+  // => 128
   const result2 = await fp.then(fp.identity, p(64));
+  // => 128
   const result3 = await fp.pipe(
     p,
     fp.then((x) => x / 2),
   )(128);
-
-  console.log(result1, result2, result3);
-  // => 128, 128, 128
+  // => 128
 })();
 ```
 
@@ -252,8 +270,13 @@ fp.then(successHandler, thenable);
 
 Make Promise.catch work with \fp.pipe.
 
-```javascript
-fp.otherwise(failureHandler, thenable);
+```ts
+type Totherwise = F.Curry<
+  (
+    failureHandler: (error: Error | any) => never | any,
+    thenable: Promise<Error | any>,
+  ) => Promise<never | any>
+>;
 ```
 
 ```javascript
@@ -270,10 +293,8 @@ fp.otherwise(failureHandler, thenable);
     });
   const composer = fp.pipe(p, fp.then(fp.identity), fp.catch(fp.identity));
   const result1 = await composer(1);
-  console.log(result1);
-  // 1
+  // => 1
   const result2 = await composer(2);
-  console.log(result2);
   // => error 'wrong'
 })();
 ```
@@ -282,8 +303,10 @@ fp.otherwise(failureHandler, thenable);
 
 Make Promise.finally work with \fp.pipe.
 
-```javascript
-fp.finally(handler, thenable);
+```ts
+type Finally = F.Curry<
+  (callback: (...args: any[]) => any, thenable: Promise<any>) => Promise<any>
+>;
 ```
 
 ```javascript
@@ -307,7 +330,6 @@ fp.finally(handler, thenable);
   );
 
   await composer(1);
-  console.log(isLoading);
   // => false
 })();
 ```
@@ -316,8 +338,8 @@ fp.finally(handler, thenable);
 
 Check argument is promise.
 
-```javascript
-fp.isPromise(value);
+```ts
+type IsPromise = <T>(x: T): boolean
 ```
 
 ```javascript
@@ -327,17 +349,17 @@ fp.isPromise(value);
   const str = '1';
   const num = 1;
 
-  console.log(fp.isPromise(p));
+  fp.isPromise(p);
   // => true
-  console.log(fp.isPromise(fn));
+  fp.isPromise(fn);
   // => false
-  console.log(fp.isPromise(str));
+  fp.isPromise(str);
   // => false
-  console.log(fp.isPromise(num));
+  fp.isPromise(num);
   // => false
-  console.log(fp.isPromise(null));
+  fp.isPromise(null);
   // => false
-  console.log(fp.isPromise(undefined));
+  fp.isPromise(undefined);
   // => false
 })();
 ```
@@ -346,25 +368,25 @@ fp.isPromise(value);
 
 opposite of lodash.isEmpty
 
-```javascript
-fp.isNotEmpty(value);
+```ts
+type IsNotEmpty = (a: unknown) => boolean;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.isNotEmpty([]));
+  fp.isNotEmpty([]);
   // => false
-  console.log(fp.isNotEmpty({}));
+  fp.isNotEmpty({});
   // => false
-  console.log(fp.isNotEmpty(1));
+  fp.isNotEmpty(1);
   // => false
-  console.log(fp.isNotEmpty(''));
+  fp.isNotEmpty(''));
   // => false
-  console.log(fp.isNotEmpty('str'));
+  fp.isNotEmpty('str');
   // => true
-  console.log(fp.isNotEmpty(null));
+  fp.isNotEmpty(null);
   // => false
-  console.log(fp.isNotEmpty(undefined));
+  fp.isNotEmpty(undefined);
   // => false
 })();
 ```
@@ -373,22 +395,21 @@ fp.isNotEmpty(value);
 
 opposite of lodash.isNil
 
-```javascript
-fp.isNotNil(value);
+```ts
+type IsNotNil = (arg: unknown) => boolean;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.isNotNil(null));
+  fp.isNotNil(null);
   // => false
-  console.log(fp.isNotNil(undefined));
+  fp.isNotNil(undefined);
   // => false
-
-  console.log(fp.isNotNil(1));
+  fp.isNotNil(1);
   // => true
-  console.log(fp.isNotNil({}));
+  fp.isNotNil({});
   // => true
-  console.log(fp.isNotNil(() => {}));
+  fp.isNotNil(() => {});
   // => true
 })();
 ```
@@ -397,18 +418,17 @@ fp.isNotNil(value);
 
 Check argument is json string.
 
-```javascript
-fp.isJson(string);
+```ts
+type IsJson = (arg: unknown) => boolean;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.isJson('{ "test": "value" }'));
+  fp.isJson('{ "test": "value" }');
   // => true
-
-  console.log(fp.isJson('test'));
+  fp.isJson('test');
   // => false
-  console.log({ test: 'value' });
+  fp.isJson({ test: 'value' });
   // => false
 })();
 ```
@@ -419,22 +439,21 @@ fp.isJson(string);
 
 opposite of lodash.isEqual
 
-```javascript
-fp.notEquals(value, other);
+```ts
+type NotEquals = F.Curry<(a: unknown, b: unknown) => boolean>;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.notEquals({ a: 1 }, { a: 1 }));
+  fp.notEquals({ a: 1 }, { a: 1 });
   // => false
-  console.log(fp.notEquals([1, 2, 3], [1, 2, 3]));
+  fp.notEquals([1, 2, 3], [1, 2, 3]);
   // => false
-
-  console.log(fp.notEquals([1, 2, 3], [2, 3, 4]));
+  fp.notEquals([1, 2, 3], [2, 3, 4]);
   // => true
-  console.log(fp.notEquals('string', 'number'));
+  fp.notEquals('string', 'number');
   // => true
-  console.log(fp.notEquals(1, 2));
+  fp.notEquals(1, 2);
   // => true
 })();
 ```
@@ -445,28 +464,28 @@ fp.notEquals(value, other);
 
 Check agument is primitive type.
 
-```javascript
-fp.isVal(value);
+```ts
+type IsVal = (arg: unknown) => boolean;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.isVal(null));
+  fp.isVal(null);
   // => true
-  console.log(fp.isVal(undefined));
+  fp.isVal(undefined);
   // => true
-  console.log(fp.isVal(false));
+  fp.isVal(false);
   // => true
-  console.log(fp.isVal(1));
+  fp.isVal(1);
   // => true
-  console.log(fp.isVal('string'));
+  fp.isVal('string');
   // => true
 
-  console.log(fp.isVal([]));
+  fp.isVal([]);
   // => false
-  console.log(fp.isVal({}));
+  fp.isVal({});
   // => false
-  console.log(fp.isVal(() => {}));
+  fp.isVal(() => {});
   // => false
 })();
 ```
@@ -477,28 +496,28 @@ fp.isVal(value);
 
 Check agument is reference type.
 
-```javascript
-fp.isRef(value);
+```ts
+type IsRef = (arg: unknown) => boolean;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.isRef(null));
+  fp.isRef(null);
   // => false
-  console.log(fp.isRef(undefined));
+  fp.isRef(undefined);
   // => false
-  console.log(fp.isRef(false));
+  fp.isRef(false);
   // => false
-  console.log(fp.isRef(1));
+  fp.isRef(1);
   // => false
-  console.log(fp.isRef('string'));
+  fp.isRef('string');
   // => false
 
-  console.log(fp.isRef([]));
+  fp.isRef([]);
   // => true
-  console.log(fp.isRef({}));
+  fp.isRef({});
   // => true
-  console.log(fp.isRef(() => {}));
+  fp.isRef(() => {});
   // => true
 })();
 ```
@@ -507,24 +526,24 @@ fp.isRef(value);
 
 Apply **!** operator to argument.
 
-```javascript
-fp.not(value);
+```ts
+type Not = <T>(a: T) => boolean;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.not(false));
+  fp.not(false);
   // => true
-  console.log(fp.not(0));
+  fp.not(0);
   // => true
 
-  console.log(fp.not('string'));
+  fp.not('string');
   // => false
-  console.log(fp.not(true));
+  fp.not(true);
   // => false
-  console.log(fp.not(1));
+  fp.not(1);
   // => false
-  console.log(fp.not({}));
+  fp.not({});
   // => false
 })();
 ```
@@ -1122,7 +1141,7 @@ fp.isTruthy(value);
 })();
 ```
 
-## delayAsync
+### delayAsync
 
 ```js
 (async () => {

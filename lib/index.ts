@@ -9,7 +9,8 @@ import { F } from 'ts-toolbelt';
  */
 const isJson = (jsonStr: string): boolean => {
   const composer = fp.pipe(fp.attempt, fp.isError);
-  const result = fp.isString(jsonStr) && !composer(() => JSON.parse(jsonStr));
+  const result: boolean =
+    fp.isString(jsonStr) && !composer(() => JSON.parse(jsonStr));
 
   return result;
 };
@@ -22,7 +23,7 @@ const isJson = (jsonStr: string): boolean => {
  * @returns {boolean} 원시 타입(primitive) 인지 여부
  */
 const isVal = (arg: unknown): boolean => {
-  const result =
+  const result: boolean =
     fp.isNil(arg) || fp.isBoolean(arg) || fp.isNumber(arg) || fp.isString(arg);
 
   return result;
@@ -166,7 +167,7 @@ const not = <T>(x: T): boolean => !x;
  * @param {any} a 대상
  * @returns {boolean} 비어 있는지 여부
  */
-const isNotEmpty = (a: any): boolean => {
+const isNotEmpty = (a: unknown): boolean => {
   const composer = fp.pipe(fp.isEmpty, not);
   const result = composer(a);
 
