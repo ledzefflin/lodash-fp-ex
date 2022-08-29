@@ -1,3 +1,4 @@
+/// <reference types="lodash" />
 import fp from 'lodash/fp';
 import { F } from 'ts-toolbelt';
 declare type Tthen = F.Curry<(fn: (response: any) => any, thenable: Promise<unknown>) => Promise<any>>;
@@ -63,7 +64,7 @@ declare const _default: {
     ifF: TifF;
     removeByIndex: TremoveByIndex;
     removeByIdx: TremoveByIndex;
-    removeLast: (target: string | unknown[]) => string | unknown[];
+    removeLast: (target: string | unknown[]) => string | any[];
     append: fp.LodashConcat;
     prepend: Tprepend;
     mapWithKey: TmapWithKey;

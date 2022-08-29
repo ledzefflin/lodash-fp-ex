@@ -30,33 +30,34 @@
     "index.js"
   ],
   "scripts": {
-    "start": "tsc-watch --onSuccess \"node index.js\" ",
     "build": "pnpm test && tsc",
     "clean": "rimraf ./node_modules && rimraf dist && rimraf index.js index.js.map",
-    "test": "mocha --reporter spec --require @babel/register",
     "package:install": "pnpm i && sort-package-json",
-    "u": "pnpm up --latest -i && pnpm run package:install",
-    "re": "rimraf ./node_modules && rimraf pnpm-lock.yaml && rimraf package-lock.json && rimraf yarn.lock && pnpm i"
+    "re": "rimraf ./node_modules && rimraf pnpm-lock.yaml && rimraf package-lock.json && rimraf yarn.lock && pnpm i",
+    "start": "tsc-watch --onSuccess \"node index.js\" ",
+    "test": "mocha --reporter spec --require @babel/register",
+    "u": "pnpm up --latest -i && pnpm run package:install"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.9",
+    "@babel/core": "^7.18.13",
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.17.7",
     "@types/babel__core": "^7.1.19",
     "@types/babel__preset-env": "^7.9.2",
     "@types/chai": "^4.3.3",
-    "@types/lodash": "^4.14.182",
+    "@types/lodash": "^4.14.184",
     "@types/mocha": "^9.1.1",
     "@types/prettier": "2.7.0",
     "@types/rimraf": "^3.0.2",
     "@types/tsc-watch": "^4.2.0",
     "chai": "^4.3.6",
+    "lodash": "^4.17.21",
     "mocha": "^10.0.0",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "ts-toolbelt": "^9.6.0",
     "tsc-watch": "^5.0.3",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.2"
   },
   "peerDependencies": {
     "lodash": "^4.17.21"
