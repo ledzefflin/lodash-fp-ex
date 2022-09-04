@@ -180,15 +180,15 @@ const isNotEmpty = (a: unknown): boolean => {
  * @param {any} a 대상
  * @returns {boolean} 변환된 boolean 타입 값
  */
-const toBool = (arg: any): boolean => !!arg;
+const toBool = (arg: unknown): boolean => !!arg;
 
 type Tternary = F.Curry<
   <T>(
-    evaluator: (arg: T) => boolean | any,
-    trueHandler: (arg: T) => any | any,
-    falseHandler: (arg: T) => any | any,
+    evaluator: (arg: T) => boolean | unknown,
+    trueHandler: (arg: T) => unknown,
+    falseHandler: (arg: T) => unknown,
     arg: T,
-  ) => any
+  ) => unknown
 >;
 /**
  * 삼항식 helper 함수\
@@ -335,7 +335,7 @@ const ifF: TifF = fp.curry(
   },
 );
 
-type TinstanceOf = F.Curry<<T>(t: any, arg: T) => boolean>;
+type TinstanceOf = F.Curry<<T>(t: unknown, arg: T) => boolean>;
 /**
  * a인자가 t타입인지 여부 조회
  * @param {any} t 조회 대상 type
@@ -527,7 +527,7 @@ const reduceAsync: TreduceAsync = fp.curry(
   },
 );
 
-type Tkey = F.Curry<(obj: object, value: unknown) => string>;
+type Tkey = F.Curry<(obj: Record<string, unknown>, value: unknown) => string>;
 
 /**
  * value로 object key 조회
@@ -672,7 +672,7 @@ type Tap = F.Curry<(arg: unknown, curried: Function) => any>;
  * @param {function} curried currying된 함수
  * @returns {any} 결과값
  */
-const ap = fp.curry((a: unknown, curried: Function) => curried(a));
+const ap: Tap = fp.curry((a: unknown, curried: Function) => curried(a));
 
 /**
  * 대상 인자가 undefined 또는 null이 아닌지 여부 조회
@@ -682,17 +682,26 @@ const ap = fp.curry((a: unknown, curried: Function) => curried(a));
  */
 const isNotNil: (arg: unknown) => boolean = fp.pipe(fp.isNil, not);
 
-type TnotIncludes = F.Curry<(arg: unknown, targetArray: unknown[]) => boolean>;
+type TnotIncludes = F.Curry<
+  (
+    arg: unknown,
+    targetArray: unknown[] | Record<string, unknown> | string,
+  ) => boolean
+>;
 
 /**
  * arr인자 배열에 a인자가 포함되지 않았는지 여부 조회
  * @param {any} a 대상 인자
- * @param {any[]} arr 대상 배열
+ * @param {unknown[] | Record<string, unknown> | string} arr 대상 배열
  * @returns {boolean} arr 배열에 a인자가 포함되지 않았는지 여부
  */
 const notIncludes: TnotIncludes = fp.curry(
-  (arg: unknown, targetArray: unknown[]): boolean => {
-    const result = !fp.includes(arg, targetArray);
+  (
+    arg: unknown,
+    targetArray: unknown[] | Record<string, unknown> | string,
+  ): boolean => {
+    const result: boolean = !fp.includes(arg, targetArray);
+
     return result;
   },
 );
@@ -713,7 +722,7 @@ const notEquals: TnotEquals = fp.curry((a: unknown, b: unknown): boolean => {
 });
 
 type TremoveByIndex = F.Curry<
-  <TResult>(index: number | string, targetArray: TResult[]) => TResult[]
+  <R>(index: number | string, targetArray: R[]) => R[]
 >;
 /**
  * arr인자의 idx인자의 index에 해당하는 요소 제거
@@ -750,7 +759,7 @@ const removeByIndex: TremoveByIndex = fp.curry(
  * @param {string|any[]} target 문자열 또는 배열의 마지막 요소 제거
  * @returns 마지막 요소 제거된 인자
  */
-const removeLast = (target: string | unknown[]) => {
+const removeLast = (target: string | unknown[]): string | unknown[] => {
   if (fp.isArray(target) || fp.isString(target)) {
     const result = fp.cloneDeep(target);
     fp.isArray(target)
@@ -772,9 +781,8 @@ const removeLast = (target: string | unknown[]) => {
  */
 const append = fp.concat;
 
-type Tprepend = F.Curry<
-  (array: unknown[], value: unknown | unknown[]) => unknown[]
->;
+type Tprepend = F.Curry<<T>(arr: T[], arg: T | T[]) => T[]>;
+
 /**
  * array 인자의 (index상)앞쪽에 value인자를 추가
  *

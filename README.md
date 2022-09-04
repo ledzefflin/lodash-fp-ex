@@ -552,17 +552,22 @@ type Not = <T>(a: T) => boolean;
 
 Opposite of lodash.includes
 
-```javascript
-fp.notIncludes(value, collection);
+```ts
+type NotIncludes = F.Curry<
+  (
+    arg: unknown,
+    targetArray: unknown[] | Record<string, unknown> | string,
+  ) => boolean
+>;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.notIncludes(1, [1, 2, 3]));
+  fp.notIncludes(1, [1, 2, 3]);
   // => false
-  console.log(fp.notIncludes('s', 'string'));
+  fp.notIncludes('s', 'string');
   // => false
-  console.log(fp.notIncludes(1, { a: 1, b: 2 }));
+  fp.notIncludes(1, { a: 1, b: 2 });
   // => false
 })();
 ```
@@ -571,20 +576,20 @@ fp.notIncludes(value, collection);
 
 'true', 'false' string and other argument convert to Boolean type.
 
-```javascript
-fp.toBool(value);
+```ts
+type ToBool = (arg: unknown) => boolean;
 ```
 
 ```javascript
 (() => {
-  console.log(fp.toBool(1));
+  fp.toBool(1);
   // => true
 
-  console.log(fp.toBool(0));
+  fp.toBool(0);
   // => false
-  console.log(fp.toBool(null));
+  fp.toBool(null);
   // => false
-  console.log(fp.toBool(undefined));
+  fp.toBool(undefined);
   // => false
 })();
 ```
@@ -593,8 +598,8 @@ fp.toBool(value);
 
 Reference type target freeze deeply.
 
-```javascript
-fp.deepFreeze(value);
+```ts
+type DeepFreeze = (obj: Record<string, unknown>) => Record<string, unknown>;
 ```
 
 ```javascript
@@ -611,20 +616,20 @@ fp.deepFreeze(value);
     },
   });
 
-  console.log(Object.isFrozen(shallowFrozen));
+  Object.isFrozen(shallowFrozen);
   // => true
-  console.log(Object.isFrozen(shallowFrozen.a));
+  Object.isFrozen(shallowFrozen.a);
   // => false
-  console.log(Object.isFrozen(shallowFrozen.a.b));
+  Object.isFrozen(shallowFrozen.a.b);
   // => false
 
-  console.log(Object.isFrozen(deepFrozen));
+  Object.isFrozen(deepFrozen);
   // => true
-  console.log(Object.isFrozen(deepFrozen.a));
+  Object.isFrozen(deepFrozen.a);
   // => true
-  console.log(Object.isFrozen(deepFrozen.a.b));
+  Object.isFrozen(deepFrozen.a.b);
   // => true
-  console.log(Object.isFrozen(deepFrozen.a.c));
+  Object.isFrozen(deepFrozen.a.c);
   // => true
 })();
 ```
@@ -635,8 +640,8 @@ fp.deepFreeze(value);
 
 Get key string of object by value.
 
-```javascript
-fp.key(object, value);
+```ts
+type Key = F.Curry<(obj: Record<string, unknown>, value: unknown) => string>;
 ```
 
 ```javascript
@@ -645,13 +650,13 @@ fp.key(object, value);
   const obj1 = { a: 1, b: 1, c: 1 };
   const obj2 = { a: { b: { k: 1 } } };
 
-  console.log(fp.key(obj, 1));
+  fp.key(obj, 1);
   // => a
-  console.log(fp.key(obj1, 1));
+  fp.key(obj1, 1);
   // => c
-  console.log(fp.key(obj2, { b: { k: 1 } }));
+  fp.key(obj2, { b: { k: 1 } });
   // => a
-  console.log(fp.key(obj2, { b: { k: 2 } }));
+  fp.key(obj2, { b: { k: 2 } });
   // => undefined
 })();
 ```
@@ -660,8 +665,13 @@ fp.key(object, value);
 
 Argument object key transform with case transform function.
 
-```javascript
-fp.transformObjectKey(caseTransformer, object);
+```ts
+type TransformObjectKey = F.Curry<
+  (
+    transformFn: (orignStr: string) => string,
+    obj: Record<string, unknown>,
+  ) => Record<string, unknown>
+>;
 ```
 
 ```javascript
@@ -676,12 +686,10 @@ fp.transformObjectKey(caseTransformer, object);
     },
   };
   const kebabKeyObj = fp.transformObjectKey(fp.kebabCase, obj);
-  const kebabKeyObj1 = fp.transformObjectKey(fp.kebabCase, nestedObj);
-  console.log(kebabKeyObj);
   // => { obj-key: 1 }
-  console.log(kebabKeyObj1);
+  const kebabKeyObj1 = fp.transformObjectKey(fp.kebabCase, nestedObj);
   // => { 'obj-key': { 'nested-key': { 'another-key': [3] } } }
-  console.log(fp.transformObjectKey(fp.kebabCase, obj1));
+  fp.transformObjectKey(fp.kebabCase, obj1);
   // => obj-key already exist. duplicated property name is not supported.
 })();
 ```
@@ -692,8 +700,8 @@ fp.transformObjectKey(caseTransformer, object);
 
 Same with transformObjectKey(lodash.camelCase)
 
-```javascript
-fp.toCamelcase(object);
+```ts
+type ToCamelcase = (obj: Record<string, unknown>) => Record<string, unknown>;
 ```
 
 ```javascript
@@ -701,10 +709,8 @@ fp.toCamelcase(object);
   const obj = { obj_key: 1 };
   const obj1 = { 'obj-key': 1, obj_key: 2 };
   const camelKeyObj = fp.toCamelcase(obj);
-
-  console.log(camelKeyObj);
   // => { objKey: 1 }
-  console.log(fp.toCamelcase(obj1));
+  fp.toCamelcase(obj1);
   // => objKey already exist. duplicated property name is not supported.
 })();
 ```
@@ -715,8 +721,8 @@ fp.toCamelcase(object);
 
 Same with transformObjectKey(lodash.snakeCase)
 
-```javascript
-fp.toSnakecase(object);
+```ts
+type ToSnakecase = (obj: Record<string, unknown>) => Record<string, unknown>;
 ```
 
 ```javascript
@@ -724,10 +730,9 @@ fp.toSnakecase(object);
   const obj = { objKey: 1 };
   const obj1 = { objKey: 1, 'obj key': 2 };
   const snakeKeyObj = fp.toSnakecase(obj);
-
-  console.log(snakeKeyObj);
   // => { obj_key: 1}
-  console.log(fp.toSnakecase(obj1));
+
+  fp.toSnakecase(obj1);
   // => obj_key already exist. duplicated property name is not supported.
 })();
 ```
@@ -736,8 +741,8 @@ fp.toSnakecase(object);
 
 Argument string transform to pascal case.
 
-```javascript
-fp.pascalCase(string);
+```ts
+type PascalCase = (string) => string;
 ```
 
 ```javascript
@@ -749,8 +754,6 @@ fp.pascalCase(string);
     'foo_bar',
     'foo-bar',
   ]);
-
-  console.log(pascals);
   // => [FooBar, FooBar, FooBar, FooBar, FooBar]
 })();
 ```
@@ -759,8 +762,8 @@ fp.pascalCase(string);
 
 Check argument string can parse with Date.parse function.
 
-```javascript
-fp.isDatetimeString(string);
+```ts
+type IsDatetimeString = (dateStr: string) => boolean;
 ```
 
 ```javascript
@@ -797,8 +800,8 @@ fp.isDatetimeString(string);
 
 Inspired by <https://github.com/monet/monet.js/blob/master/docs/MAYBE.md#ap>
 
-```javascript
-fp.ap(value, curriedFunction);
+```ts
+type Ap = F.Curry<(arg: unknown, curreid: Function) => unknown>;
 ```
 
 ```javascript
@@ -807,19 +810,17 @@ fp.ap(value, curriedFunction);
   const reduceWithAp = fp.pipe(fp.reduce, fp.ap(['f', 'o', 'o']));
 
   const isIncludeI = includesWithAp('i');
-  console.log(isIncludeI);
   // => true
 
   const foo = reduceWithAp((acc, v) => `${acc}${v}`, '');
-  console.log(foo);
   // => foo
 })();
 ```
 
 ### instanceOf
 
-```javascript
-fp.instanceOf(value);
+```ts
+type InstanceOf = F.Curry<<T>(t: unknown, arg: T) => boolean>;
 ```
 
 ```javascript
@@ -835,28 +836,35 @@ fp.instanceOf(value);
   class D {}
   const auto = new Car('Honda', 'Accord', 1998);
 
-  console.log(fp.instanceOf(Car, auto));
+  fp.instanceOf(Car, auto);
   // => true
-  console.log(fp.instanceOf(Object, auto));
+  fp.instanceOf(Object, auto);
   // => true
-  console.log(fp.instanceOf(C, new C()));
+  fp.instanceOf(C, new C());
   // => true
-  console.log(fp.instanceOf(C, new D()));
+  fp.instanceOf(C, new D());
   // => false
 
-  console.log(fp.instanceOf(String, 'string'));
+  fp.instanceOf(String, 'string');
   // => false
-  console.log(fp.instanceOf(String, new String('string')));
+  fp.instanceOf(String, new String('string'));
   // => true
-  console.log(fp.instanceOf(Object, {}));
+  fp.instanceOf(Object, {});
   // => true
 })();
 ```
 
 ### ternary
 
-```javascript
-fp.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value);
+```ts
+type Ternary = F.Curry<
+  <T>(
+    evaluator: (arg: T) => boolean | unknown,
+    trueHandler: (arg: T) => unknown,
+    falseHandler: (arg: T) => unknown,
+    arg: T,
+  ) => unknown
+>;
 ```
 
 ```javascript
@@ -881,33 +889,33 @@ fp.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value);
   );
   const ternaryWithEvaluatorByValue = fp.ternary(hasTrue, 'y', 'n');
 
-  console.log(YorN(true));
+  YorN(true);
   // => Y
-  console.log(YorN(false));
+  YorN(false);
   // => N
-  console.log(fp.pipe(fp.isEmpty, YorN)(['a']));
+  fp.pipe(fp.isEmpty, YorN)(['a']);
   // => N
-  console.log(fp.getYorN(true));
+  fp.getYorN(true);
   // => y
 
-  console.log(paddingYorN('True'));
+  paddingYorN('True');
   // => True-Y
-  console.log(paddingYorN(false));
+  paddingYorN(false);
   // => false-N
-  console.log(paddingYorN(''));
+  paddingYorN('');
   // => -N
-  console.log(paddingYorN(null));
+  paddingYorN(null);
   // null-N
-  console.log(paddingYorN(undefined));
+  paddingYorN(undefined);
   // undefined-N
 
-  console.log(ternaryWithEvaluatorByHandler([false, 'N', null, undefined]));
+  ternaryWithEvaluatorByHandler([false, 'N', null, undefined]);
   // => N
-  console.log(ternaryWithEvaluatorByHandler([true]));
+  ternaryWithEvaluatorByHandler([true]);
   // => Y
-  console.log(ternaryWithEvaluatorByValue([false, 'N', null, undefined]));
+  ternaryWithEvaluatorByValue([false, 'N', null, undefined]);
   // => n
-  console.log(ternaryWithEvaluatorByValue([true]));
+  ternaryWithEvaluatorByValue([true]);
   // => y
 })();
 ```
@@ -916,8 +924,14 @@ fp.ternary(evaluator, trueHandlerOrVal, falseHandlerOrVal, value);
 
 If evaluator(value) return true, return trueHandler(value) result otherwise return value.
 
-```javascript
-fp.ifT(evaluator, trueHandler, value);
+```ts
+type IfT = F.Curry<
+  <T, R>(
+    evaluator: (arg: T) => boolean | boolean,
+    trueHandler: (arg: T) => R | R,
+    arg: T,
+  ) => T | R
+>;
 ```
 
 ```javascript
@@ -928,17 +942,17 @@ fp.ifT(evaluator, trueHandler, value);
     (str) => `${str}-paddString`,
   );
 
-  console.log(getYifT([]));
+  getYifT([]);
   // => Y
-  console.log(getYifT('str'));
+  getYifT('str');
   // => str
-  console.log(ifNotEmptyAppendString('str'));
+  ifNotEmptyAppendString('str');
   // => 'str-paddString'
-  console.log(ifNotEmptyAppendString(''));
+  ifNotEmptyAppendString('');
   // =>
-  console.log(ifNotEmptyAppendString([]));
+  ifNotEmptyAppendString([]);
   // => []
-  console.log(ifNotEmptyAppendString(['s', 't', 'r']));
+  ifNotEmptyAppendString(['s', 't', 'r']);
   // => s,t,r-paddString
 })();
 ```
@@ -947,8 +961,14 @@ fp.ifT(evaluator, trueHandler, value);
 
 If evaluator(value) return false, return falseHandler(value) result otherwise return value.
 
-```javascript
-fp.ifF(evaluator, falseHandler, value);
+```ts
+type IfF = F.Curry<
+  <T, R>(
+    evaluator: (arg: T) => boolean | boolean,
+    falseHandler: (arg: T) => R | R,
+    arg: T,
+  ) => T | R
+>;
 ```
 
 ```javascript
@@ -959,17 +979,17 @@ fp.ifF(evaluator, falseHandler, value);
     (str) => `${str}-paddString`,
   );
 
-  console.log(ifNotEmptyN([]));
+  ifNotEmptyN([]);
   // => []
-  console.log(ifNotEmptyN('str'));
+  ifNotEmptyN('str');
   // => N
-  console.log(ifNotEmptyAppendString('str'));
+  ifNotEmptyAppendString('str');
   // => str-paddString
-  console.log(ifNotEmptyAppendString(''));
+  ifNotEmptyAppendString('');
   // =>
-  console.log(ifNotEmptyAppendString([]));
+  ifNotEmptyAppendString([]);
   // => []
-  console.log(ifNotEmptyAppendString(['s', 't', 'r']));
+  ifNotEmptyAppendString(['s', 't', 'r']);
   // => s,t,r-paddString
 })();
 ```
@@ -978,8 +998,10 @@ fp.ifF(evaluator, falseHandler, value);
 
 **alias:** removeByIdx
 
-```javascript
-fp.removeByIndex(index, array);
+```ts
+type RemoveByIndex = F.Curry<
+  <R>(index: number | string, targetArray: R[]) => R[]
+>;
 ```
 
 ```javascript
@@ -988,17 +1010,17 @@ fp.removeByIndex(index, array);
   const secondRemoved = fp.removeByIndex(1, arr);
 
   // argument array should not be mutated.
-  console.log(arr);
+  arr;
   // => [1, 2, 3]
-  console.log(secondRemoved);
+  secondRemoved;
   // => [1, 3]
 })();
 ```
 
 ### removeLast
 
-```javascript
-fp.removeLast(array);
+```ts
+type RemoveLast = (target: string | unknown[]) => string | unknown[];
 ```
 
 ```javascript
@@ -1007,9 +1029,9 @@ fp.removeLast(array);
   const lastRemoved = fp.removeLast(arr);
 
   // argument array should not be mutated.
-  console.log(arr);
+  arr;
   // => [1, 2, 3]
-  console.log(lastRemoved);
+  lastRemoved;
   // => [1, 2]
 })();
 ```
@@ -1018,8 +1040,8 @@ fp.removeLast(array);
 
 **alias:** concat
 
-```javascript
-fp.append(array, [values]);
+```ts
+type Append = F.Curry<<T>(arr: T[], arg: T | T[]) => T[]>;
 ```
 
 ```javascript
@@ -1028,19 +1050,19 @@ fp.append(array, [values]);
   const appended = fp.append(arr, 34);
 
   // argument array should not be mutated.
-  console.log(arr);
+  arr;
   // => [1]
-  console.log(appended);
+  appended;
   // => [1, 34]
-  console.log(fp.append(arr, [2, 3, 4]));
+  fp.append(arr, [2, 3, 4]);
   // => [1, 2, 3, 4]
 })();
 ```
 
 ### prepend
 
-```javascript
-fp.prepend(array, [values]);
+```ts
+type Prepend = F.Curry<<T>(arr: T[], arg: T | T[]) => T[]>;
 ```
 
 ```javascript
@@ -1049,11 +1071,11 @@ fp.prepend(array, [values]);
   const prepended = fp.prepend(arr, 34);
 
   // argument array should not be mutated.
-  console.log(arr);
+  arr;
   // => [1]
-  console.log(prepended);
+  prepended;
   // => [34, 1]
-  console.log(fp.prepend(arr, [2, 3, 4]));
+  fp.prepend(arr, [2, 3, 4]);
   // => [2, 3, 4, 1]
 })();
 ```
@@ -1064,8 +1086,13 @@ fp.prepend(array, [values]);
 
 Same with \fp.map.convert({ cap: false})
 
-```javascript
-fp.mapWithKey(iteratee, collection);
+```ts
+type MapWithKey = F.Curry<
+  <T, K extends keyof T, R>(
+    iteratee: (value: T[K], key: K) => R,
+    collection: T,
+  ) => R[]
+>;
 ```
 
 ```javascript
@@ -1073,9 +1100,9 @@ fp.mapWithKey(iteratee, collection);
   const arr = [3, 4, 5];
   const getIdxs = fp.mapWithKey((v, i) => i);
 
-  console.log(getIdxs(arr));
+  getIdxs(arr);
   // => [0, 1, 2]
-  console.log(getIdxs({ a: 1, b: 2 }));
+  getIdxs({ a: 1, b: 2 });
   // => ['a', 'b']
 })();
 ```
@@ -1086,8 +1113,14 @@ fp.mapWithKey(iteratee, collection);
 
 Same with \fp.reduce.convert({ cap: false })
 
-```javascript
-fp.reduceWithKey(iteratee, accumulator, collection);
+```ts
+type ReduceWithKey = F.Curry<
+  <T, K extends keyof T, R>(
+    iteratee: (acc: R, value: T[K], key: K) => R,
+    acc: R,
+    collection: T,
+  ) => R
+>;
 ```
 
 ```javascript
@@ -1095,17 +1128,17 @@ fp.reduceWithKey(iteratee, accumulator, collection);
   const arr = [3, 4, 5];
   const getIdxs = fp.reduceWithKey((acc, v, i) => fp.concat(acc, i), []);
 
-  console.log(getIdxs(arr));
+  getIdxs(arr);
   // => [0, 1, 2]
-  console.log(getIdxs({ a: 1, b: 2 }));
+  getIdxs({ a: 1, b: 2 });
   // => ['a', 'b']
 })();
 ```
 
 ### isFalsy
 
-```javascript
-fp.isFalsy(value);
+```ts
+type isFalsy = (arg: unknown) => boolean;
 ```
 
 ```javascript
@@ -1123,8 +1156,8 @@ fp.isFalsy(value);
 
 ### isTruthy
 
-```javascript
-fp.isTruthy(value);
+```ts
+type IsTruthy = (arg: unknown) => boolean;
 ```
 
 ```javascript
@@ -1142,6 +1175,10 @@ fp.isTruthy(value);
 ```
 
 ### delayAsync
+
+```ts
+type DelayAsync = (ms: number) => Promise<void>;
+```
 
 ```js
 (async () => {

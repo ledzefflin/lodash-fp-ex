@@ -557,7 +557,7 @@ var isNotNil = fp_1.default.pipe(fp_1.default.isNil, not);
 /**
  * arr인자 배열에 a인자가 포함되지 않았는지 여부 조회
  * @param {any} a 대상 인자
- * @param {any[]} arr 대상 배열
+ * @param {unknown[] | Record<string, unknown> | string} arr 대상 배열
  * @returns {boolean} arr 배열에 a인자가 포함되지 않았는지 여부
  */
 var notIncludes = fp_1.default.curry(function (arg, targetArray) {
