@@ -94,10 +94,10 @@ So if you more important function order than performance, reduceAsync is suitabl
 ```ts
 type ReduceAsync = F.Curry<
   <T, K extends keyof T>(
-    asyncFn: (acc: unknown, arg: T[K], key: K) => Promise<unknown>,
-    initAcc: Promise<unknown> | unknown,
+    asyncFn: (acc: any, arg: T[K], key: K) => Promise<any>,
+    initAcc: Promise<any> | any,
     collection: T,
-  ) => Promise<unknown>
+  ) => Promise<any>
 >;
 ```
 
@@ -238,7 +238,7 @@ Make Promise.then work with \fp.pipe
 
 ```ts
 type Then = F.Curry<
-  (fn: (response: any) => any, thenable: Promise<unknown>) => Promise<any>
+  (fn: (response: any) => any, thenable: Promise<any>) => Promise<any>
 >;
 ```
 
@@ -369,7 +369,7 @@ type IsPromise = <T>(x: T): boolean
 opposite of lodash.isEmpty
 
 ```ts
-type IsNotEmpty = (a: unknown) => boolean;
+type IsNotEmpty = (a: any) => boolean;
 ```
 
 ```javascript
@@ -396,7 +396,7 @@ type IsNotEmpty = (a: unknown) => boolean;
 opposite of lodash.isNil
 
 ```ts
-type IsNotNil = (arg: unknown) => boolean;
+type IsNotNil = (arg: any) => boolean;
 ```
 
 ```javascript
@@ -419,7 +419,7 @@ type IsNotNil = (arg: unknown) => boolean;
 Check argument is json string.
 
 ```ts
-type IsJson = (arg: unknown) => boolean;
+type IsJson = (arg: any) => boolean;
 ```
 
 ```javascript
@@ -440,7 +440,7 @@ type IsJson = (arg: unknown) => boolean;
 opposite of lodash.isEqual
 
 ```ts
-type NotEquals = F.Curry<(a: unknown, b: unknown) => boolean>;
+type NotEquals = F.Curry<(a: any, b: any) => boolean>;
 ```
 
 ```javascript
@@ -465,7 +465,7 @@ type NotEquals = F.Curry<(a: unknown, b: unknown) => boolean>;
 Check agument is primitive type.
 
 ```ts
-type IsVal = (arg: unknown) => boolean;
+type IsVal = (arg: any) => boolean;
 ```
 
 ```javascript
@@ -497,7 +497,7 @@ type IsVal = (arg: unknown) => boolean;
 Check agument is reference type.
 
 ```ts
-type IsRef = (arg: unknown) => boolean;
+type IsRef = (arg: any) => boolean;
 ```
 
 ```javascript
@@ -554,10 +554,7 @@ Opposite of lodash.includes
 
 ```ts
 type NotIncludes = F.Curry<
-  (
-    arg: unknown,
-    targetArray: unknown[] | Record<string, unknown> | string,
-  ) => boolean
+  (arg: any, targetArray: any[] | Record<string, any> | string) => boolean
 >;
 ```
 
@@ -577,7 +574,7 @@ type NotIncludes = F.Curry<
 'true', 'false' string and other argument convert to Boolean type.
 
 ```ts
-type ToBool = (arg: unknown) => boolean;
+type ToBool = (arg: any) => boolean;
 ```
 
 ```javascript
@@ -599,7 +596,7 @@ type ToBool = (arg: unknown) => boolean;
 Reference type target freeze deeply.
 
 ```ts
-type DeepFreeze = (obj: Record<string, unknown>) => Record<string, unknown>;
+type DeepFreeze = (obj: Record<string, any>) => Record<string, any>;
 ```
 
 ```javascript
@@ -641,7 +638,7 @@ type DeepFreeze = (obj: Record<string, unknown>) => Record<string, unknown>;
 Get key string of object by value.
 
 ```ts
-type Key = F.Curry<(obj: Record<string, unknown>, value: unknown) => string>;
+type Key = F.Curry<(obj: Record<string, any>, value: any) => string>;
 ```
 
 ```javascript
@@ -669,8 +666,8 @@ Argument object key transform with case transform function.
 type TransformObjectKey = F.Curry<
   (
     transformFn: (orignStr: string) => string,
-    obj: Record<string, unknown>,
-  ) => Record<string, unknown>
+    obj: Record<string, any>,
+  ) => Record<string, any>
 >;
 ```
 
@@ -701,7 +698,7 @@ type TransformObjectKey = F.Curry<
 Same with transformObjectKey(lodash.camelCase)
 
 ```ts
-type ToCamelcase = (obj: Record<string, unknown>) => Record<string, unknown>;
+type ToCamelcase = (obj: Record<string, any>) => Record<string, any>;
 ```
 
 ```javascript
@@ -722,7 +719,7 @@ type ToCamelcase = (obj: Record<string, unknown>) => Record<string, unknown>;
 Same with transformObjectKey(lodash.snakeCase)
 
 ```ts
-type ToSnakecase = (obj: Record<string, unknown>) => Record<string, unknown>;
+type ToSnakecase = (obj: Record<string, any>) => Record<string, any>;
 ```
 
 ```javascript
@@ -801,7 +798,7 @@ type IsDatetimeString = (dateStr: string) => boolean;
 Inspired by <https://github.com/monet/monet.js/blob/master/docs/MAYBE.md#ap>
 
 ```ts
-type Ap = F.Curry<(arg: unknown, curreid: Function) => unknown>;
+type Ap = F.Curry<(arg: any, curreid: Function) => any>;
 ```
 
 ```javascript
@@ -820,7 +817,7 @@ type Ap = F.Curry<(arg: unknown, curreid: Function) => unknown>;
 ### instanceOf
 
 ```ts
-type InstanceOf = F.Curry<<T>(t: unknown, arg: T) => boolean>;
+type InstanceOf = F.Curry<<T>(t: any, arg: T) => boolean>;
 ```
 
 ```javascript
@@ -859,11 +856,11 @@ type InstanceOf = F.Curry<<T>(t: unknown, arg: T) => boolean>;
 ```ts
 type Ternary = F.Curry<
   <T>(
-    evaluator: (arg: T) => boolean | unknown,
-    trueHandler: (arg: T) => unknown,
-    falseHandler: (arg: T) => unknown,
+    evaluator: (arg: T) => boolean | any,
+    trueHandler: (arg: T) => any,
+    falseHandler: (arg: T) => any,
     arg: T,
-  ) => unknown
+  ) => any
 >;
 ```
 
@@ -1020,7 +1017,7 @@ type RemoveByIndex = F.Curry<
 ### removeLast
 
 ```ts
-type RemoveLast = (target: string | unknown[]) => string | unknown[];
+type RemoveLast = (target: string | any[]) => string | any[];
 ```
 
 ```javascript
@@ -1138,7 +1135,7 @@ type ReduceWithKey = F.Curry<
 ### isFalsy
 
 ```ts
-type isFalsy = (arg: unknown) => boolean;
+type isFalsy = (arg: any) => boolean;
 ```
 
 ```javascript
@@ -1157,7 +1154,7 @@ type isFalsy = (arg: unknown) => boolean;
 ### isTruthy
 
 ```ts
-type IsTruthy = (arg: unknown) => boolean;
+type IsTruthy = (arg: any) => boolean;
 ```
 
 ```javascript

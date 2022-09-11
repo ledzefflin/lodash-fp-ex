@@ -421,7 +421,7 @@ var findAsync = fp_1.default.curry(function (asyncFilter, collection) { return _
  * (ex 300ms이 걸리는 5개의 promise가 있다면, 최소 1500ms+alpah의 시간이 소요된다.\
  * 상기의 mapAsync의 경우 300+alpah의 시간만 소요된다.(Promise.all과 Promise.resolve의 차이))
  *
- * @param {(acc:any, v:any) => Promise<unknown>} asyncFn 비동기 iterator
+ * @param {(acc:any, v:any) => Promise<any>} asyncFn 비동기 iterator
  * @param {Promise<any>|any} initAcc 초기 누적기를 반환하는 promise 또는 누적기
  * @param {object|any[]} collection 대상 객체 또는 배열
  * @returns {Promise<any>} 결과 Promise
@@ -557,7 +557,7 @@ var isNotNil = fp_1.default.pipe(fp_1.default.isNil, not);
 /**
  * arr인자 배열에 a인자가 포함되지 않았는지 여부 조회
  * @param {any} a 대상 인자
- * @param {unknown[] | Record<string, unknown> | string} arr 대상 배열
+ * @param {any[] | Record<string, any> | string} arr 대상 배열
  * @returns {boolean} arr 배열에 a인자가 포함되지 않았는지 여부
  */
 var notIncludes = fp_1.default.curry(function (arg, targetArray) {

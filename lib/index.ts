@@ -22,7 +22,7 @@ const isJson = (jsonStr: string): boolean => {
  * @param {any} arg 조회 대상
  * @returns {boolean} 원시 타입(primitive) 인지 여부
  */
-const isVal = (arg: unknown): boolean => {
+const isVal = (arg: any): boolean => {
   const result: boolean =
     fp.isNil(arg) || fp.isBoolean(arg) || fp.isNumber(arg) || fp.isString(arg);
 
@@ -36,7 +36,7 @@ const isVal = (arg: unknown): boolean => {
  * @param {any} arg 조회 대상
  * @returns {boolean} 참조 타입(reference) 인지 여부
  */
-const isRef = (arg: unknown): boolean => {
+const isRef = (arg: any): boolean => {
   const composer = fp.pipe(isVal, not);
   const result = composer(arg);
 
@@ -100,7 +100,7 @@ const flatPromise = (thenable: Promise<any> | any): Promise<any> | any =>
   isPromise(thenable) ? thenable.then((x: any) => flatPromise(x)) : thenable;
 
 type Tthen = F.Curry<
-  (fn: (response: any) => any, thenable: Promise<unknown>) => Promise<any>
+  (fn: (response: any) => any, thenable: Promise<any>) => Promise<any>
 >;
 /**
  * lodash 형태의 promise then
@@ -112,8 +112,8 @@ type Tthen = F.Curry<
 const then: Tthen = fp.curry(
   (
     successHandler: (response: any) => any,
-    thenable: Promise<unknown>,
-  ): Promise<unknown> => promisify(thenable).then(flatPromise(successHandler)),
+    thenable: Promise<any>,
+  ): Promise<any> => promisify(thenable).then(flatPromise(successHandler)),
 );
 
 type Totherwise = F.Curry<
@@ -167,7 +167,7 @@ const not = <T>(x: T): boolean => !x;
  * @param {any} a 대상
  * @returns {boolean} 비어 있는지 여부
  */
-const isNotEmpty = (a: unknown): boolean => {
+const isNotEmpty = (a: any): boolean => {
   const composer = fp.pipe(fp.isEmpty, not);
   const result = composer(a);
 
@@ -180,15 +180,15 @@ const isNotEmpty = (a: unknown): boolean => {
  * @param {any} a 대상
  * @returns {boolean} 변환된 boolean 타입 값
  */
-const toBool = (arg: unknown): boolean => !!arg;
+const toBool = (arg: any): boolean => !!arg;
 
 type Tternary = F.Curry<
   <T>(
-    evaluator: (arg: T) => boolean | unknown,
-    trueHandler: (arg: T) => unknown,
-    falseHandler: (arg: T) => unknown,
+    evaluator: (arg: T) => boolean | any,
+    trueHandler: (arg: T) => any,
+    falseHandler: (arg: T) => any,
     arg: T,
-  ) => unknown
+  ) => any
 >;
 /**
  * 삼항식 helper 함수\
@@ -335,7 +335,7 @@ const ifF: TifF = fp.curry(
   },
 );
 
-type TinstanceOf = F.Curry<<T>(t: unknown, arg: T) => boolean>;
+type TinstanceOf = F.Curry<<T>(t: any, arg: T) => boolean>;
 /**
  * a인자가 t타입인지 여부 조회
  * @param {any} t 조회 대상 type
@@ -491,10 +491,10 @@ const findAsync: TfindAsync = fp.curry(
 
 type TreduceAsync = F.Curry<
   <T, K extends keyof T>(
-    asyncFn: (acc: unknown, arg: T[K], key: K) => Promise<unknown>,
-    initAcc: Promise<unknown> | unknown,
+    asyncFn: (acc: any, arg: T[K], key: K) => Promise<any>,
+    initAcc: Promise<any> | any,
     collection: T,
-  ) => Promise<unknown>
+  ) => Promise<any>
 >;
 
 /**
@@ -503,18 +503,18 @@ type TreduceAsync = F.Curry<
  * (ex 300ms이 걸리는 5개의 promise가 있다면, 최소 1500ms+alpah의 시간이 소요된다.\
  * 상기의 mapAsync의 경우 300+alpah의 시간만 소요된다.(Promise.all과 Promise.resolve의 차이))
  *
- * @param {(acc:any, v:any) => Promise<unknown>} asyncFn 비동기 iterator
+ * @param {(acc:any, v:any) => Promise<any>} asyncFn 비동기 iterator
  * @param {Promise<any>|any} initAcc 초기 누적기를 반환하는 promise 또는 누적기
  * @param {object|any[]} collection 대상 객체 또는 배열
  * @returns {Promise<any>} 결과 Promise
  */
 const reduceAsync: TreduceAsync = fp.curry(
   async <T, K extends keyof T>(
-    asyncFn: (acc: unknown, arg: T[K], key: K) => Promise<unknown>,
-    initAcc: Promise<unknown> | unknown,
+    asyncFn: (acc: any, arg: T[K], key: K) => Promise<any>,
+    initAcc: Promise<any> | any,
     collection: T,
-  ): Promise<unknown> => {
-    const initAccPromise: Promise<unknown> = await fp.pipe(promisify, (accP) =>
+  ): Promise<any> => {
+    const initAccPromise: Promise<any> = await fp.pipe(promisify, (accP) =>
       Promise.resolve(accP),
     )(initAcc);
     const result = (fp.reduce as IFpReduceEx).convert({ cap: false })(
@@ -527,7 +527,7 @@ const reduceAsync: TreduceAsync = fp.curry(
   },
 );
 
-type Tkey = F.Curry<(obj: Record<string, unknown>, value: unknown) => string>;
+type Tkey = F.Curry<(obj: Record<string, any>, value: any) => string>;
 
 /**
  * value로 object key 조회
@@ -536,7 +536,7 @@ type Tkey = F.Curry<(obj: Record<string, unknown>, value: unknown) => string>;
  * @param {string} value 조회 대상 값
  * @returns {string} 속성명
  */
-const key: Tkey = fp.curry((obj: object, value: unknown): string => {
+const key: Tkey = fp.curry((obj: object, value: any): string => {
   const composer = fp.pipe(
     fp.entries,
     fp.find(([k, val]) => fp.equals(value, val)),
@@ -553,7 +553,7 @@ const key: Tkey = fp.curry((obj: object, value: unknown): string => {
  * @param {object} obj 대상 객체
  * @returns {object} frozen 처리된 객체
  */
-const deepFreeze = (obj: Record<string, unknown>): Record<string, unknown> => {
+const deepFreeze = (obj: Record<string, any>): Record<string, any> => {
   const freezeRecursively = (v: any) =>
     isRef(v) && !Object.isFrozen(v) ? deepFreeze(v) : v;
   const composer = fp.pipe(Object.freeze, fp.forOwn(freezeRecursively));
@@ -565,8 +565,8 @@ const deepFreeze = (obj: Record<string, unknown>): Record<string, unknown> => {
 type TtransformObjectKey = F.Curry<
   (
     transformFn: (orignStr: string) => string,
-    obj: Record<string, unknown>,
-  ) => Record<string, unknown>
+    obj: Record<string, any>,
+  ) => Record<string, any>
 >;
 
 /**
@@ -579,20 +579,18 @@ type TtransformObjectKey = F.Curry<
 const transformObjectKey: TtransformObjectKey = fp.curry(
   (
     transformFn: (orignStr: string) => string,
-    obj: Record<string, unknown>,
-  ): Record<string, unknown> => {
+    obj: Record<string, any>,
+  ): Record<string, any> => {
     const convertRecursively = (
-      obj: Record<string, unknown>,
-    ): Record<string, unknown> => {
-      const convertTo = (
-        o: Record<string, unknown>,
-      ): Record<string, unknown> => {
+      obj: Record<string, any>,
+    ): Record<string, any> => {
+      const convertTo = (o: Record<string, any>): Record<string, any> => {
         const composer = fp.pipe(
           (fp.reduce as IFpReduceEx).convert({ cap: false })(
-            (acc: Record<string, unknown>, v: unknown, k: string) => {
+            (acc: Record<string, any>, v: any, k: string) => {
               const cond = (
-                arg: Record<string, unknown> | unknown[] | any,
-              ): Record<string, unknown> | unknown[] | any => {
+                arg: Record<string, any> | any[] | any,
+              ): Record<string, any> | any[] | any => {
                 if (fp.isPlainObject(arg)) {
                   return convertTo(arg);
                 } else if (fp.isArray(arg)) {
@@ -662,7 +660,7 @@ const toPascalcase = transformObjectKey(pascalCase);
 const isDatetimeString = (dateStr: string): boolean =>
   fp.isString(dateStr) && !isNaN(Date.parse(dateStr));
 
-type Tap = F.Curry<(arg: unknown, curried: Function) => any>;
+type Tap = F.Curry<(arg: any, curried: Function) => any>;
 
 /**
  * applicative functor pattern 구현체
@@ -672,7 +670,7 @@ type Tap = F.Curry<(arg: unknown, curried: Function) => any>;
  * @param {function} curried currying된 함수
  * @returns {any} 결과값
  */
-const ap: Tap = fp.curry((a: unknown, curried: Function) => curried(a));
+const ap: Tap = fp.curry((a: any, curried: Function) => curried(a));
 
 /**
  * 대상 인자가 undefined 또는 null이 아닌지 여부 조회
@@ -680,33 +678,27 @@ const ap: Tap = fp.curry((a: unknown, curried: Function) => curried(a));
  * @param {any} arg 대상인자
  * @returns {boolean} 대상 인자가 undefined 또는 null이 아닌지 여부
  */
-const isNotNil: (arg: unknown) => boolean = fp.pipe(fp.isNil, not);
+const isNotNil: (arg: any) => boolean = fp.pipe(fp.isNil, not);
 
 type TnotIncludes = F.Curry<
-  (
-    arg: unknown,
-    targetArray: unknown[] | Record<string, unknown> | string,
-  ) => boolean
+  (arg: any, targetArray: any[] | Record<string, any> | string) => boolean
 >;
 
 /**
  * arr인자 배열에 a인자가 포함되지 않았는지 여부 조회
  * @param {any} a 대상 인자
- * @param {unknown[] | Record<string, unknown> | string} arr 대상 배열
+ * @param {any[] | Record<string, any> | string} arr 대상 배열
  * @returns {boolean} arr 배열에 a인자가 포함되지 않았는지 여부
  */
 const notIncludes: TnotIncludes = fp.curry(
-  (
-    arg: unknown,
-    targetArray: unknown[] | Record<string, unknown> | string,
-  ): boolean => {
+  (arg: any, targetArray: any[] | Record<string, any> | string): boolean => {
     const result: boolean = !fp.includes(arg, targetArray);
 
     return result;
   },
 );
 
-type TnotEquals = F.Curry<(a: unknown, b: unknown) => boolean>;
+type TnotEquals = F.Curry<(a: any, b: any) => boolean>;
 
 /**
  * a인자와 b인자가 다른지 여부 (deep equal) 조회
@@ -714,7 +706,7 @@ type TnotEquals = F.Curry<(a: unknown, b: unknown) => boolean>;
  * @param {any} b 비교 인자
  * @returns {boolean} a인자와 b인자가 다른지 여부 (deep equal)
  */
-const notEquals: TnotEquals = fp.curry((a: unknown, b: unknown): boolean => {
+const notEquals: TnotEquals = fp.curry((a: any, b: any): boolean => {
   const composer = fp.pipe(fp.equals(a), not);
   const result = composer(b);
 
@@ -759,11 +751,11 @@ const removeByIndex: TremoveByIndex = fp.curry(
  * @param {string|any[]} target 문자열 또는 배열의 마지막 요소 제거
  * @returns 마지막 요소 제거된 인자
  */
-const removeLast = (target: string | unknown[]): string | unknown[] => {
+const removeLast = (target: string | any[]): string | any[] => {
   if (fp.isArray(target) || fp.isString(target)) {
     const result = fp.cloneDeep(target);
     fp.isArray(target)
-      ? (result as unknown[]).pop()
+      ? (result as any[]).pop()
       : (result as string).substring(0, fp.size(target) - 1);
 
     return result;
@@ -879,7 +871,7 @@ const reduceWithKey: TreduceWithKey = fp.curry(
  * @param {any} arg 조회 대상
  * @returns {boolean} falsy 타입(0, -0, NaN, false, '')인지 여부
  */
-const isFalsy = (arg: unknown): boolean => {
+const isFalsy = (arg: any): boolean => {
   return fp.isNil(arg) || fp.some(fp.equals(arg), [0, -0, NaN, false, '']);
 };
 
@@ -889,7 +881,7 @@ const isFalsy = (arg: unknown): boolean => {
  * @param {any} arg 조회 대상
  * @returns {boolean} truthy 타입 인지 여부
  */
-const isTruthy = (arg: unknown): boolean => !isFalsy(arg);
+const isTruthy = (arg: any): boolean => !isFalsy(arg);
 
 /**
  * fp.getOr override
@@ -898,13 +890,11 @@ const isTruthy = (arg: unknown): boolean => !isFalsy(arg);
  * circular dependency 때문에 closure로 작성
  */
 const getOr = (({ curry, getOr }) => {
-  const _getOr = curry(
-    (defaultValue: unknown, path: string, target: unknown) => {
-      return fp.isNil(target) || fp.isNil(fp.get(path, target))
-        ? defaultValue
-        : fp.get(path, target);
-    },
-  );
+  const _getOr = curry((defaultValue: any, path: string, target: any) => {
+    return fp.isNil(target) || fp.isNil(fp.get(path, target))
+      ? defaultValue
+      : fp.get(path, target);
+  });
   return _getOr;
 })(fp);
 
