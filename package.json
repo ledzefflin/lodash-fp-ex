@@ -39,15 +39,15 @@
     "u": "pnpm up --latest -i && pnpm run package:install"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.0",
-    "@babel/preset-env": "^7.19.0",
+    "@babel/core": "^7.19.3",
+    "@babel/preset-env": "^7.19.4",
     "@babel/register": "^7.17.7",
     "@types/babel__core": "^7.1.19",
     "@types/babel__preset-env": "^7.9.2",
     "@types/chai": "^4.3.3",
-    "@types/lodash": "^4.14.185",
-    "@types/mocha": "^9.1.1",
-    "@types/prettier": "2.7.0",
+    "@types/lodash": "^4.14.186",
+    "@types/mocha": "^10.0.0",
+    "@types/prettier": "2.7.1",
     "@types/rimraf": "^3.0.2",
     "@types/tsc-watch": "^4.2.0",
     "chai": "^4.3.6",
@@ -57,7 +57,7 @@
     "rimraf": "^3.0.2",
     "ts-toolbelt": "^9.6.0",
     "tsc-watch": "^5.0.3",
-    "typescript": "^4.8.3"
+    "typescript": "^4.8.4"
   },
   "peerDependencies": {
     "lodash": "^4.17.21"
