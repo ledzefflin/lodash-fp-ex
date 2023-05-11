@@ -770,6 +770,19 @@ describe('# fp.mapWithKey test', () => {
   });
 });
 
+describe('# fp.forEachWithKey test', () => {
+  const arr = [3, 4, 5];
+  const getIdxs = fp.forEachWithKey((v, i) => i);
+
+  it('Should be same with argument array', () => {
+    expect(getIdxs(arr)).to.eqls(arr);
+  });
+
+  it('Should be same with argument object', () => {
+    expect(getIdxs({ a: 1, b: 2 })).to.eqls({ a: 1, b: 2 });
+  });
+});
+
 describe('# fp.reduceWithKey test', () => {
   const arr = [3, 4, 5];
   const getIdxs = fp.reduceWithKey((acc, v, i) => fp.concat(acc, i), []);

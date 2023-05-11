@@ -22,7 +22,7 @@ const isJson = (jsonStr: string): boolean => {
  * @param {any} arg 조회 대상
  * @returns {boolean} 원시 타입(primitive) 인지 여부
  */
-const isVal = (arg: any): boolean => {
+const isVal = <T>(arg: T): boolean => {
   const result: boolean =
     fp.isNil(arg) || fp.isBoolean(arg) || fp.isNumber(arg) || fp.isString(arg);
 
@@ -36,7 +36,7 @@ const isVal = (arg: any): boolean => {
  * @param {any} arg 조회 대상
  * @returns {boolean} 참조 타입(reference) 인지 여부
  */
-const isRef = (arg: any): boolean => {
+const isRef = <T>(arg: T): boolean => {
   const composer = fp.pipe(isVal, not);
   const result = composer(arg);
 
@@ -815,10 +815,10 @@ const mapWithKey: TmapWithKey = fp.curry(
 );
 
 type TforEachWithKey = F.Curry<
-  <T, K extends keyof T, R>(
-    iteratee: (value: T[K], key: K) => R,
+  <T, K extends keyof T>(
+    iteratee: (value: T[K], key: K) => T,
     collection: T,
-  ) => R[]
+  ) => T
 >;
 interface IFpForEachEx extends fp.LodashForEach, LodashConvertible {}
 /**
@@ -828,10 +828,10 @@ interface IFpForEachEx extends fp.LodashForEach, LodashConvertible {}
  * @returns {void} 반환값 없음
  */
 const forEachWithKey: TforEachWithKey = fp.curry(
-  <T, K extends keyof T, R>(
-    iteratee: (value: T[K], key: K) => R,
+  <T, K extends keyof T>(
+    iteratee: (value: T[K], key: K) => T,
     collection: T,
-  ): R[] =>
+  ): T =>
     (fp.forEach as IFpForEachEx).convert({ cap: false })(iteratee, collection),
 );
 
@@ -969,13 +969,17 @@ export default {
 
   mapWithKey,
   mapWithIdx: mapWithKey,
+  mapWithIndex: mapWithKey,
   forEachWithKey,
   forEachWithIdx: forEachWithKey,
+  forEachWithIndex: forEachWithKey,
   reduceWithKey,
   reduceWithIdx: reduceWithKey,
+  reduceWithIndex: reduceWithKey,
   isFalsy,
   isTruthy,
 
   getOr,
   delayAsync,
+  sleep: delayAsync,
 };
