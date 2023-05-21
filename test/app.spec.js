@@ -215,7 +215,7 @@ describe('# fp.promisify test', () => {
   });
 });
 
-describe('# fp.then test', () => {
+describe('# fp.andThen test', () => {
   it('should return 128', async () => {
     const p = (a) =>
       new Promise((resolve) => {
@@ -224,12 +224,12 @@ describe('# fp.then test', () => {
         }, 5);
       });
 
-    const composer = fp.pipe(p, fp.then(fp.identity));
+    const composer = fp.pipe(p, fp.andThen(fp.identity));
     const result1 = await composer(64);
-    const result2 = await fp.then(fp.identity, p(64));
+    const result2 = await fp.andThen(fp.identity, p(64));
     const result3 = await fp.pipe(
       p,
-      fp.then((x) => x / 2),
+      fp.andThen((x) => x / 2),
     )(128);
 
     expect([result1, result2, result3]).to.eqls([128, 128, 128]);
@@ -247,7 +247,11 @@ describe('# fp.otherwise test', () => {
         }
       });
     });
-  const composer = fp.pipe(p, fp.then(fp.identity), fp.catch(fp.identity));
+  const composer = fp.pipe(
+    p,
+    fp.andThen(fp.identity),
+    fp.otherwise(fp.identity),
+  );
   it('should return "wrong" text', async () => {
     const result = await composer(2);
 
@@ -275,7 +279,7 @@ describe('# fp.finally test', () => {
     });
   const composer = fp.pipe(
     p,
-    fp.then(fp.identity),
+    fp.andThen(fp.identity),
     fp.otherwise(fp.identity),
     fp.finally(() => (isLoading = false)),
   );
@@ -607,100 +611,100 @@ describe('# fp.instanceOf test', () => {
   });
 });
 
-describe('# fp.ternary test', () => {
-  const YorN = fp.ternary(null, 'Y', 'N');
-  const paddingYorN = fp.ternary(
-    fp.isTruthy,
-    (a) => `${a}-Y`,
-    (a) => `${a}-N`,
-  );
+// describe('# fp.ternary test', () => {
+//   const YorN = fp.ternary(null, 'Y', 'N');
+//   const paddingYorN = fp.ternary(
+//     fp.isTruthy,
+//     (a) => `${a}-Y`,
+//     (a) => `${a}-N`,
+//   );
 
-  it('If argument is true, should return Y else return N', () => {
-    expect(YorN(true)).to.eql('Y');
-    expect(YorN(false)).to.eql('N');
-    expect(fp.pipe(fp.isEmpty, YorN)(['a'])).to.eql('N');
-    // evaluator가 함수가 아니면, evaluator를 boolean으로 변환해서 평가
-    expect(
-      fp.ternary(
-        null,
-        (a) => `y-${fp.isNotNil(a)}`,
-        (a) => `n-${fp.isBoolean(a)}`,
-        true,
-      ),
-    ).to.eql('y-true');
-  });
+//   it('If argument is true, should return Y else return N', () => {
+//     expect(YorN(true)).to.eql('Y');
+//     expect(YorN(false)).to.eql('N');
+//     expect(fp.pipe(fp.isEmpty, YorN)(['a'])).to.eql('N');
+//     // evaluator가 함수가 아니면, evaluator를 boolean으로 변환해서 평가
+//     expect(
+//       fp.ternary(
+//         null,
+//         (a) => `y-${fp.isNotNil(a)}`,
+//         (a) => `n-${fp.isBoolean(a)}`,
+//         true,
+//       ),
+//     ).to.eql('y-true');
+//   });
 
-  it('If arguement is not one of false, null, undefined, empty string, padding "-Y" else padding "-N"', () => {
-    expect(paddingYorN('True')).to.eql('True-Y');
+//   it('If arguement is not one of false, null, undefined, empty string, padding "-Y" else padding "-N"', () => {
+//     expect(paddingYorN('True')).to.eql('True-Y');
 
-    expect(paddingYorN('')).to.eql('-N');
-    expect(paddingYorN(null)).to.eql('null-N');
-    expect(paddingYorN(undefined)).to.eql('undefined-N');
-    expect(paddingYorN(false)).to.eql('false-N');
-  });
+//     expect(paddingYorN('')).to.eql('-N');
+//     expect(paddingYorN(null)).to.eql('null-N');
+//     expect(paddingYorN(undefined)).to.eql('undefined-N');
+//     expect(paddingYorN(false)).to.eql('false-N');
+//   });
 
-  it('If argments has true, return Y else N', () => {
-    const hasTrue = (args) => fp.includes(true, args);
-    const ternaryByHandler = fp.ternary(
-      hasTrue,
-      () => 'Y',
-      () => 'N',
-    );
-    const ternaryByValue = fp.ternary(hasTrue, 'y', 'n');
+//   it('If argments has true, return Y else N', () => {
+//     const hasTrue = (args) => fp.includes(true, args);
+//     const ternaryByHandler = fp.ternary(
+//       hasTrue,
+//       () => 'Y',
+//       () => 'N',
+//     );
+//     const ternaryByValue = fp.ternary(hasTrue, 'y', 'n');
 
-    expect(ternaryByHandler([false, 'N', null, undefined])).to.eql('N');
-    expect(ternaryByHandler([true])).to.eql('Y');
+//     expect(ternaryByHandler([false, 'N', null, undefined])).to.eql('N');
+//     expect(ternaryByHandler([true])).to.eql('Y');
 
-    expect(ternaryByValue([false, 'N', null, undefined])).to.eql('n');
-    expect(ternaryByValue([true])).to.eql('y');
-    expect(fp.ternary(hasTrue, () => 'Y', 'n', [true])).to.eql('Y');
-    expect(fp.ternary(hasTrue, () => 'Y', 'n', [false])).to.eql('n');
-  });
-});
+//     expect(ternaryByValue([false, 'N', null, undefined])).to.eql('n');
+//     expect(ternaryByValue([true])).to.eql('y');
+//     expect(fp.ternary(hasTrue, () => 'Y', 'n', [true])).to.eql('Y');
+//     expect(fp.ternary(hasTrue, () => 'Y', 'n', [false])).to.eql('n');
+//   });
+// });
 
-describe('# fp.ifT test', () => {
-  const getYifT = fp.ifT(fp.isEmpty, () => 'Y');
-  const ifNotEmptyAppendString = fp.ifT(
-    fp.isNotEmpty,
-    (str) => `${str}-paddString`,
-  );
+// describe('# fp.ifT test', () => {
+//   const getYifT = fp.ifT(fp.isEmpty, () => 'Y');
+//   const ifNotEmptyAppendString = fp.ifT(
+//     fp.isNotEmpty,
+//     (str) => `${str}-paddString`,
+//   );
 
-  it('if argument is empty, should return Y else return argument', () => {
-    expect(getYifT([])).to.eql('Y');
-    expect(getYifT('str')).to.be.a('String', 'str');
-  });
+//   it('if argument is empty, should return Y else return argument', () => {
+//     expect(getYifT([])).to.eql('Y');
+//     expect(getYifT('str')).to.be.a('String', 'str');
+//   });
 
-  it('if argument is not empty, should pad string, else return argument', () => {
-    expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
-    expect(ifNotEmptyAppendString('')).to.eql('');
+//   it('if argument is not empty, should pad string, else return argument', () => {
+//     expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
+//     expect(ifNotEmptyAppendString('')).to.eql('');
 
-    expect(ifNotEmptyAppendString([])).to.eql([]);
-    expect(ifNotEmptyAppendString(['s', 't', 'r'])).to.eql('s,t,r-paddString');
-    expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
-  });
-});
+//     expect(ifNotEmptyAppendString([])).to.eql([]);
+//     expect(ifNotEmptyAppendString(['s', 't', 'r'])).to.eql('s,t,r-paddString');
+//     expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
+//   });
+// });
 
-describe('# fp.ifF test', () => {
-  const ifNotEmptyN = fp.ifF(fp.isEmpty, () => 'N');
-  const ifNotEmptyAppendString = fp.ifF(
-    fp.isEmpty,
-    (str) => `${str}-paddString`,
-  );
+// describe('# fp.ifF test', () => {
+//   const ifNotEmptyN = fp.ifF(fp.isEmpty, () => 'N');
+//   const ifNotEmptyAppendString = fp.ifF(
+//     fp.isEmpty,
+//     (str) => `${str}-paddString`,
+//   );
 
-  it('if argument is not empty, should return N else return argument', () => {
-    expect(ifNotEmptyN([])).to.eql([]);
-    expect(ifNotEmptyN('str')).to.be.a('String', 'N');
-  });
+//   it('if argument is not empty, should return N else return argument', () => {
+//     expect(ifNotEmptyN([])).to.eql([]);
+//     expect(ifNotEmptyN('str')).to.be.a('String', 'N');
+//   });
 
-  it('if argument is not empty, should pad string, else return argument', () => {
-    expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
-    expect(ifNotEmptyAppendString('')).to.eql('');
+//   it('if argument is not empty, should pad string, else return argument', () => {
+//     expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
+//     expect(ifNotEmptyAppendString('')).to.eql('');
 
-    expect(ifNotEmptyAppendString([])).to.eql([]);
-    expect(ifNotEmptyAppendString(['s', 't', 'r'])).to.eql('s,t,r-paddString');
-    expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
-  });
-});
+//     expect(ifNotEmptyAppendString([])).to.eql([]);
+//     expect(ifNotEmptyAppendString(['s', 't', 'r'])).to.eql('s,t,r-paddString');
+//     expect(ifNotEmptyAppendString('str')).to.eql('str-paddString');
+//   });
+// });
 
 describe('# fp.removeByIndex test', () => {
   const arr = [1, 2, 3];

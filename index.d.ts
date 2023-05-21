@@ -1,12 +1,9 @@
 /// <reference types="lodash" />
 import fp from 'lodash/fp';
 import { F } from 'ts-toolbelt';
-type Tthen = F.Curry<(fn: (response: any) => any, thenable: Promise<any>) => Promise<any>>;
+type TandThen = F.Curry<(fn: (response: any) => any, thenable: Promise<any>) => Promise<any>>;
 type Totherwise = F.Curry<(failureHandler: (error: Error | any) => never | any, thenable: Promise<Error | any>) => Promise<never | any>>;
 type Tfinally = F.Curry<(callback: (...args: any[]) => any, thenable: Promise<any>) => Promise<any>>;
-type Tternary = F.Curry<(<T>(evaluator: (arg: T) => boolean | any, trueHandler: (arg: T) => any, falseHandler: (arg: T) => any, arg: T) => any)>;
-type TifT = F.Curry<(<T, R>(evaluator: (arg: T) => boolean | boolean, trueHandler: (arg: T) => R | R, arg: T) => T | R)>;
-type TifF = F.Curry<(<T, R>(evaluator: (arg: T) => boolean | boolean, falseHandler: (arg: T) => R | R, arg: T) => T | R)>;
 type TinstanceOf = F.Curry<(<T>(t: any, arg: T) => boolean)>;
 type TmapAsync = F.Curry<(<T, K extends keyof T, R>(asyncMapper: (arg: T[K], key: K) => Promise<R>, collection: T) => Promise<R[]>)>;
 type TfilterAsync = F.Curry<(<T, K extends keyof T, R>(asyncFilter: (arg: T[K], key: K) => Promise<boolean>, collection: T) => Promise<R[]>)>;
@@ -29,10 +26,8 @@ declare const _default: {
     findAsync: TfindAsync;
     forEachAsync: (...args: any[]) => any;
     promisify: (a: any, ...args: any[]) => Promise<any>;
-    then: Tthen;
-    andThen: Tthen;
+    andThen: TandThen;
     otherwise: Totherwise;
-    catch: Totherwise;
     finally: Tfinally;
     isPromise: <T>(x: T) => boolean;
     isNotEmpty: (a: any) => boolean;
@@ -60,9 +55,6 @@ declare const _default: {
     isDatetimeString: (dateStr: string) => boolean;
     ap: Tap;
     instanceOf: TinstanceOf;
-    ternary: Tternary;
-    ifT: TifT;
-    ifF: TifF;
     removeByIndex: TremoveByIndex;
     removeByIdx: TremoveByIndex;
     removeLast: (target: string | any[]) => string | any[];

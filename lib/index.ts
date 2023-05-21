@@ -99,7 +99,7 @@ const promisify = (a: any, ...args: any[]): Promise<any> => {
 const flatPromise = (thenable: Promise<any> | any): Promise<any> | any =>
   isPromise(thenable) ? thenable.then((x: any) => flatPromise(x)) : thenable;
 
-type Tthen = F.Curry<
+type TandThen = F.Curry<
   (fn: (response: any) => any, thenable: Promise<any>) => Promise<any>
 >;
 /**
@@ -109,7 +109,7 @@ type Tthen = F.Curry<
  * @param {Promise<any>} thenable resolve 대상 Promise 객체
  * @returns {Promise<any>} fullfilled 상태의 Promise 객체
  */
-const then: Tthen = fp.curry(
+const andThen: TandThen = fp.curry(
   (
     successHandler: (response: any) => any,
     thenable: Promise<any>,
@@ -195,6 +195,7 @@ type Tternary = F.Curry<
  * evaluator의 실행 결과가 true면 trueHandler(실행)반환, false면 falseHandler(실행)반환\
  * evaluator가 함수가 아니면 arg인자를 boolean으로 변환하여 반환된 값으로 trueHandler 또는 falseHandler 실행
  *
+ * @deprecated
  * @param {(arg: any) => bool | any} evaluator 대상인자가 true 인지여부 조회 함수 또는 boolean을 반환하는 함수 또는 bool로 변환되는 아무값
  * @param {(arg: any) => any | any} trueHandler evaluator가 true를 반환하면,  실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
  * @param {(arg: any) => any | any} falseHandler evaluator가 false를 반환하면, 실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
@@ -250,6 +251,7 @@ type TifT = F.Curry<
  * true면 trueHandler에 a인자 대입
  * false면 a 반환
  *
+ * @deprecated
  * @param {(a) => boolean} evaluator a를 인자로 하는 평가함수
  * @param {(a) => any} trueHandler evaluator의 결과가 true인 경우, a를 인자로 실행되는 callback
  * @param {any} a 대상 인자
@@ -299,6 +301,7 @@ type TifF = F.Curry<
  * false면 falseHandler에 a인자 대입
  * true면 a 반환
  *
+ * @deprecated
  * @param {(a) => boolean} evaluator a를 인자로 하는 평가함수
  * @param {(a) => any} falseHandler evaluator의 결과가 false인 경우, a를 인자로 실행되는 callback
  * @param {any} a 대상 인자
@@ -450,7 +453,9 @@ const filterAsync: TfilterAsync = fp.curry(
       mapAsync(async (item: T[K], key: K) =>
         (await asyncFilter(item, key)) ? item : false,
       ),
-      then((response) => fp.filter(fp.pipe(fp.equals(false), not))(response)),
+      andThen((response) =>
+        fp.filter(fp.pipe(fp.equals(false), not))(response),
+      ),
     );
     const result = await composer(collection);
 
@@ -478,7 +483,7 @@ const findAsync: TfindAsync = fp.curry(
   ): Promise<R> => {
     const composer = fp.pipe(
       filterAsync(asyncFilter),
-      then((response: R[]): R | undefined =>
+      andThen((response: R[]): R | undefined =>
         fp.isEmpty(response) ? undefined : fp.head(response),
       ),
       otherwise(fp.always(undefined)),
@@ -919,10 +924,8 @@ export default {
   findAsync,
   forEachAsync,
   promisify,
-  then,
-  andThen: then,
+  andThen,
   otherwise,
-  catch: otherwise,
   finally: _finally,
 
   isPromise,
@@ -955,10 +958,6 @@ export default {
 
   ap,
   instanceOf,
-
-  ternary,
-  ifT,
-  ifF,
 
   // array
   removeByIndex,

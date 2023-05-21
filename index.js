@@ -149,7 +149,7 @@ var flatPromise = function (thenable) {
  * @param {Promise<any>} thenable resolve 대상 Promise 객체
  * @returns {Promise<any>} fullfilled 상태의 Promise 객체
  */
-var then = fp_1.default.curry(function (successHandler, thenable) { return promisify(thenable).then(flatPromise(successHandler)); });
+var andThen = fp_1.default.curry(function (successHandler, thenable) { return promisify(thenable).then(flatPromise(successHandler)); });
 /**
  * lodash 형태의 promise catch
  *
@@ -200,6 +200,7 @@ var toBool = function (arg) { return !!arg; };
  * evaluator의 실행 결과가 true면 trueHandler(실행)반환, false면 falseHandler(실행)반환\
  * evaluator가 함수가 아니면 arg인자를 boolean으로 변환하여 반환된 값으로 trueHandler 또는 falseHandler 실행
  *
+ * @deprecated
  * @param {(arg: any) => bool | any} evaluator 대상인자가 true 인지여부 조회 함수 또는 boolean을 반환하는 함수 또는 bool로 변환되는 아무값
  * @param {(arg: any) => any | any} trueHandler evaluator가 true를 반환하면,  실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
  * @param {(arg: any) => any | any} falseHandler evaluator가 false를 반환하면, 실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
@@ -225,6 +226,7 @@ var ternary = fp_1.default.curry(function (evaluator, trueHandler, falseHandler,
  * true면 trueHandler에 a인자 대입
  * false면 a 반환
  *
+ * @deprecated
  * @param {(a) => boolean} evaluator a를 인자로 하는 평가함수
  * @param {(a) => any} trueHandler evaluator의 결과가 true인 경우, a를 인자로 실행되는 callback
  * @param {any} a 대상 인자
@@ -261,6 +263,7 @@ var ifT = fp_1.default.curry(function (evaluator, trueHandler, arg) {
  * false면 falseHandler에 a인자 대입
  * true면 a 반환
  *
+ * @deprecated
  * @param {(a) => boolean} evaluator a를 인자로 하는 평가함수
  * @param {(a) => any} falseHandler evaluator의 결과가 false인 경우, a를 인자로 실행되는 callback
  * @param {any} a 대상 인자
@@ -386,7 +389,9 @@ var filterAsync = fp_1.default.curry(function (asyncFilter, collection) { return
                         case 0: return [4 /*yield*/, asyncFilter(item, key)];
                         case 1: return [2 /*return*/, (_a.sent()) ? item : false];
                     }
-                }); }); }), then(function (response) { return fp_1.default.filter(fp_1.default.pipe(fp_1.default.equals(false), not))(response); }));
+                }); }); }), andThen(function (response) {
+                    return fp_1.default.filter(fp_1.default.pipe(fp_1.default.equals(false), not))(response);
+                }));
                 return [4 /*yield*/, composer(collection)];
             case 1:
                 result = _a.sent();
@@ -405,7 +410,7 @@ var findAsync = fp_1.default.curry(function (asyncFilter, collection) { return _
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                composer = fp_1.default.pipe(filterAsync(asyncFilter), then(function (response) {
+                composer = fp_1.default.pipe(filterAsync(asyncFilter), andThen(function (response) {
                     return fp_1.default.isEmpty(response) ? undefined : fp_1.default.head(response);
                 }), otherwise(fp_1.default.always(undefined)));
                 return [4 /*yield*/, composer(collection)];
@@ -715,10 +720,8 @@ exports.default = {
     findAsync: findAsync,
     forEachAsync: forEachAsync,
     promisify: promisify,
-    then: then,
-    andThen: then,
+    andThen: andThen,
     otherwise: otherwise,
-    catch: otherwise,
     finally: _finally,
     isPromise: isPromise,
     isNotEmpty: isNotEmpty,
@@ -747,9 +750,6 @@ exports.default = {
     isDatetimeString: isDatetimeString,
     ap: ap,
     instanceOf: instanceOf,
-    ternary: ternary,
-    ifT: ifT,
-    ifF: ifF,
     // array
     removeByIndex: removeByIndex,
     removeByIdx: removeByIndex,

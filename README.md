@@ -23,7 +23,7 @@ fp.mixin(lodashFpEx);
 
 All functions are curried except promisify.
 
-[`mapASync`](#mapasync), [`filterAsync`](#filterasync), [`reduceAsync`](#reduceasync), [`findAsync`](#findasync), [`forEachAsync`](#foreachasync), [`promisify`](#promisify), [`then`](#then)(`andThen`), [`otherwise`](#otherwise)(`catch`), [`finally`](#finally), [`isPromise`](#ispromise), [`isNotEmpty`](#isnotempty), [`isNotNil`](#isnotnil), [`isJson`](#isjson), [`notEquals`](#notequals)(`isNotEqual`), [`isVal`](#isval)(`isPrimitive`), [`isRef`](#isref)(`isReference`), [`not`](#not), [`notIncludes`](#notincludes), [`toBool`](#tobool), [`deepFreeze`](#deepfreeze), [`key`](#key)(`keyByVal`), [`transformObjectKey`](#transformobjectkey), [`toCamelcase`](#tocamelcase)(`toCamelKey`), [`toSnakecase`](#tosnakecase)(`toSnakeKey`), [`pascalCase`](#pascalcase), [`isDatetimeString`](#isdatetimestring), [`ap`](#ap), [`instanceOf`](#instanceof), [`ternary`](#ternary), [`ifT`](#ift), [`ifF`](#iff), [`removeByIndex`](#removebyindex)(`removeByIdx`), [`removeLast`](#removelast), [`append`](#append), [`prepend`](#prepend), [`mapWithKey`](#mapwithkey)(`mapWithIdx`, `mapWithIndex`), [`forEachWithKey`](#foreachwithkey)(`forEachWithIdx`, `forEachWithIndex`), [`reduceWithKey`](#reducewithkey)(`reduceWithIdx`, `reduceWithIndex`), [`isFalsy`](#isfalsy), [`isTruthy`](#istruthy), [`delayAsync`](#delayasync)(`sleep`)
+[`mapASync`](#mapasync), [`filterAsync`](#filterasync), [`reduceAsync`](#reduceasync), [`findAsync`](#findasync), [`forEachAsync`](#foreachasync), [`promisify`](#promisify), [`andThen`](#andthen), [`otherwise`](#otherwise), [`finally`](#finally), [`isPromise`](#ispromise), [`isNotEmpty`](#isnotempty), [`isNotNil`](#isnotnil), [`isJson`](#isjson), [`notEquals`](#notequals)(`isNotEqual`), [`isVal`](#isval)(`isPrimitive`), [`isRef`](#isref)(`isReference`), [`not`](#not), [`notIncludes`](#notincludes), [`toBool`](#tobool), [`deepFreeze`](#deepfreeze), [`key`](#key)(`keyByVal`), [`transformObjectKey`](#transformobjectkey), [`toCamelcase`](#tocamelcase)(`toCamelKey`), [`toSnakecase`](#tosnakecase)(`toSnakeKey`), [`pascalCase`](#pascalcase), [`isDatetimeString`](#isdatetimestring), [`ap`](#ap), [`instanceOf`](#instanceof), [`ternary`](#ternary), [`ifT`](#ift), [`ifF`](#iff), [`removeByIndex`](#removebyindex)(`removeByIdx`), [`removeLast`](#removelast), [`append`](#append), [`prepend`](#prepend), [`mapWithKey`](#mapwithkey)(`mapWithIdx`, `mapWithIndex`), [`forEachWithKey`](#foreachwithkey)(`forEachWithIdx`, `forEachWithIndex`), [`reduceWithKey`](#reducewithkey)(`reduceWithIdx`, `reduceWithIndex`), [`isFalsy`](#isfalsy), [`isTruthy`](#istruthy), [`delayAsync`](#delayasync)(`sleep`)
 
 ### mapAsync
 
@@ -230,7 +230,7 @@ type Promisify = (a: any, ...args: any[]): Promise<any>
 })();
 ```
 
-### then
+### andThen
 
 **alias:** andThen
 
@@ -251,14 +251,14 @@ type Then = F.Curry<
       }, 5);
     });
 
-  const composer = fp.pipe(p, fp.then(fp.identity));
+  const composer = fp.pipe(p, fp.andThen(fp.identity));
   const result1 = await composer(64);
   // => 128
-  const result2 = await fp.then(fp.identity, p(64));
+  const result2 = await fp.andThen(fp.identity, p(64));
   // => 128
   const result3 = await fp.pipe(
     p,
-    fp.then((x) => x / 2),
+    fp.andThen((x) => x / 2),
   )(128);
   // => 128
 })();
@@ -266,9 +266,7 @@ type Then = F.Curry<
 
 ### otherwise
 
-**alias:** catch
-
-Make Promise.catch work with \fp.pipe.
+Make Promise.catch work with fp.pipe.
 
 ```ts
 type Totherwise = F.Curry<
@@ -291,7 +289,7 @@ type Totherwise = F.Curry<
         }
       });
     });
-  const composer = fp.pipe(p, fp.then(fp.identity), fp.catch(fp.identity));
+  const composer = fp.pipe(p, fp.andThen(fp.identity), fp.catch(fp.identity));
   const result1 = await composer(1);
   // => 1
   const result2 = await composer(2);
@@ -324,7 +322,7 @@ type Finally = F.Curry<
     });
   const composer = fp.pipe(
     p,
-    fp.then(fp.identity),
+    fp.andThen(fp.identity),
     fp.catch(fp.identity),
     fp.finally(() => (isLoading = false)),
   );
