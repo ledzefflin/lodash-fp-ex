@@ -750,13 +750,16 @@ const removeByIndex: TremoveByIndex = fp.curry(
   },
 );
 
+function removeLast(target: string): string;
+function removeLast(target: any[]): any[];
+
 /**
  * 인자의 마지막 요소 제거 (immutable)
  *
  * @param {string|any[]} target 문자열 또는 배열의 마지막 요소 제거
  * @returns 마지막 요소 제거된 인자
  */
-const removeLast = (target: string | any[]): string | any[] => {
+function removeLast(target: string | any[]): string | any[] {
   if (fp.isArray(target) || fp.isString(target)) {
     const result = fp.cloneDeep(target);
     fp.isArray(target)
@@ -767,7 +770,7 @@ const removeLast = (target: string | any[]): string | any[] => {
   }
 
   return target;
-};
+}
 
 /**
  * fp.concat alias

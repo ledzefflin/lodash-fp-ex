@@ -15,6 +15,8 @@ type Tap = F.Curry<(arg: any, curried: Function) => any>;
 type TnotIncludes = F.Curry<(arg: any, targetArray: any[] | Record<string, any> | string) => boolean>;
 type TnotEquals = F.Curry<(a: any, b: any) => boolean>;
 type TremoveByIndex = F.Curry<(<R>(index: number | string, targetArray: R[]) => R[])>;
+declare function removeLast(target: string): string;
+declare function removeLast(target: any[]): any[];
 type Tprepend = F.Curry<(<T>(arr: T[], arg: T | T[]) => T[])>;
 type TmapWithKey = F.Curry<(<T, K extends keyof T, R>(iteratee: (value: T[K], key: K) => R, collection: T) => R[])>;
 type TforEachWithKey = F.Curry<(<T, K extends keyof T>(iteratee: (value: T[K], key: K) => T, collection: T) => T)>;
@@ -57,7 +59,7 @@ declare const _default: {
     instanceOf: TinstanceOf;
     removeByIndex: TremoveByIndex;
     removeByIdx: TremoveByIndex;
-    removeLast: (target: string | any[]) => string | any[];
+    removeLast: typeof removeLast;
     append: fp.LodashConcat;
     prepend: Tprepend;
     mapWithKey: TmapWithKey;

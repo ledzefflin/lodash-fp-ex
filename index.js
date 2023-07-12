@@ -605,7 +605,7 @@ var removeByIndex = fp_1.default.curry(function (index, targetArray) {
  * @param {string|any[]} target 문자열 또는 배열의 마지막 요소 제거
  * @returns 마지막 요소 제거된 인자
  */
-var removeLast = function (target) {
+function removeLast(target) {
     if (fp_1.default.isArray(target) || fp_1.default.isString(target)) {
         var result = fp_1.default.cloneDeep(target);
         fp_1.default.isArray(target)
@@ -614,7 +614,7 @@ var removeLast = function (target) {
         return result;
     }
     return target;
-};
+}
 /**
  * fp.concat alias
  *
