@@ -414,7 +414,7 @@ const forEachAsync = fp.curry(
     callbackAsync: (value: T[K], key: K) => Promise<R>,
     collection: T,
   ): Promise<R[]> => {
-    const loopResults = [];
+    const loopResults: Awaited<R>[] = [];
     const entries = fp.entries(collection) as [K, T[K]][];
 
     for (const entry of entries) {
@@ -790,10 +790,11 @@ type Tprepend = F.Curry<<T>(arr: T[], arg: T | T[]) => T[]>;
  * @param {any|any[]} value 병합 인자
  * @returns {any[]} 병합된 배열
  */
-const prepend: Tprepend = fp.curry(<T>(targetArray: T[], value: T | T[]): T[] =>
-  fp.isArray(value)
-    ? fp.concat(value, targetArray)
-    : fp.concat([value], targetArray),
+const prepend: Tprepend = fp.curry(
+  <T>(targetArray: T[], value: T | T[]): T[] =>
+    fp.isArray(value)
+      ? fp.concat(value, targetArray)
+      : fp.concat([value], targetArray),
 );
 
 type TmapWithKey = F.Curry<
