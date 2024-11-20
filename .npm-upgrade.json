@@ -1,0 +1,12 @@
+{
+  "ignore": {
+    "chai": {
+      "versions": "~5",
+      "reason": "4유지"
+    },
+    "@types/chai": {
+      "versions": "~5",
+      "reason": "4유지"
+    }
+  }
+}

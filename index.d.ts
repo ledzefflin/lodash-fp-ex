@@ -1,4 +1,3 @@
-/// <reference types="lodash" />
 import fp from 'lodash/fp';
 import { F } from 'ts-toolbelt';
 type TandThen = F.Curry<(fn: (response: any) => any, thenable: Promise<any>) => Promise<any>>;
@@ -37,11 +36,11 @@ declare const _default: {
     isJson: (jsonStr: string) => boolean;
     notEquals: TnotEquals;
     isNotEqual: TnotEquals;
-    isVal: <T_1>(arg: T_1) => boolean;
-    isPrimitive: <T_1>(arg: T_1) => boolean;
-    isRef: <T_2>(arg: T_2) => boolean;
-    isReference: <T_2>(arg: T_2) => boolean;
-    not: <T_3>(x: T_3) => boolean;
+    isVal: <T>(arg: T) => boolean;
+    isPrimitive: <T>(arg: T) => boolean;
+    isRef: <T>(arg: T) => boolean;
+    isReference: <T>(arg: T) => boolean;
+    not: <T>(x: T) => boolean;
     notIncludes: TnotIncludes;
     toBool: (arg: any) => boolean;
     deepFreeze: (obj: Record<string, any>) => Record<string, any>;
