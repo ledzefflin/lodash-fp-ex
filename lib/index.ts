@@ -221,8 +221,8 @@ const ternary: Tternary = fp.curry(
             ? t(a)
             : fp.identity(t)
           : fp.isFunction(f)
-          ? f(a)
-          : fp.identity(f);
+            ? f(a)
+            : fp.identity(f);
 
         return result;
       },
@@ -965,19 +965,15 @@ export default {
 
   // array
   removeByIndex,
-  removeByIdx: removeByIndex,
   removeLast,
   append,
   prepend,
 
   mapWithKey,
-  mapWithIdx: mapWithKey,
   mapWithIndex: mapWithKey,
   forEachWithKey,
-  forEachWithIdx: forEachWithKey,
   forEachWithIndex: forEachWithKey,
   reduceWithKey,
-  reduceWithIdx: reduceWithKey,
   reduceWithIndex: reduceWithKey,
   isFalsy,
   isTruthy,

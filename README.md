@@ -23,7 +23,7 @@ fp.mixin(lodashFpEx);
 
 All functions are curried except promisify.
 
-[`mapASync`](#mapasync), [`filterAsync`](#filterasync), [`reduceAsync`](#reduceasync), [`findAsync`](#findasync), [`forEachAsync`](#foreachasync), [`promisify`](#promisify), [`andThen`](#andthen), [`otherwise`](#otherwise), [`finally`](#finally), [`isPromise`](#ispromise), [`isNotEmpty`](#isnotempty), [`isNotNil`](#isnotnil), [`isJson`](#isjson), [`notEquals`](#notequals)(`isNotEqual`), [`isVal`](#isval)(`isPrimitive`), [`isRef`](#isref)(`isReference`), [`not`](#not), [`notIncludes`](#notincludes), [`toBool`](#tobool), [`deepFreeze`](#deepfreeze), [`key`](#key)(`keyByVal`), [`transformObjectKey`](#transformobjectkey), [`toCamelcase`](#tocamelcase)(`toCamelKey`), [`toSnakecase`](#tosnakecase)(`toSnakeKey`), [`pascalCase`](#pascalcase), [`isDatetimeString`](#isdatetimestring), [`ap`](#ap), [`instanceOf`](#instanceof), [`removeByIndex`](#removebyindex)(`removeByIdx`), [`removeLast`](#removelast), [`append`](#append), [`prepend`](#prepend), [`mapWithKey`](#mapwithkey)(`mapWithIdx`, `mapWithIndex`), [`forEachWithKey`](#foreachwithkey)(`forEachWithIdx`, `forEachWithIndex`), [`reduceWithKey`](#reducewithkey)(`reduceWithIdx`, `reduceWithIndex`), [`isFalsy`](#isfalsy), [`isTruthy`](#istruthy), [`delayAsync`](#delayasync)(`sleep`)
+[`mapASync`](#mapasync), [`filterAsync`](#filterasync), [`reduceAsync`](#reduceasync), [`findAsync`](#findasync), [`forEachAsync`](#foreachasync), [`promisify`](#promisify), [`andThen`](#andthen), [`otherwise`](#otherwise), [`finally`](#finally), [`isPromise`](#ispromise), [`isNotEmpty`](#isnotempty), [`isNotNil`](#isnotnil), [`isJson`](#isjson), [`notEquals`](#notequals)(`isNotEqual`), [`isVal`](#isval)(`isPrimitive`), [`isRef`](#isref)(`isReference`), [`not`](#not), [`notIncludes`](#notincludes), [`toBool`](#tobool), [`deepFreeze`](#deepfreeze), [`key`](#key)(`keyByVal`), [`transformObjectKey`](#transformobjectkey), [`toCamelcase`](#tocamelcase)(`toCamelKey`), [`toSnakecase`](#tosnakecase)(`toSnakeKey`), [`pascalCase`](#pascalcase), [`isDatetimeString`](#isdatetimestring), [`ap`](#ap), [`instanceOf`](#instanceof), [`removeByIndex`](#removebyindex), [`removeLast`](#removelast), [`append`](#append), [`prepend`](#prepend), [`mapWithKey`](#mapwithkey)(`mapWithIndex`), [`forEachWithKey`](#foreachwithkey)(`forEachWithIndex`), [`reduceWithKey`](#reducewithkey)(`reduceWithIndex`), [`isFalsy`](#isfalsy), [`isTruthy`](#istruthy), [`delayAsync`](#delayasync)(`sleep`)
 
 ### mapAsync
 
@@ -232,9 +232,7 @@ type Promisify = (a: any, ...args: any[]): Promise<any>
 
 ### andThen
 
-**alias:** andThen
-
-Make Promise.then work with \fp.pipe
+Make Promise.then work with fp.pipe
 
 ```ts
 type Then = F.Curry<
@@ -299,7 +297,7 @@ type Totherwise = F.Curry<
 
 ### finally
 
-Make Promise.finally work with \fp.pipe.
+Make Promise.finally work with fp.pipe.
 
 ```ts
 type Finally = F.Curry<
@@ -851,8 +849,6 @@ type InstanceOf = F.Curry<<T>(t: any, arg: T) => boolean>;
 
 ### removeByIndex
 
-**alias:** removeByIdx
-
 ```ts
 type RemoveByIndex = F.Curry<
   <R>(index: number | string, targetArray: R[]) => R[]
@@ -937,9 +933,9 @@ type Prepend = F.Curry<<T>(arr: T[], arg: T | T[]) => T[]>;
 
 ### mapWithKey
 
-**alias:** mapWithIdx, mapWithIndex
+**alias:** mapWithIndex
 
-Same with \fp.map.convert({ cap: false})
+Same with fp.map.convert({ cap: false})
 
 ```ts
 type MapWithKey = F.Curry<
@@ -966,9 +962,9 @@ type MapWithKey = F.Curry<
 
 result will same with input (effect function)
 
-**alias:** forEachWithIdx, forEachWithIndex
+**alias:** forEachWithIndex
 
-Same with \fp.map.forEach({ cap: false})
+Same with fp.map.forEach({ cap: false})
 
 ```ts
 type TforEachWithKey = F.Curry<
@@ -993,9 +989,9 @@ type TforEachWithKey = F.Curry<
 
 ### reduceWithKey
 
-**alias:** reduceWithIdx, reduceWithIndex
+**alias:** reduceWithIndex
 
-Same with \fp.reduce.convert({ cap: false })
+Same with fp.reduce.convert({ cap: false })
 
 ```ts
 type ReduceWithKey = F.Curry<

@@ -57,18 +57,14 @@ declare const _default: {
     ap: Tap;
     instanceOf: TinstanceOf;
     removeByIndex: TremoveByIndex;
-    removeByIdx: TremoveByIndex;
     removeLast: typeof removeLast;
     append: fp.LodashConcat;
     prepend: Tprepend;
     mapWithKey: TmapWithKey;
-    mapWithIdx: TmapWithKey;
     mapWithIndex: TmapWithKey;
     forEachWithKey: TforEachWithKey;
-    forEachWithIdx: TforEachWithKey;
     forEachWithIndex: TforEachWithKey;
     reduceWithKey: TreduceWithKey;
-    reduceWithIdx: TreduceWithKey;
     reduceWithIndex: TreduceWithKey;
     isFalsy: (arg: any) => boolean;
     isTruthy: (arg: any) => boolean;
