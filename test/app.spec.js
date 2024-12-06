@@ -1,8 +1,24 @@
 import chai from 'chai';
-import fp from 'lodash/fp';
+import {
+  mixin,
+  pipe,
+  map,
+  equals,
+  every,
+  concat,
+  get,
+  identity,
+  kebabCase,
+  keys,
+  head,
+  camelCase,
+  snakeCase,
+  includes,
+  reduce,
+} from 'lodash/fp';
 import lodashFpEx from '../index';
 
-fp.mixin(lodashFpEx);
+const fp = mixin(lodashFpEx);
 
 const expect = chai.expect;
 
@@ -56,7 +72,7 @@ describe('# fp.filterAsync test', () => {
     const asyncFilter = (a, i) =>
       new Promise((resolve) => {
         setTimeout(() => {
-          resolve(!fp.equals(0, a % 2));
+          resolve(!equals(0, a % 2));
         }, 5);
       });
     const results = await fp.filterAsync(asyncFilter, arr);
@@ -130,7 +146,7 @@ describe('# fp.findAsync test', () => {
     const asyncFilter = (a) =>
       new Promise((resolve) => {
         setTimeout(() => {
-          resolve(fp.pipe(fp.get('name'), fp.equals('hello'))(a));
+          resolve(pipe(get('name'), equals('hello'))(a));
         }, 5);
       });
 
@@ -144,7 +160,7 @@ describe('# fp.findAsync test', () => {
     const asyncKeys = (v, i) =>
       new Promise((resolve) => {
         setTimeout(() => {
-          resolve(fp.equals(3, i));
+          resolve(equals(3, i));
         }, 1);
       });
     const threeKey = await fp.findAsync(asyncKeys, arr);
@@ -224,10 +240,10 @@ describe('# fp.andThen test', () => {
         }, 5);
       });
 
-    const composer = fp.pipe(p, fp.andThen(fp.identity));
+    const composer = pipe(p, fp.andThen(identity));
     const result1 = await composer(64);
-    const result2 = await fp.andThen(fp.identity, p(64));
-    const result3 = await fp.pipe(
+    const result2 = await fp.andThen(identity, p(64));
+    const result3 = await pipe(
       p,
       fp.andThen((x) => x / 2),
     )(128);
@@ -240,18 +256,14 @@ describe('# fp.otherwise test', () => {
   const p = (a) =>
     new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (fp.equals(a * a, a)) {
+        if (equals(a * a, a)) {
           resolve(a);
         } else {
           reject(new Error('wrong'));
         }
       });
     });
-  const composer = fp.pipe(
-    p,
-    fp.andThen(fp.identity),
-    fp.otherwise(fp.identity),
-  );
+  const composer = pipe(p, fp.andThen(identity), fp.otherwise(identity));
   it('should return "wrong" text', async () => {
     const result = await composer(2);
 
@@ -270,17 +282,17 @@ describe('# fp.finally test', () => {
   const p = (a) =>
     new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (fp.equals(a * a, a)) {
+        if (equals(a * a, a)) {
           resolve(a);
         } else {
           reject(new Error('wrong'));
         }
       });
     });
-  const composer = fp.pipe(
+  const composer = pipe(
     p,
-    fp.andThen(fp.identity),
-    fp.otherwise(fp.identity),
+    fp.andThen(identity),
+    fp.otherwise(identity),
     fp.finally(() => (isLoading = false)),
   );
 
@@ -394,7 +406,7 @@ describe('# fp.not test', () => {
 });
 
 describe('# fp.notIncludes test', () => {
-  it('Should return opposite result from fp.includes', () => {
+  it('Should return opposite result from includes', () => {
     expect(fp.notIncludes(1, [1, 2, 3])).to.be.false;
     expect(fp.notIncludes('s', 'string')).to.be.false;
     expect(fp.notIncludes(1, { a: 1, b: 2 })).to.be.false;
@@ -461,23 +473,23 @@ describe('# fp.transformObjectKey test', () => {
   };
 
   it('Should transform by input function', () => {
-    const kebabKeyObj = fp.transformObjectKey(fp.kebabCase, obj);
-    const kebabKeyObj1 = fp.transformObjectKey(fp.kebabCase, nestedObj);
+    const kebabKeyObj = fp.transformObjectKey(kebabCase, obj);
+    const kebabKeyObj1 = fp.transformObjectKey(kebabCase, nestedObj);
     console.log(kebabKeyObj1);
-    expect(fp.keys(kebabKeyObj)).to.eqls(['obj-key']);
+    expect(keys(kebabKeyObj)).to.eqls(['obj-key']);
     expect(kebabKeyObj1).to.eqls({
       'obj-key': { 'nested-key': { 'another-key': [3] } },
     });
   });
 
   it('If transformed keys are duplicated, should throw error', () => {
-    const errFn = () => fp.transformObjectKey(fp.kebabCase, obj1);
+    const errFn = () => fp.transformObjectKey(kebabCase, obj1);
     expect(errFn).to.throw(
       Error,
-      `${fp.pipe(
-        fp.keys,
-        fp.head,
-        fp.kebabCase,
+      `${pipe(
+        keys,
+        head,
+        kebabCase,
       )(obj1)} already exist. duplicated property name is not supported.`,
     );
   });
@@ -489,17 +501,17 @@ describe('# fp.toCamelKey test', () => {
 
   it('Object property names are converted to camelcase', () => {
     const camelcaseObj = fp.toCamelKey(obj);
-    expect(fp.keys(camelcaseObj)).to.eqls(['objKey']);
+    expect(keys(camelcaseObj)).to.eqls(['objKey']);
   });
 
   it('If transformed keys are duplicated, should throw error', () => {
     const errFn = () => fp.toCamelKey(obj1);
     expect(errFn).to.throw(
       Error,
-      `${fp.pipe(
-        fp.keys,
-        fp.head,
-        fp.camelCase,
+      `${pipe(
+        keys,
+        head,
+        camelCase,
       )(obj1)} already exist. duplicated property name is not supported.`,
     );
   });
@@ -511,17 +523,17 @@ describe('# fp.toSnakeKey test', () => {
 
   it('Object property names are converted to snakecase', () => {
     const snakecaseObj = fp.toSnakeKey(obj);
-    expect(fp.keys(snakecaseObj)).to.eqls(['obj_key']);
+    expect(keys(snakecaseObj)).to.eqls(['obj_key']);
   });
 
   it('If transformed keys are duplicated, should throw error', () => {
     const errFn = () => fp.toSnakeKey(obj1);
     expect(errFn).to.throw(
       Error,
-      `${fp.pipe(
-        fp.keys,
-        fp.head,
-        fp.snakeCase,
+      `${pipe(
+        keys,
+        head,
+        snakeCase,
       )(obj1)} already exist. duplicated property name is not supported.`,
     );
   });
@@ -529,9 +541,9 @@ describe('# fp.toSnakeKey test', () => {
 
 describe('# fp.pascalCase test', () => {
   it('Should transform to Pascalcase', () => {
-    const isAllSame = fp.every(
-      fp.equals('FooBar'),
-      fp.map(fp.pascalCase, [
+    const isAllSame = every(
+      equals('FooBar'),
+      map(fp.pascalCase, [
         '__Foo_Bar__',
         'FOO BAR',
         'fooBar',
@@ -563,22 +575,18 @@ describe('# fp.isDatetimeString test', () => {
 
     const invalidDatetimeStrings = ['21:22:23', '20210314'];
 
+    expect(every(pipe(fp.isDatetimeString, equals(true)), datetimeStrings)).to
+      .be.true;
     expect(
-      fp.every(fp.pipe(fp.isDatetimeString, fp.equals(true)), datetimeStrings),
-    ).to.be.true;
-    expect(
-      fp.every(
-        fp.pipe(fp.isDatetimeString, fp.equals(false)),
-        invalidDatetimeStrings,
-      ),
+      every(pipe(fp.isDatetimeString, equals(false)), invalidDatetimeStrings),
     ).to.be.true;
   });
 });
 
 describe('# fp.ap test', () => {
   it('Should return valid value', () => {
-    const includesWithAp = fp.pipe(fp.includes, fp.ap('string'));
-    const reduceWithAp = fp.pipe(fp.reduce, fp.ap(['f', 'o', 'o']));
+    const includesWithAp = pipe(includes, fp.ap('string'));
+    const reduceWithAp = pipe(reduce, fp.ap(['f', 'o', 'o']));
 
     expect(includesWithAp('i')).to.be.true;
     expect(reduceWithAp((acc, v) => `${acc}${v}`, '')).to.eql('foo');
@@ -622,7 +630,7 @@ describe('# fp.instanceOf test', () => {
 //   it('If argument is true, should return Y else return N', () => {
 //     expect(YorN(true)).to.eql('Y');
 //     expect(YorN(false)).to.eql('N');
-//     expect(fp.pipe(fp.isEmpty, YorN)(['a'])).to.eql('N');
+//     expect(pipe(fp.isEmpty, YorN)(['a'])).to.eql('N');
 //     // evaluator가 함수가 아니면, evaluator를 boolean으로 변환해서 평가
 //     expect(
 //       fp.ternary(
@@ -644,7 +652,7 @@ describe('# fp.instanceOf test', () => {
 //   });
 
 //   it('If argments has true, return Y else N', () => {
-//     const hasTrue = (args) => fp.includes(true, args);
+//     const hasTrue = (args) => includes(true, args);
 //     const ternaryByHandler = fp.ternary(
 //       hasTrue,
 //       () => 'Y',
@@ -789,7 +797,7 @@ describe('# fp.forEachWithKey test', () => {
 
 describe('# fp.reduceWithKey test', () => {
   const arr = [3, 4, 5];
-  const getIdxs = fp.reduceWithKey((acc, v, i) => fp.concat(acc, i), []);
+  const getIdxs = fp.reduceWithKey((acc, v, i) => concat(acc, i), []);
 
   it('Should return indexs', () => {
     expect(getIdxs(arr)).to.eqls([0, 1, 2]);
@@ -803,7 +811,7 @@ describe('# fp.reduceWithKey test', () => {
 describe('# fp.isFalsy test', () => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
   const notFalsy = [[], '0', 'false', {}, () => {}];
-  const composer = fp.pipe(fp.map(fp.isFalsy), fp.every(fp.equals(true)));
+  const composer = pipe(map(fp.isFalsy), every(equals(true)));
 
   it('Should return true', () => {
     expect(composer(falsies)).to.eqls(true);
@@ -818,7 +826,7 @@ describe('# fp.isTruthy test', () => {
   const falsies = [undefined, null, 0, -0, NaN, false, ''];
   const notFalsy = [[], '0', 'false', {}, () => {}];
 
-  const composer = fp.pipe(fp.map(fp.isTruthy), fp.every(fp.equals(false)));
+  const composer = pipe(map(fp.isTruthy), every(equals(false)));
 
   it('Should return true', () => {
     expect(composer(falsies)).to.eqls(true);
