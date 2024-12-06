@@ -1,4 +1,4 @@
-import fp from 'lodash/fp';
+import type { LodashConcat } from 'lodash/fp';
 import { F } from 'ts-toolbelt';
 type TandThen = F.Curry<(fn: (response: any) => any, thenable: Promise<any>) => Promise<any>>;
 type Totherwise = F.Curry<(failureHandler: (error: Error | any) => never | any, thenable: Promise<Error | any>) => Promise<never | any>>;
@@ -58,7 +58,7 @@ declare const _default: {
     instanceOf: TinstanceOf;
     removeByIndex: TremoveByIndex;
     removeLast: typeof removeLast;
-    append: fp.LodashConcat;
+    append: LodashConcat;
     prepend: Tprepend;
     mapWithKey: TmapWithKey;
     mapWithIndex: TmapWithKey;
@@ -68,7 +68,7 @@ declare const _default: {
     reduceWithIndex: TreduceWithKey;
     isFalsy: (arg: any) => boolean;
     isTruthy: (arg: any) => boolean;
-    getOr: import("lodash").CurriedFunction3<any, string, any, any>;
+    getOr: import("lodash/fp").LodashGetOr;
     delayAsync: (ms: number) => Promise<void>;
     sleep: (ms: number) => Promise<void>;
 };

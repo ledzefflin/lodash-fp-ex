@@ -1,4 +1,53 @@
-import fp from 'lodash/fp';
+import {
+  concat,
+  isNil,
+  isString,
+  isBoolean,
+  attempt,
+  isNumber,
+  isError,
+  pipe,
+  get,
+  isFunction,
+  cond,
+  T,
+  isPlainObject,
+  isArray,
+  identity,
+  curry,
+  isEmpty,
+  equals,
+  upperFirst,
+  camelCase,
+  flatMapDeep,
+  entries,
+  toNumber,
+  map,
+  filter,
+  head,
+  always,
+  reduce,
+  find,
+  forOwn,
+  has,
+  set,
+  isObject,
+  includes,
+  size,
+  snakeCase,
+  lte,
+  cloneDeep,
+  forEach,
+  some,
+  getOr as _getOr,
+} from 'lodash/fp';
+import type {
+  LodashFlatMapDeep,
+  LodashMap,
+  LodashForEach,
+  LodashReduce,
+  LodashConcat,
+} from 'lodash/fp';
 import { F } from 'ts-toolbelt';
 
 /**
@@ -8,9 +57,9 @@ import { F } from 'ts-toolbelt';
  * @returns {boolean} json 문자열인지 여부
  */
 const isJson = (jsonStr: string): boolean => {
-  const composer = fp.pipe(fp.attempt, fp.isError);
+  const composer = pipe(attempt, isError);
   const result: boolean =
-    fp.isString(jsonStr) && !composer(() => JSON.parse(jsonStr));
+    isString(jsonStr) && !composer(() => JSON.parse(jsonStr));
 
   return result;
 };
@@ -24,7 +73,7 @@ const isJson = (jsonStr: string): boolean => {
  */
 const isVal = <T>(arg: T): boolean => {
   const result: boolean =
-    fp.isNil(arg) || fp.isBoolean(arg) || fp.isNumber(arg) || fp.isString(arg);
+    isNil(arg) || isBoolean(arg) || isNumber(arg) || isString(arg);
 
   return result;
 };
@@ -37,7 +86,7 @@ const isVal = <T>(arg: T): boolean => {
  * @returns {boolean} 참조 타입(reference) 인지 여부
  */
 const isRef = <T>(arg: T): boolean => {
-  const composer = fp.pipe(isVal, not);
+  const composer = pipe(isVal, not);
   const result = composer(arg);
 
   return result;
@@ -50,7 +99,7 @@ const isRef = <T>(arg: T): boolean => {
  * @return {boolean} 대상 인자가 promise(thenable)인지 여부
  */
 const isPromise = <T>(x: T): boolean =>
-  fp.isFunction(fp.get('then', x)) && fp.isFunction(fp.get('catch', x));
+  isFunction(get('then', x)) && isFunction(get('catch', x));
 
 /**
  * 대상 함수를 promise로 lift
@@ -80,12 +129,12 @@ const fnPromisify = (
  * @return {Promise<any>} Promise로 lift된 Promise 객채
  */
 const promisify = (a: any, ...args: any[]): Promise<any> => {
-  const cond = fp.cond([
-    [fp.isFunction, () => fnPromisify(a, ...args)],
-    [isPromise, (a: Promise<any>): Promise<any> => fp.identity(a)],
-    [fp.T, (a) => Promise.resolve(a)],
+  const conditional = cond([
+    [isFunction, () => fnPromisify(a, ...args)],
+    [isPromise, (a: Promise<any>): Promise<any> => identity(a)],
+    [T, (a) => Promise.resolve(a)],
   ]);
-  const result = cond(a);
+  const result = conditional(a);
 
   return result;
 };
@@ -109,7 +158,7 @@ type TandThen = F.Curry<
  * @param {Promise<any>} thenable resolve 대상 Promise 객체
  * @returns {Promise<any>} fullfilled 상태의 Promise 객체
  */
-const andThen: TandThen = fp.curry(
+const andThen: TandThen = curry(
   (
     successHandler: (response: any) => any,
     thenable: Promise<any>,
@@ -129,7 +178,7 @@ type Totherwise = F.Curry<
  * @param {Promise<Error|any>} thenable error를 resolve 하는 promise
  * @return {Promise<never | any>} error 상태의 Promise 객체
  */
-const otherwise: Totherwise = fp.curry(
+const otherwise: Totherwise = curry(
   (
     failureHandler: (error: Error | any) => never | any,
     thenable: Promise<Error | any>,
@@ -148,7 +197,7 @@ type Tfinally = F.Curry<
  * @param {Promise<any>} thenable Promise 객체
  * @return {Promise<any>} Promise 객체
  */
-const _finally: Tfinally = fp.curry(
+const _finally: Tfinally = curry(
   (callback: (...args: any[]) => any, thenable: Promise<any>): Promise<any> =>
     promisify(thenable).finally(flatPromise(callback)),
 );
@@ -168,7 +217,7 @@ const not = <T>(x: T): boolean => !x;
  * @returns {boolean} 비어 있는지 여부
  */
 const isNotEmpty = (a: any): boolean => {
-  const composer = fp.pipe(fp.isEmpty, not);
+  const composer = pipe(isEmpty, not);
   const result = composer(a);
 
   return result;
@@ -202,14 +251,14 @@ type Tternary = F.Curry<
  * @param {any} arg 대상인자
  * @returns {any} handler의 결과값
  */
-const ternary: Tternary = fp.curry(
+const ternary: Tternary = curry(
   <T>(
     evaluator: (arg: T) => boolean | any,
     trueHandler: (arg: T) => any | any,
     falseHandler: (arg: T) => any | any,
     arg: T,
   ): any => {
-    const executor = fp.curry(
+    const executor = curry(
       (
         t: (arg: T) => any | any,
         f: (arg: T) => any | any,
@@ -217,12 +266,12 @@ const ternary: Tternary = fp.curry(
         isTrue: boolean,
       ): any => {
         const result = isTrue
-          ? fp.isFunction(t)
+          ? isFunction(t)
             ? t(a)
-            : fp.identity(t)
-          : fp.isFunction(f)
+            : identity(t)
+          : isFunction(f)
             ? f(a)
-            : fp.identity(f);
+            : identity(f);
 
         return result;
       },
@@ -231,7 +280,7 @@ const ternary: Tternary = fp.curry(
       trueHandler,
       falseHandler,
       arg,
-      fp.isFunction(evaluator) ? evaluator(arg) : !!arg,
+      isFunction(evaluator) ? evaluator(arg) : !!arg,
     );
 
     return result;
@@ -257,27 +306,26 @@ type TifT = F.Curry<
  * @param {any} a 대상 인자
  * @returns {any} evaluator가 true를 반환하는 경우, trueHandler의 결과값, false인 경우 a 반환
  */
-const ifT: TifT = fp.curry(
+const ifT: TifT = curry(
   <T, R>(
     evaluator: (arg: T) => boolean | boolean,
     trueHandler: (arg: T) => R | R,
     arg: T,
   ): T | R => {
-    const isValidEvaluator =
-      fp.isFunction(evaluator) || fp.isBoolean(evaluator);
+    const isValidEvaluator = isFunction(evaluator) || isBoolean(evaluator);
 
     if (isValidEvaluator) {
       // evaluator가 함수인 경우
-      if (fp.isFunction(evaluator)) {
-        if (fp.pipe(evaluator, fp.equals(true))(arg)) {
-          return fp.isFunction(trueHandler) ? trueHandler(arg) : trueHandler;
+      if (isFunction(evaluator)) {
+        if (pipe(evaluator, equals(true))(arg)) {
+          return isFunction(trueHandler) ? trueHandler(arg) : trueHandler;
         } else {
           return arg;
         }
       } else {
         // evaluator가 boolean인 경우
         if (evaluator) {
-          return fp.isFunction(trueHandler) ? trueHandler(arg) : trueHandler;
+          return isFunction(trueHandler) ? trueHandler(arg) : trueHandler;
         } else {
           return arg;
         }
@@ -307,27 +355,26 @@ type TifF = F.Curry<
  * @param {any} a 대상 인자
  * @returns {any} evaluator가 false를 반환하는 경우, falseHandler의 결과값, true경우 a 반환
  */
-const ifF: TifF = fp.curry(
+const ifF: TifF = curry(
   <T, R>(
     evaluator: (arg: T) => boolean | boolean,
     falseHandler: (arg: T) => R | R,
     arg: T,
   ): T | R => {
-    const isValidEvaluator =
-      fp.isFunction(evaluator) || fp.isBoolean(evaluator);
+    const isValidEvaluator = isFunction(evaluator) || isBoolean(evaluator);
 
     if (isValidEvaluator) {
       // evaluator가 함수인 경우
-      if (fp.isFunction(evaluator)) {
-        if (fp.pipe(evaluator, fp.equals(false))(arg)) {
-          return fp.isFunction(falseHandler) ? falseHandler(arg) : falseHandler;
+      if (isFunction(evaluator)) {
+        if (pipe(evaluator, equals(false))(arg)) {
+          return isFunction(falseHandler) ? falseHandler(arg) : falseHandler;
         } else {
           return arg;
         }
       } else {
         // evaluator가 boolean인 경우
         if (evaluator) {
-          return fp.isFunction(falseHandler) ? falseHandler(arg) : falseHandler;
+          return isFunction(falseHandler) ? falseHandler(arg) : falseHandler;
         } else {
           return arg;
         }
@@ -345,7 +392,7 @@ type TinstanceOf = F.Curry<<T>(t: any, arg: T) => boolean>;
  * @param {any} a 조회 대상
  * @returns {boolean} a인자가 t타입인지 여부
  */
-const instanceOf: TinstanceOf = fp.curry(
+const instanceOf: TinstanceOf = curry(
   (t: any, a: any): boolean => a instanceof t,
 );
 
@@ -355,7 +402,7 @@ const instanceOf: TinstanceOf = fp.curry(
  * @returns {string} pascal case로 변환된 문자열
  */
 const pascalCase = (str: string): string => {
-  const composer = fp.pipe(fp.camelCase, fp.upperFirst);
+  const composer = pipe(camelCase, upperFirst);
   const result = composer(str);
 
   return result;
@@ -368,23 +415,23 @@ type TmapAsync = F.Curry<
   ) => Promise<R[]>
 >;
 
-interface IFpFlatMapDeepEx extends fp.LodashFlatMapDeep, LodashConvertible {}
+interface IFpFlatMapDeepEx extends LodashFlatMapDeep, LodashConvertible {}
 /**
- * (collection) fp.map의 비동기 함수\
+ * (collection) map의 비동기 함수\
  * mapper 함수로 비동기 함수를 받아서 처리해준다.
  *
  * @param {(a) => Promise<any>} asyncMapper 비동기 mapper
  * @param {object|any[]} collection 대상 object 또는 array
  * @returns {Promise<any[]>} 결과 array를 resolve 하는 promise
  */
-const mapAsync: TmapAsync = fp.curry(
+const mapAsync: TmapAsync = curry(
   async <T, K extends keyof T, R>(
     asyncMapper: (arg: T[K], key: K) => Promise<R>,
     collection: T,
   ): Promise<R[]> => {
-    const composer = fp.pipe(
-      (fp.flatMapDeep as IFpFlatMapDeepEx).convert({ cap: false })(
-        fp.pipe(asyncMapper, promisify),
+    const composer = pipe(
+      (flatMapDeep as IFpFlatMapDeepEx).convert({ cap: false })(
+        pipe(asyncMapper, promisify),
       ),
       async (a: Promise<R>[]) => await Promise.all(a),
     );
@@ -409,19 +456,19 @@ type TforEachAsync = F.Curry<
  * @param {object|any[]} collection 대상 객체 또는 배열
  * @returns {Promise<any[]>} 결과 Promise
  */
-const forEachAsync = fp.curry(
+const forEachAsync = curry(
   async <T extends object, K extends keyof T, R>(
     callbackAsync: (value: T[K], key: K) => Promise<R>,
     collection: T,
   ): Promise<R[]> => {
     const loopResults: Awaited<R>[] = [];
-    const entries = fp.entries(collection) as [K, T[K]][];
+    const entryList = entries(collection) as [K, T[K]][];
 
-    for (const entry of entries) {
+    for (const entry of entryList) {
       loopResults.push(
         await callbackAsync(
           entry[1],
-          (fp.isArray(collection) ? fp.toNumber(entry[0]) : entry[0]) as K,
+          (isArray(collection) ? toNumber(entry[0]) : entry[0]) as K,
         ),
       );
     }
@@ -437,25 +484,23 @@ type TfilterAsync = F.Curry<
   ) => Promise<R[]>
 >;
 /**
- * (collection) fp.filter의 비동기 함수\
+ * (collection) filter의 비동기 함수\
  * 필터함수로 비동기 함수를 받아서 처리해준다.
  *
  * @param {(a) => Promise<bool>} asyncFilter 비동기 필터
  * @param {object|any[]} collection 대상 object 또는 array
  * @returns {Promise<any[]>} 결과 array를 resolve하는 promise
  */
-const filterAsync: TfilterAsync = fp.curry(
+const filterAsync: TfilterAsync = curry(
   async <T, K extends keyof T, R>(
     asyncFilter: (arg: T[K], key: K) => Promise<boolean>,
     collection: T,
   ): Promise<R[]> => {
-    const composer = fp.pipe(
+    const composer = pipe(
       mapAsync(async (item: T[K], key: K) =>
         (await asyncFilter(item, key)) ? item : false,
       ),
-      andThen((response) =>
-        fp.filter(fp.pipe(fp.equals(false), not))(response),
-      ),
+      andThen((response) => filter(pipe(equals(false), not))(response)),
     );
     const result = await composer(collection);
 
@@ -471,22 +516,22 @@ type TfindAsync = F.Curry<
 >;
 
 /**
- * (collection) fp.find의 비동기 함수
+ * (collection) find의 비동기 함수
  * @param {(a) => Promise<bool>} asyncFilter 비동기 필터
  * @param {object|any[]} collection 대상 object 또는 array
  * @returns {Promise<any>} 필터된 단일 결과를 resolve하는 promise
  */
-const findAsync: TfindAsync = fp.curry(
+const findAsync: TfindAsync = curry(
   async <T, K extends keyof T, R>(
     asyncFilter: (arg: T[K], key: K) => Promise<boolean>,
     collection: T,
   ): Promise<R> => {
-    const composer = fp.pipe(
+    const composer = pipe(
       filterAsync(asyncFilter),
       andThen((response: R[]): R | undefined =>
-        fp.isEmpty(response) ? undefined : fp.head(response),
+        isEmpty(response) ? undefined : head(response),
       ),
-      otherwise(fp.always(undefined)),
+      otherwise(always(undefined)),
     );
     const result = await composer(collection);
 
@@ -513,16 +558,16 @@ type TreduceAsync = F.Curry<
  * @param {object|any[]} collection 대상 객체 또는 배열
  * @returns {Promise<any>} 결과 Promise
  */
-const reduceAsync: TreduceAsync = fp.curry(
+const reduceAsync: TreduceAsync = curry(
   async <T, K extends keyof T>(
     asyncFn: (acc: any, arg: T[K], key: K) => Promise<any>,
     initAcc: Promise<any> | any,
     collection: T,
   ): Promise<any> => {
-    const initAccPromise: Promise<any> = await fp.pipe(promisify, (accP) =>
+    const initAccPromise: Promise<any> = await pipe(promisify, (accP) =>
       Promise.resolve(accP),
     )(initAcc);
-    const result = (fp.reduce as IFpReduceEx).convert({ cap: false })(
+    const result = (reduce as IFpReduceEx).convert({ cap: false })(
       asyncFn,
       initAccPromise,
       collection,
@@ -541,11 +586,11 @@ type Tkey = F.Curry<(obj: Record<string, any>, value: any) => string>;
  * @param {string} value 조회 대상 값
  * @returns {string} 속성명
  */
-const key: Tkey = fp.curry((obj: object, value: any): string => {
-  const composer = fp.pipe(
-    fp.entries,
-    fp.find(([k, val]) => fp.equals(value, val)),
-    fp.head,
+const key: Tkey = curry((obj: object, value: any): string => {
+  const composer = pipe(
+    entries,
+    find(([k, val]) => equals(value, val)),
+    head,
   );
   const result = composer(obj);
 
@@ -561,7 +606,7 @@ const key: Tkey = fp.curry((obj: object, value: any): string => {
 const deepFreeze = (obj: Record<string, any>): Record<string, any> => {
   const freezeRecursively = (v: any) =>
     isRef(v) && !Object.isFrozen(v) ? deepFreeze(v) : v;
-  const composer = fp.pipe(Object.freeze, fp.forOwn(freezeRecursively));
+  const composer = pipe(Object.freeze, forOwn(freezeRecursively));
   const result = composer(obj);
 
   return result;
@@ -581,7 +626,7 @@ type TtransformObjectKey = F.Curry<
  * @param {object} obj 대상 객체
  * @returns {object} 속성명이 변환된 객체
  */
-const transformObjectKey: TtransformObjectKey = fp.curry(
+const transformObjectKey: TtransformObjectKey = curry(
   (
     transformFn: (orignStr: string) => string,
     obj: Record<string, any>,
@@ -590,24 +635,24 @@ const transformObjectKey: TtransformObjectKey = fp.curry(
       obj: Record<string, any>,
     ): Record<string, any> => {
       const convertTo = (o: Record<string, any>): Record<string, any> => {
-        const composer = fp.pipe(
-          (fp.reduce as IFpReduceEx).convert({ cap: false })(
+        const composer = pipe(
+          (reduce as IFpReduceEx).convert({ cap: false })(
             (acc: Record<string, any>, v: any, k: string) => {
-              const cond = (
+              const conditional = (
                 arg: Record<string, any> | any[] | any,
               ): Record<string, any> | any[] | any => {
-                if (fp.isPlainObject(arg)) {
+                if (isPlainObject(arg)) {
                   return convertTo(arg);
-                } else if (fp.isArray(arg)) {
-                  return fp.map(cond, arg);
+                } else if (isArray(arg)) {
+                  return map(conditional, arg);
                 } else {
-                  return fp.identity(arg);
+                  return identity(arg);
                 }
               };
 
               const transformedKey = transformFn(k);
-              if (!fp.has(transformedKey, acc)) {
-                const result = fp.set(transformedKey, cond(v), acc);
+              if (!has(transformedKey, acc)) {
+                const result = set(transformedKey, conditional(v), acc);
                 return result;
               } else {
                 throw new Error(
@@ -627,7 +672,7 @@ const transformObjectKey: TtransformObjectKey = fp.curry(
     };
 
     const result =
-      fp.isObject(obj) || fp.isArray(obj) ? convertRecursively(obj) : obj;
+      isObject(obj) || isArray(obj) ? convertRecursively(obj) : obj;
 
     return result;
   },
@@ -639,7 +684,7 @@ const transformObjectKey: TtransformObjectKey = fp.curry(
  * @param {object} obj 대상 객체
  * @returns {object} 속성명이 camel case로 변환된 객체
  */
-const toCamelcase = transformObjectKey(fp.camelCase);
+const toCamelcase = transformObjectKey(camelCase);
 
 /**
  * 대상 object의 property key문자열을 snakecase 문자열로 변환
@@ -647,7 +692,7 @@ const toCamelcase = transformObjectKey(fp.camelCase);
  * @param {object} obj 대상 객체
  * @returns {object} 속성명이 snake case로 변환된 객체
  */
-const toSnakecase = transformObjectKey(fp.snakeCase);
+const toSnakecase = transformObjectKey(snakeCase);
 
 /**
  * 대상 object의 property key문자열을 camelcase 문자열로 변환
@@ -663,19 +708,19 @@ const toPascalcase = transformObjectKey(pascalCase);
  * @returns {boolean} date형식 문자열 여부
  */
 const isDatetimeString = (dateStr: string): boolean =>
-  fp.isString(dateStr) && !isNaN(Date.parse(dateStr));
+  isString(dateStr) && !isNaN(Date.parse(dateStr));
 
 type Tap = F.Curry<(arg: any, curried: Function) => any>;
 
 /**
  * applicative functor pattern 구현체
- * (주로 fp.pipe함수에서 함수의 인자 순서를 변경하기 위해 사용)
+ * (주로 pipe함수에서 함수의 인자 순서를 변경하기 위해 사용)
  *
  * @param {any} arg 대입 인자
  * @param {function} curried currying된 함수
  * @returns {any} 결과값
  */
-const ap: Tap = fp.curry((a: any, curried: Function) => curried(a));
+const ap: Tap = curry((a: any, curried: Function) => curried(a));
 
 /**
  * 대상 인자가 undefined 또는 null이 아닌지 여부 조회
@@ -683,7 +728,7 @@ const ap: Tap = fp.curry((a: any, curried: Function) => curried(a));
  * @param {any} arg 대상인자
  * @returns {boolean} 대상 인자가 undefined 또는 null이 아닌지 여부
  */
-const isNotNil: (arg: any) => boolean = fp.pipe(fp.isNil, not);
+const isNotNil: (arg: any) => boolean = pipe(isNil, not);
 
 type TnotIncludes = F.Curry<
   (arg: any, targetArray: any[] | Record<string, any> | string) => boolean
@@ -695,9 +740,9 @@ type TnotIncludes = F.Curry<
  * @param {any[] | Record<string, any> | string} arr 대상 배열
  * @returns {boolean} arr 배열에 a인자가 포함되지 않았는지 여부
  */
-const notIncludes: TnotIncludes = fp.curry(
+const notIncludes: TnotIncludes = curry(
   (arg: any, targetArray: any[] | Record<string, any> | string): boolean => {
-    const result: boolean = !fp.includes(arg, targetArray);
+    const result: boolean = !includes(arg, targetArray);
 
     return result;
   },
@@ -711,8 +756,8 @@ type TnotEquals = F.Curry<(a: any, b: any) => boolean>;
  * @param {any} b 비교 인자
  * @returns {boolean} a인자와 b인자가 다른지 여부 (deep equal)
  */
-const notEquals: TnotEquals = fp.curry((a: any, b: any): boolean => {
-  const composer = fp.pipe(fp.equals(a), not);
+const notEquals: TnotEquals = curry((a: any, b: any): boolean => {
+  const composer = pipe(equals(a), not);
   const result = composer(b);
 
   return result;
@@ -727,22 +772,22 @@ type TremoveByIndex = F.Curry<
  * @param {any[]} targetArray 대상 배열
  * @returns {any[]} index에 해당하는 요소 제거된 배열
  */
-const removeByIndex: TremoveByIndex = fp.curry(
+const removeByIndex: TremoveByIndex = curry(
   <TResult>(index: number | string, targetArray: TResult[]): TResult[] => {
     if (
-      fp.isArray(targetArray) &&
-      fp.pipe(
-        fp.size,
-        fp.curry((index: number | string, sz: number) => {
-          const num = fp.toNumber(index);
-          const isAccesable = fp.isNumber(num) && fp.lte(num, sz);
+      isArray(targetArray) &&
+      pipe(
+        size,
+        curry((index: number | string, sz: number) => {
+          const num = toNumber(index);
+          const isAccesable = isNumber(num) && lte(num, sz);
 
           return isAccesable;
         })(index),
       )(targetArray)
     ) {
-      const cloned = fp.cloneDeep(targetArray);
-      cloned.splice(fp.toNumber(index), 1);
+      const cloned = cloneDeep(targetArray);
+      cloned.splice(toNumber(index), 1);
 
       return cloned;
     }
@@ -760,11 +805,11 @@ function removeLast(target: any[]): any[];
  * @returns 마지막 요소 제거된 인자
  */
 function removeLast(target: string | any[]): string | any[] {
-  if (fp.isArray(target) || fp.isString(target)) {
-    const result = fp.cloneDeep(target);
-    fp.isArray(target)
+  if (isArray(target) || isString(target)) {
+    const result = cloneDeep(target);
+    isArray(target)
       ? (result as any[]).pop()
-      : (result as string).substring(0, fp.size(target) - 1);
+      : (result as string).substring(0, size(target) - 1);
 
     return result;
   }
@@ -779,7 +824,7 @@ function removeLast(target: string | any[]): string | any[] {
  * @param {any|any[]} a 병합 인자
  * @returns {any[]} 병합된 배열
  */
-const append = fp.concat;
+const append: LodashConcat = concat;
 
 type Tprepend = F.Curry<<T>(arr: T[], arg: T | T[]) => T[]>;
 
@@ -790,11 +835,8 @@ type Tprepend = F.Curry<<T>(arr: T[], arg: T | T[]) => T[]>;
  * @param {any|any[]} value 병합 인자
  * @returns {any[]} 병합된 배열
  */
-const prepend: Tprepend = fp.curry(
-  <T>(targetArray: T[], value: T | T[]): T[] =>
-    fp.isArray(value)
-      ? fp.concat(value, targetArray)
-      : fp.concat([value], targetArray),
+const prepend: Tprepend = curry(<T>(targetArray: T[], value: T | T[]): T[] =>
+  isArray(value) ? concat(value, targetArray) : concat([value], targetArray),
 );
 
 type TmapWithKey = F.Curry<
@@ -808,19 +850,19 @@ interface LodashConvertible {
   convert(options: { cap: boolean }): (...args: any[]) => any;
 }
 
-interface IFpMapEx extends fp.LodashMap, LodashConvertible {}
+interface IFpMapEx extends LodashMap, LodashConvertible {}
 
 /**
- * key(index)를 포함한 fp.map
+ * key(index)를 포함한 map
  * @param {(v, k) => any} f value, key(또는 index)를 인자로 갖는 callback
  * @param {object|any[]} a 대상 collection
  * @returns {any[]} 결과 배열
  */
-const mapWithKey: TmapWithKey = fp.curry(
+const mapWithKey: TmapWithKey = curry(
   <T, K extends keyof T, R>(
     iteratee: (value: T[K], key: K) => R,
     collection: T,
-  ): R[] => (fp.map as IFpMapEx).convert({ cap: false })(iteratee, collection),
+  ): R[] => (map as IFpMapEx).convert({ cap: false })(iteratee, collection),
 );
 
 type TforEachWithKey = F.Curry<
@@ -829,19 +871,19 @@ type TforEachWithKey = F.Curry<
     collection: T,
   ) => T
 >;
-interface IFpForEachEx extends fp.LodashForEach, LodashConvertible {}
+interface IFpForEachEx extends LodashForEach, LodashConvertible {}
 /**
- * key(index)를 포함한 fp.forEach
+ * key(index)를 포함한 forEach
  * @param {(v, k) => any} f value, key(또는 index)를 인자로 갖는 callback
  * @param {object|any[]} a 대상 collection
  * @returns {void} 반환값 없음
  */
-const forEachWithKey: TforEachWithKey = fp.curry(
+const forEachWithKey: TforEachWithKey = curry(
   <T, K extends keyof T>(
     iteratee: (value: T[K], key: K) => T,
     collection: T,
   ): T =>
-    (fp.forEach as IFpForEachEx).convert({ cap: false })(iteratee, collection),
+    (forEach as IFpForEachEx).convert({ cap: false })(iteratee, collection),
 );
 
 type TreduceWithKey = F.Curry<
@@ -852,7 +894,7 @@ type TreduceWithKey = F.Curry<
   ) => R
 >;
 
-interface IFpReduceEx extends fp.LodashReduce, LodashConvertible {}
+interface IFpReduceEx extends LodashReduce, LodashConvertible {}
 
 /**
  * key(index)를 포함한 reduce
@@ -862,17 +904,13 @@ interface IFpReduceEx extends fp.LodashReduce, LodashConvertible {}
  * @param {object|any[]} 대상 collection
  * @returns {any} 누적기
  */
-const reduceWithKey: TreduceWithKey = fp.curry(
+const reduceWithKey: TreduceWithKey = curry(
   <T, K extends keyof T, R>(
     iteratee: (acc: R, value: T[K], key: K) => R,
     acc: R,
     collection: T,
   ): R =>
-    (fp.reduce as IFpReduceEx).convert({ cap: false })(
-      iteratee,
-      acc,
-      collection,
-    ),
+    (reduce as IFpReduceEx).convert({ cap: false })(iteratee, acc, collection),
 );
 
 /**
@@ -881,7 +919,7 @@ const reduceWithKey: TreduceWithKey = fp.curry(
  * @returns {boolean} falsy 타입(0, -0, NaN, false, '')인지 여부
  */
 const isFalsy = (arg: any): boolean => {
-  return fp.isNil(arg) || fp.some(fp.equals(arg), [0, -0, NaN, false, '']);
+  return isNil(arg) || some(equals(arg), [0, -0, NaN, false, '']);
 };
 
 /**
@@ -893,19 +931,25 @@ const isFalsy = (arg: any): boolean => {
 const isTruthy = (arg: any): boolean => !isFalsy(arg);
 
 /**
- * fp.getOr override
+ * getOr override
  *
- * fp.getOr의 반환값이 null인 경우, 기본값 반환되게 수정한 버전
+ * getOr의 반환값이 null인 경우, 기본값 반환되게 수정한 버전
  * circular dependency 때문에 closure로 작성
  */
-const getOr = (({ curry, getOr }) => {
-  const _getOr = curry((defaultValue: any, path: string, target: any) => {
-    return fp.isNil(target) || fp.isNil(fp.get(path, target))
-      ? defaultValue
-      : fp.get(path, target);
-  });
-  return _getOr;
-})(fp);
+const getOr = (({ curry, _getOr }) => {
+  const __getOr = curry(
+    <T extends object, K extends keyof T>(
+      defaultValue: T[K],
+      path: string,
+      target: T,
+    ) => {
+      return isNil(target) || isNil(get(path, target))
+        ? defaultValue
+        : get(path, target);
+    },
+  );
+  return __getOr as typeof _getOr;
+})({ curry, _getOr });
 
 /**
  * ms 시간동안 대기
