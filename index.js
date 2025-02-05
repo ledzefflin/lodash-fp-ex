@@ -139,11 +139,11 @@ const andThen = (0, _curry2.default)((successHandler, thenable) => promisify(the
 /**
  * lodash 형태의 promise catch
  *
- * @param {(error:Error|any) => never | any} failureHandler error 처리 callback
+ * @param {(error:Error|any) =>  any} failureHandler error 처리 callback
  * @param {Promise<Error|any>} thenable error를 resolve 하는 promise
- * @return {Promise<never | any>} error 상태의 Promise 객체
+ * @return {Promise<any>} error 상태의 Promise 객체
  */
-const otherwise = (0, _curry2.default)((failureHandler, thenable) => promisify(thenable).catch(flatPromise(failureHandler)));
+const otherwise = (0, _curry2.default)((failureHandler, thenable) => promisify(thenable).then(null, flatPromise(failureHandler)));
 /**
  * lodash 형태의 promise finally
  *
@@ -180,26 +180,6 @@ const isNotEmpty = a => {
  * @returns {boolean} 변환된 boolean 타입 값
  */
 const toBool = arg => !!arg;
-/**
- * 삼항식 helper 함수\
- * evaluator의 실행 결과가 true면 trueHandler(실행)반환, false면 falseHandler(실행)반환\
- * evaluator가 함수가 아니면 arg인자를 boolean으로 변환하여 반환된 값으로 trueHandler 또는 falseHandler 실행
- *
- * @deprecated
- * @param {(arg: any) => bool | any} evaluator 대상인자가 true 인지여부 조회 함수 또는 boolean을 반환하는 함수 또는 bool로 변환되는 아무값
- * @param {(arg: any) => any | any} trueHandler evaluator가 true를 반환하면,  실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
- * @param {(arg: any) => any | any} falseHandler evaluator가 false를 반환하면, 실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
- * @param {any} arg 대상인자
- * @returns {any} handler의 결과값
- */
-const ternary = (0, _curry2.default)((evaluator, trueHandler, falseHandler, arg) => {
-  const executor = (0, _curry2.default)((t, f, a, isTrue) => {
-    const result = isTrue ? (0, _isFunction2.default)(t) ? t(a) : (0, _identity2.default)(t) : (0, _isFunction2.default)(f) ? f(a) : (0, _identity2.default)(f);
-    return result;
-  });
-  const result = executor(trueHandler, falseHandler, arg, (0, _isFunction2.default)(evaluator) ? evaluator(arg) : !!arg);
-  return result;
-});
 /**
  * a인자를 인자로, evaluator함수 실행,
  * true면 trueHandler에 a인자 대입

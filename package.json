@@ -37,18 +37,18 @@
     "start": "tsc-watch --onSuccess \"node index.js\" ",
     "test": "mocha --reporter spec --require @babel/register",
     "u": "npm-upgrade && pnpm run package:install",
-    "babel": "babel --plugins lodash --presets @babel/preset-typescript ./lib/index.ts --out-file ./index.js"
+    "babel": "babel --plugins=lodash --presets @babel/preset-typescript ./lib/index.ts --out-file ./index.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.26.4",
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
+    "@babel/core": "^7.26.7",
+    "@babel/preset-env": "^7.26.7",
     "@babel/preset-typescript": "^7.26.0",
     "@babel/register": "^7.25.9",
     "@types/babel__core": "^7.20.5",
-    "@types/babel__preset-env": "^7.9.7",
+    "@types/babel__preset-env": "^7.10.0",
     "@types/chai": "^4.3.6",
-    "@types/lodash": "^4.17.13",
+    "@types/lodash": "^4.17.15",
     "@types/mocha": "^10.0.10",
     "@types/prettier": "2.7.3",
     "@types/rimraf": "^3.0.2",
@@ -62,7 +62,7 @@
     "rimraf": "^6.0.1",
     "ts-toolbelt": "^9.6.0",
     "tsc-watch": "^6.2.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   },
   "peerDependencies": {
     "lodash": "^4.17.21"

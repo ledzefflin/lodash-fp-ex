@@ -108,10 +108,10 @@ const isPromise = <T>(x: T): boolean =>
  * @param  {any[]} args 함수 인자 목록
  * @returns {Promise<any>} Promise로 lift된 Promise 객체
  */
-const fnPromisify = (
-  fn: (...args: any[]) => any,
+const fnPromisify = <T>(
+  fn: (...args: any[]) => T,
   ...args: any[]
-): Promise<any> => {
+): Promise<T> => {
   return new Promise((resolve, reject) => {
     try {
       resolve(fn(...args));
@@ -167,23 +167,22 @@ const andThen: TandThen = curry(
 
 type Totherwise = F.Curry<
   (
-    failureHandler: (error: Error | any) => never | any,
+    failureHandler: (error: Error | any) => any,
     thenable: Promise<Error | any>,
-  ) => Promise<never | any>
+  ) => Promise<any>
 >;
 /**
  * lodash 형태의 promise catch
  *
- * @param {(error:Error|any) => never | any} failureHandler error 처리 callback
+ * @param {(error:Error|any) =>  any} failureHandler error 처리 callback
  * @param {Promise<Error|any>} thenable error를 resolve 하는 promise
- * @return {Promise<never | any>} error 상태의 Promise 객체
+ * @return {Promise<any>} error 상태의 Promise 객체
  */
 const otherwise: Totherwise = curry(
   (
-    failureHandler: (error: Error | any) => never | any,
+    failureHandler: (error: Error | any) => any,
     thenable: Promise<Error | any>,
-  ): Promise<never | any> =>
-    promisify(thenable).catch(flatPromise(failureHandler)),
+  ) => promisify(thenable).then(null, flatPromise(failureHandler)),
 );
 
 type Tfinally = F.Curry<
@@ -230,62 +229,6 @@ const isNotEmpty = (a: any): boolean => {
  * @returns {boolean} 변환된 boolean 타입 값
  */
 const toBool = (arg: any): boolean => !!arg;
-
-type Tternary = F.Curry<
-  <T>(
-    evaluator: (arg: T) => boolean | any,
-    trueHandler: (arg: T) => any,
-    falseHandler: (arg: T) => any,
-    arg: T,
-  ) => any
->;
-/**
- * 삼항식 helper 함수\
- * evaluator의 실행 결과가 true면 trueHandler(실행)반환, false면 falseHandler(실행)반환\
- * evaluator가 함수가 아니면 arg인자를 boolean으로 변환하여 반환된 값으로 trueHandler 또는 falseHandler 실행
- *
- * @deprecated
- * @param {(arg: any) => bool | any} evaluator 대상인자가 true 인지여부 조회 함수 또는 boolean을 반환하는 함수 또는 bool로 변환되는 아무값
- * @param {(arg: any) => any | any} trueHandler evaluator가 true를 반환하면,  실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
- * @param {(arg: any) => any | any} falseHandler evaluator가 false를 반환하면, 실행되는 대상인자를 인자로 갖는 함수 또는 반환되는 아무값
- * @param {any} arg 대상인자
- * @returns {any} handler의 결과값
- */
-const ternary: Tternary = curry(
-  <T>(
-    evaluator: (arg: T) => boolean | any,
-    trueHandler: (arg: T) => any | any,
-    falseHandler: (arg: T) => any | any,
-    arg: T,
-  ): any => {
-    const executor = curry(
-      (
-        t: (arg: T) => any | any,
-        f: (arg: T) => any | any,
-        a: T,
-        isTrue: boolean,
-      ): any => {
-        const result = isTrue
-          ? isFunction(t)
-            ? t(a)
-            : identity(t)
-          : isFunction(f)
-            ? f(a)
-            : identity(f);
-
-        return result;
-      },
-    );
-    const result = executor(
-      trueHandler,
-      falseHandler,
-      arg,
-      isFunction(evaluator) ? evaluator(arg) : !!arg,
-    );
-
-    return result;
-  },
-);
 
 type TifT = F.Curry<
   <T, R>(

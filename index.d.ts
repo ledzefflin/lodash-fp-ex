@@ -1,7 +1,7 @@
 import type { LodashConcat } from 'lodash/fp';
 import { F } from 'ts-toolbelt';
 type TandThen = F.Curry<(fn: (response: any) => any, thenable: Promise<any>) => Promise<any>>;
-type Totherwise = F.Curry<(failureHandler: (error: Error | any) => never | any, thenable: Promise<Error | any>) => Promise<never | any>>;
+type Totherwise = F.Curry<(failureHandler: (error: Error | any) => any, thenable: Promise<Error | any>) => Promise<any>>;
 type Tfinally = F.Curry<(callback: (...args: any[]) => any, thenable: Promise<any>) => Promise<any>>;
 type TinstanceOf = F.Curry<(<T>(t: any, arg: T) => boolean)>;
 type TmapAsync = F.Curry<(<T, K extends keyof T, R>(asyncMapper: (arg: T[K], key: K) => Promise<R>, collection: T) => Promise<R[]>)>;
