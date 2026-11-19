@@ -263,13 +263,17 @@ const isNotEmpty = <T>(a: T): boolean => {
  */
 const toBool = <T>(arg: T): boolean => !!arg;
 
-type TifT = F.Curry<
+type TifT = {
   <T, R>(
-    evaluator: (arg: T) => boolean | boolean,
-    trueHandler: (arg: T) => R | R,
+    evaluator: ((arg: T) => boolean) | boolean,
+    trueHandler: ((arg: T) => R) | R,
     arg: T,
-  ) => T | R
->;
+  ): T | R;
+  <T, R>(
+    evaluator: ((arg: T) => boolean) | boolean,
+    trueHandler: ((arg: T) => R) | R,
+  ): (arg: T) => T | R;
+};
 
 /**
  * a인자를 인자로, evaluator함수 실행,
@@ -312,13 +316,17 @@ const ifT: TifT = curry(
   },
 );
 
-type TifF = F.Curry<
+type TifF = {
   <T, R>(
-    evaluator: (arg: T) => boolean | boolean,
-    falseHandler: (arg: T) => R | R,
+    evaluator: ((arg: T) => boolean) | boolean,
+    falseHandler: ((arg: T) => R) | R,
     arg: T,
-  ) => T | R
->;
+  ): T | R;
+  <T, R>(
+    evaluator: ((arg: T) => boolean) | boolean,
+    falseHandler: ((arg: T) => R) | R,
+  ): (arg: T) => T | R;
+};
 
 /**
  * a인자를 인자로, evaluator함수 실행,
