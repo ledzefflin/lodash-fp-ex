@@ -539,18 +539,18 @@ const findAsync: TfindAsync = curry(
 
 type TreduceAsync = {
   <T extends object, A>(
-    asyncFn: (acc: A, value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<A>,
+    asyncFn: (acc: Promise<A>, value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<A>,
     initAcc: MaybePromise<A>,
     collection: T,
   ): Promise<A>;
   <V, K extends string | number, A>(
-    asyncFn: (acc: A, value: V, key: K) => MaybePromise<A>,
+    asyncFn: (acc: Promise<A>, value: V, key: K) => MaybePromise<A>,
     initAcc: MaybePromise<A>,
   ): (collection: Collection<V>) => Promise<A>;
 };
 
 /**
- * asyncFn의 시작은 await accPromise가 되어야 한다.\
+ * asyncFn의 acc는 이전 단계 결과를 담은 Promise 이므로, asyncFn의 시작은 await acc 가 되어야 한다.\
  * 순차적으로 실행된다.\
  * (ex 300ms이 걸리는 5개의 promise가 있다면, 최소 1500ms+alpah의 시간이 소요된다.\
  * 상기의 mapAsync의 경우 300+alpah의 시간만 소요된다.(Promise.all과 Promise.resolve의 차이))
@@ -562,7 +562,7 @@ type TreduceAsync = {
  */
 const reduceAsync: TreduceAsync = curry(
   async <T extends object, A>(
-    asyncFn: (acc: A, value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<A>,
+    asyncFn: (acc: Promise<A>, value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<A>,
     initAcc: MaybePromise<A>,
     collection: T,
   ): Promise<A> => {
