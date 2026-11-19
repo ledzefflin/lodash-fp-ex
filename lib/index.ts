@@ -511,21 +511,26 @@ type TfindAsync = {
 };
 
 /**
- * (collection) find의 비동기 함수
+ * (collection) find의 비동기 함수\
+ * 순차적으로 실행되며, 처음으로 true를 반환한 요소에서 즉시 중단한다.\
+ * (이후 요소의 asyncFilter는 호출되지 않는다)
+ *
  * @param {(a) => Promise<bool>} asyncFilter 비동기 필터
  * @param {object|any[]} collection 대상 object 또는 array
- * @returns {Promise<any>} 필터된 단일 결과를 resolve하는 promise
+ * @returns {Promise<any>} 필터된 단일 결과를 resolve하는 promise (일치 항목이 없으면 undefined)
  */
 const findAsync: TfindAsync = curry(
   async <T extends object>(
     asyncFilter: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<boolean>,
     collection: T,
   ): Promise<ValueOf<T>> => {
-    const filtered = await filterAsyncImpl(asyncFilter, collection);
-    // 결과 없음 / 실패 시 lodash find와 동일하게 비어있는 값(head([]))을 반환
-    const result: ValueOf<T> = head(filtered) as ValueOf<T>;
+    for (const [k, v] of toEntries(collection)) {
+      if (await asyncFilter(v, k)) {
+        return v;
+      }
+    }
 
-    return result;
+    return undefined as ValueOf<T>;
   },
 );
 

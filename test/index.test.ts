@@ -317,6 +317,32 @@ describe('async collection helpers', () => {
     expect(await f.findAsync((v: number) => later(v > 100), nums)).toBeUndefined();
   });
 
+  it('findAsync: 순차 실행, 첫 일치 항목에서 중단', async () => {
+    const called: number[] = [];
+    const found = await f.findAsync(async (v: number) => {
+      called.push(v);
+      await later(null, 1);
+      return v === 3;
+    }, nums);
+
+    expect(found).toBe(3);
+    expect(called).toEqual([1, 2, 3]);
+  });
+
+  it('findAsync: 객체 collection 은 key 와 함께 순차 탐색', async () => {
+    expect(
+      await f.findAsync((v: number, k: string) => later(k === 'b' && v === 2), { a: 1, b: 2 }),
+    ).toBe(2);
+  });
+
+  it('findAsync: 필터가 reject 하면 reject 전파', async () => {
+    await expect(
+      f.findAsync(async () => {
+        throw new Error('boom');
+      }, nums),
+    ).rejects.toThrow('boom');
+  });
+
   it('reduceAsync: reduce 와 동일한 인자 (acc, value, key), 순차 누적', async () => {
     const doubled = await f.reduceAsync(
       async (acc: number[], v: number) => [...acc, await later(v * 2)],

@@ -37,7 +37,8 @@
     "prepublishOnly": "pnpm run typecheck && pnpm run build && pnpm test",
     "clean": "rimraf ./node_modules dist",
     "test:watch": "vp test watch",
-    "bench": "vp pack && node bench/run.mjs"
+    "bench": "vp pack && node bench/run.mjs",
+    "bench:clone": "node bench/clone.mjs"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.15",
