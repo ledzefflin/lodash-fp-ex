@@ -27,7 +27,7 @@ describe('타입 추론', () => {
 
   it('reduceAsync: 누적기 타입 추론', () => {
     expectTypeOf(
-      fp.reduceAsync(async (acc: Promise<number>, v: number) => (await acc) + v, 0, [1]),
+      fp.reduceAsync(async (acc: number, v: number) => acc + v, 0, [1]),
     ).toEqualTypeOf<Promise<number>>();
   });
 

@@ -539,38 +539,41 @@ const findAsync: TfindAsync = curry(
 
 type TreduceAsync = {
   <T extends object, A>(
-    asyncFn: (acc: Promise<A>, value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<A>,
+    asyncFn: (acc: A, value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<A>,
     initAcc: MaybePromise<A>,
     collection: T,
   ): Promise<A>;
   <V, K extends string | number, A>(
-    asyncFn: (acc: Promise<A>, value: V, key: K) => MaybePromise<A>,
+    asyncFn: (acc: A, value: V, key: K) => MaybePromise<A>,
     initAcc: MaybePromise<A>,
   ): (collection: Collection<V>) => Promise<A>;
 };
 
 /**
- * asyncFn의 acc는 이전 단계 결과를 담은 Promise 이므로, asyncFn의 시작은 await acc 가 되어야 한다.\
- * 순차적으로 실행된다.\
+ * (collection) reduce의 비동기 함수\
+ * lodash reduce와 동일한 인자(acc, value, key)로 동작하며, 순차적으로 실행된다.\
+ * asyncFn은 동기/비동기 값을 모두 반환할 수 있고, acc는 항상 resolve된 값이 전달된다.\
  * (ex 300ms이 걸리는 5개의 promise가 있다면, 최소 1500ms+alpah의 시간이 소요된다.\
  * 상기의 mapAsync의 경우 300+alpah의 시간만 소요된다.(Promise.all과 Promise.resolve의 차이))
  *
- * @param {(acc:any, v:any) => Promise<any>} asyncFn 비동기 iterator
- * @param {Promise<any>|any} initAcc 초기 누적기를 반환하는 promise 또는 누적기
+ * @param {(acc, value, key) => Promise<any>|any} asyncFn 비동기 iterator
+ * @param {Promise<any>|any} initAcc 초기 누적기 또는 초기 누적기를 resolve하는 promise
  * @param {object|any[]} collection 대상 객체 또는 배열
- * @returns {Promise<any>} 결과 Promise
+ * @returns {Promise<any>} 최종 누적기를 resolve하는 promise
  */
 const reduceAsync: TreduceAsync = curry(
   async <T extends object, A>(
-    asyncFn: (acc: Promise<A>, value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<A>,
+    asyncFn: (acc: A, value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<A>,
     initAcc: MaybePromise<A>,
     collection: T,
   ): Promise<A> => {
-    const initAccPromise: Promise<A> = Promise.resolve(initAcc);
-    const result: Promise<A> = (reduce as IFpReduceEx).convert({ cap: false })(
-      asyncFn,
-      initAccPromise,
-      collection,
+    const entryList = entries(collection) as [string, ValueOf<T>][];
+    const result: Promise<A> = entryList.reduce(
+      (accP: Promise<A>, [k, v]) =>
+        accP.then((acc) =>
+          asyncFn(acc, v, (isArray(collection) ? toNumber(k) : k) as KeyOf<T>),
+        ),
+      Promise.resolve(initAcc),
     );
 
     return result;

@@ -317,26 +317,71 @@ describe('async collection helpers', () => {
     expect(await f.findAsync((v: number) => later(v > 100), nums)).toBeUndefined();
   });
 
-  it('reduceAsync: acc 는 이전 단계의 Promise, 순차 누적 + key 전달', async () => {
+  it('reduceAsync: reduce 와 동일한 인자 (acc, value, key), 순차 누적', async () => {
     const doubled = await f.reduceAsync(
-      async (accP: Promise<number[]>, v: number) => [
-        ...(await accP),
-        await later(v * 2),
-      ],
+      async (acc: number[], v: number) => [...acc, await later(v * 2)],
       [] as number[],
       nums,
     );
     expect(doubled).toEqual([2, 4, 6, 8, 10]);
 
     const idxs = await f.reduceAsync(
-      async (accP: Promise<number[]>, _v: number, i: number) => {
-        const acc = await accP;
-        return i > 0 ? [...acc, i] : acc;
-      },
-      Promise.resolve([] as number[]),
+      (acc: number[], _v: number, i: number) => (i > 0 ? [...acc, i] : acc),
+      [] as number[],
       nums,
     );
     expect(idxs).toEqual([1, 2, 3, 4]);
+  });
+
+  it('reduceAsync: acc 는 resolve 된 값으로 전달 (Promise 아님)', async () => {
+    const seen: boolean[] = [];
+    await f.reduceAsync(
+      async (acc: number, v: number) => {
+        seen.push(f.isPromise(acc));
+        return acc + v;
+      },
+      0,
+      nums,
+    );
+    expect(seen).toEqual([false, false, false, false, false]);
+  });
+
+  it('reduceAsync: 초기값이 Promise 이거나 객체 collection 이어도 동작', async () => {
+    expect(
+      await f.reduceAsync(
+        async (acc: string, v: number, k: string) => `${acc}${k}${v}`,
+        later(''),
+        { a: 1, b: 2 },
+      ),
+    ).toBe('a1b2');
+  });
+
+  it('reduceAsync: 순차 실행 (이전 단계가 끝나야 다음 단계 시작)', async () => {
+    const order: number[] = [];
+    await f.reduceAsync(
+      async (acc: number, v: number) => {
+        await later(null, 6 - v);
+        order.push(v);
+        return acc;
+      },
+      0,
+      nums,
+    );
+    expect(order).toEqual(nums);
+  });
+
+  it('reduceAsync: 부분 적용 및 callback 에러는 reject', async () => {
+    const sum = f.reduceAsync((acc: number, v: number) => acc + v, 0);
+    expect(await sum(nums)).toBe(15);
+    await expect(
+      f.reduceAsync(
+        async () => {
+          throw new Error('boom');
+        },
+        0,
+        nums,
+      ),
+    ).rejects.toThrow('boom');
   });
 
   it('forEachAsync: 순차 실행, 배열은 number key / 객체는 string key', async () => {
