@@ -28,10 +28,10 @@
   ],
   "scripts": {
     "build": "vp pack",
-    "package:install": "pnpm i && sort-package-json",
-    "re": "rimraf ./node_modules && rimraf pnpm-lock.yaml && rimraf package-lock.json && rimraf yarn.lock && pnpm i",
+    "package:install": "pnpm i",
+    "re": "rimraf ./node_modules pnpm-lock.yaml && pnpm i",
     "test": "vp pack && mocha --reporter spec --require @babel/register",
-    "u": "npm-upgrade && pnpm run package:install",
+    "u": "pnpm up --interactive --latest",
     "dev": "vp pack --watch",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm run typecheck && pnpm test",
@@ -48,7 +48,6 @@
     "chai": "^4.3.8",
     "lodash": "^4.17.21",
     "mocha": "^10.8.2",
-    "npm-upgrade": "^3.1.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.3",
     "vite-plus": "^1.7.0"
@@ -70,5 +69,10 @@
     },
     "./package.json": "./package.json"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": "^22.18.0 || ^24.11.0 || >=26.0.0",
+    "pnpm": ">=10"
+  }
 }
