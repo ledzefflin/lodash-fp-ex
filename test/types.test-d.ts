@@ -21,7 +21,7 @@ describe('타입 추론', () => {
       fp.filterAsync(async (v: { id: number }) => v.id > 0, [{ id: 1 }]),
     ).toEqualTypeOf<Promise<{ id: number }[]>>();
     expectTypeOf(fp.findAsync(async (v: string) => v === 'a', ['a'])).toEqualTypeOf<
-      Promise<string>
+      Promise<string | undefined>
     >();
   });
 
@@ -32,7 +32,7 @@ describe('타입 추론', () => {
   });
 
   it('key: 객체의 key 유니온 반환', () => {
-    expectTypeOf(fp.key({ a: 1, b: 2 }, 1)).toEqualTypeOf<'a' | 'b'>();
+    expectTypeOf(fp.key({ a: 1, b: 2 }, 1)).toEqualTypeOf<'a' | 'b' | undefined>();
   });
 
   it('removeLast / prepend: 요소 타입 보존', () => {
@@ -79,7 +79,7 @@ describe('타입 추론', () => {
       Promise<number>
     >();
     expectTypeOf(fp.findKeyAsync(async (v: number) => v > 1, { a: 1, b: 2 })).toEqualTypeOf<
-      Promise<'a' | 'b'>
+      Promise<'a' | 'b' | undefined>
     >();
   });
 

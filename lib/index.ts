@@ -579,10 +579,10 @@ type TfindAsync = {
   <T extends object>(
     asyncFilter: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<boolean>,
     collection: T,
-  ): Promise<ValueOf<T>>;
+  ): Promise<ValueOf<T> | undefined>;
   <V, K extends string | number>(
     asyncFilter: (value: V, key: K) => MaybePromise<boolean>,
-  ): (collection: Collection<V>) => Promise<V>;
+  ): (collection: Collection<V>) => Promise<V | undefined>;
 };
 
 /**
@@ -598,14 +598,14 @@ const findAsync: TfindAsync = curry(
   async <T extends object>(
     asyncFilter: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<boolean>,
     collection: T,
-  ): Promise<ValueOf<T>> => {
+  ): Promise<ValueOf<T> | undefined> => {
     for (const [k, v] of toEntries(collection)) {
       if (await asyncFilter(v, k)) {
         return v;
       }
     }
 
-    return undefined as ValueOf<T>;
+    return undefined;
   },
 );
 
@@ -730,10 +730,10 @@ type TfindKeyAsync = {
       key: KeyOf<T>,
     ) => MaybePromise<boolean>,
     object: T,
-  ): Promise<KeyOf<T>>;
+  ): Promise<KeyOf<T> | undefined>;
   <V, K extends string>(
     asyncPredicate: (value: V, key: K) => MaybePromise<boolean>,
-  ): (object: { readonly [key: string]: V }) => Promise<K>;
+  ): (object: { readonly [key: string]: V }) => Promise<K | undefined>;
 };
 
 /**
@@ -752,14 +752,14 @@ const findKeyAsync: TfindKeyAsync = curry(
       key: KeyOf<T>,
     ) => MaybePromise<boolean>,
     object: T,
-  ): Promise<KeyOf<T>> => {
+  ): Promise<KeyOf<T> | undefined> => {
     for (const [k, v] of toEntries(object)) {
       if (await asyncPredicate(v, k)) {
         return k;
       }
     }
 
-    return undefined as any;
+    return undefined;
   },
 );
 
@@ -803,8 +803,10 @@ const reduceAsync: TreduceAsync = curry(
 );
 
 type Tkey = {
-  <T extends object>(obj: T, value: ValueOf<T>): KeyOf<T>;
-  <T extends object>(obj: T): (value: ValueOf<T>) => KeyOf<T>;
+  <T extends object>(obj: T, value: ValueOf<T>): KeyOf<T> | undefined;
+  <T extends object>(
+    obj: T,
+  ): (value: ValueOf<T>) => KeyOf<T> | undefined;
 };
 
 /**
@@ -815,8 +817,8 @@ type Tkey = {
  * @returns {string} 속성명
  */
 const key: Tkey = curry(
-  (obj: Dict, value: any): string =>
-    find((k: string) => equals(value, obj[k]), keys(obj)) as string,
+  (obj: Dict, value: any): string | undefined =>
+    find((k: string) => equals(value, obj[k]), keys(obj)),
 );
 
 /**

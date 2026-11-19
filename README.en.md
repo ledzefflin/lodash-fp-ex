@@ -7,7 +7,7 @@ It provides async collection functions (`mapAsync`, `findAsync`, `pipeAsync`, �
 
 - Every function is **auto-curried** (plug it straight into `pipe`/`flow`)
 - **Immutable** behavior — inputs are never mutated
-- TypeScript **generic inference** — callback parameter and return types are inferred, and no `unknown` / `undefined` / `never` leaks into the public types
+- TypeScript **generic inference** — callback parameter and return types are inferred, and no `unknown` / `never` leaks into the public types (functions whose result may be missing spell out `| undefined`)
 - Both ESM and CommonJS are supported; `lodash` is a peer dependency
 
 ## Table of Contents
@@ -113,7 +113,7 @@ Behaves like lodash.
 | `key` | `undefined` |
 | `someAsync` / `everyAsync` (empty collection) | `false` / `true` |
 
-The type declarations deliberately do not include `undefined` (they are `Promise<V>`), so check the result with something like `isNotNil` before using it.
+The types include `undefined` as well (e.g. `findAsync` is `Promise<V | undefined>`). Check the result with something like `isNotNil` before using it, and TypeScript will make you handle the `undefined` case.
 
 ### Error handling
 
@@ -350,7 +350,7 @@ Runs **sequentially**. **Stops immediately** at the first element for which the 
 findAsync<T extends object>(
   asyncFilter: (value: ValueOf<T>, key: KeyOf<T>) => boolean | Promise<boolean>,
   collection: T,
-): Promise<ValueOf<T>>
+): Promise<ValueOf<T> | undefined>
 ```
 
 ```js
@@ -383,7 +383,7 @@ Runs **sequentially**. The key of the first match, or `undefined` if none. **Obj
 findKeyAsync<T extends object>(
   asyncPredicate: (value: ValueOf<T>, key: KeyOf<T>) => boolean | Promise<boolean>,
   object: T,
-): Promise<KeyOf<T>>
+): Promise<KeyOf<T> | undefined>
 ```
 
 ```js
@@ -674,7 +674,7 @@ fp.notIncludes(9, [1, 2, 3]); // => true
 **alias:** `keyByVal` — finds a key by value (deep comparison). If several keys match, the **first** one is returned; `undefined` if none.
 
 ```ts
-key<T extends object>(obj: T, value: ValueOf<T>): KeyOf<T>
+key<T extends object>(obj: T, value: ValueOf<T>): KeyOf<T> | undefined
 ```
 
 ```js
@@ -850,7 +850,7 @@ includesWithAp('i'); // => true  (fp.includes('i', 'string'))
 
 ## TypeScript
 
-Callback parameter and return types are inferred through generics, and no `unknown`, `undefined`, or `never` appears in the public types.
+Callback parameter and return types are inferred through generics, and no `unknown` or `never` appears in the public types. Only functions whose result may be missing (`findAsync`, `findKeyAsync`, `key`) have `| undefined` spelled out in their return type.
 
 ```ts
 import fpEx from 'lodash-fp-ex';
@@ -858,7 +858,7 @@ import fpEx from 'lodash-fp-ex';
 // return type: Promise<string[]>
 const names = await fpEx.mapAsync(async (id: number) => `user-${id}`, [1, 2]);
 
-// object keys are strings, and the return type is the key union: Promise<'a' | 'b'>
+// object keys are strings, and the return type is the key union: Promise<'a' | 'b' | undefined>
 const k = await fpEx.findKeyAsync(async (v: number) => v > 1, { a: 1, b: 2 });
 
 // pipeAsync: the resolved type of each step carries over to the next
@@ -881,6 +881,7 @@ await toStr([1, 2]); // string[]
 If you are upgrading from an earlier version, check the following.
 
 - **`reduceAsync`**: the callback's `acc` is now the **resolved value, not a Promise**. Code that did `await accP` keeps working, but if you typed `acc` as `Promise<T>` in TypeScript, change it to `T`.
+- **`findAsync` / `findKeyAsync` / `key` types**: since nothing may match, the return type now spells out `| undefined`. TypeScript code that used the result directly needs to handle `undefined` to compile.
 - **`findAsync`**: now **runs sequentially and stops at the first match**. An error thrown by the predicate is no longer swallowed into `undefined`; the result rejects.
 - **`removeByIndex` / `removeLast`**: changed from deep cloning to **structural sharing** (new array, shared elements). The original array is not mutated.
 - **`removeLast('abc')`**: a bug where strings were not truncated has been fixed; it now returns `'ab'`.

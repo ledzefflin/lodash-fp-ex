@@ -7,7 +7,7 @@
 
 - 모든 함수는 **자동 커링**됩니다 (`pipe`/`flow`에 그대로 연결 가능)
 - 입력을 변경하지 않는 **불변(immutable)** 동작
-- TypeScript **제네릭 추론** 지원 — 콜백 인자/반환 타입이 자동으로 추론되고, 공개 타입에 `unknown`/`undefined`/`never`가 노출되지 않습니다
+- TypeScript **제네릭 추론** 지원 — 콜백 인자/반환 타입이 자동으로 추론되고, 공개 타입에 `unknown`/`never`가 노출되지 않습니다 (결과가 없을 수 있는 함수는 `| undefined` 명시)
 - ESM / CommonJS 모두 지원, `lodash`는 peerDependency
 
 ## 목차
@@ -113,7 +113,7 @@ lodash와 동일하게 동작합니다.
 | `key` | `undefined` |
 | `someAsync` / `everyAsync` (빈 컬렉션) | `false` / `true` |
 
-타입 선언에는 `undefined`를 넣지 않았으므로(`Promise<V>`), 결과를 쓰기 전에 `isNotNil` 등으로 확인하세요.
+타입에도 `undefined`가 포함되어 있습니다(예: `findAsync`는 `Promise<V | undefined>`). 결과를 쓰기 전에 `isNotNil` 등으로 확인해야 TypeScript 가 `undefined` 처리를 강제해 줍니다.
 
 ### 에러 처리
 
@@ -350,7 +350,7 @@ await fp.forEachAsync(async (v, i) => v * i, [1, 2, 3]);
 findAsync<T extends object>(
   asyncFilter: (value: ValueOf<T>, key: KeyOf<T>) => boolean | Promise<boolean>,
   collection: T,
-): Promise<ValueOf<T>>
+): Promise<ValueOf<T> | undefined>
 ```
 
 ```js
@@ -383,7 +383,7 @@ await fp.findIndexAsync(async (v) => v > 10, [1, 2, 3]); // => -1
 findKeyAsync<T extends object>(
   asyncPredicate: (value: ValueOf<T>, key: KeyOf<T>) => boolean | Promise<boolean>,
   object: T,
-): Promise<KeyOf<T>>
+): Promise<KeyOf<T> | undefined>
 ```
 
 ```js
@@ -674,7 +674,7 @@ fp.notIncludes(9, [1, 2, 3]); // => true
 **alias:** `keyByVal` — 값(깊은 비교)으로 key 를 찾습니다. 값이 여러 개면 **처음** 일치하는 key, 없으면 `undefined`.
 
 ```ts
-key<T extends object>(obj: T, value: ValueOf<T>): KeyOf<T>
+key<T extends object>(obj: T, value: ValueOf<T>): KeyOf<T> | undefined
 ```
 
 ```js
@@ -850,7 +850,7 @@ includesWithAp('i'); // => true  (fp.includes('i', 'string'))
 
 ## TypeScript
 
-콜백의 인자/반환 타입이 제네릭으로 자동 추론되며, 공개 타입에 `unknown`·`undefined`·`never`가 나타나지 않습니다.
+콜백의 인자/반환 타입이 제네릭으로 자동 추론되며, 공개 타입에 `unknown`·`never`가 나타나지 않습니다. 결과가 없을 수 있는 함수(`findAsync`, `findKeyAsync`, `key`)만 반환 타입에 `| undefined`가 명시됩니다.
 
 ```ts
 import fpEx from 'lodash-fp-ex';
@@ -858,7 +858,7 @@ import fpEx from 'lodash-fp-ex';
 // 반환 타입: Promise<string[]>
 const names = await fpEx.mapAsync(async (id: number) => `user-${id}`, [1, 2]);
 
-// 객체의 key 는 string, 반환 타입은 key 유니온: Promise<'a' | 'b'>
+// 객체의 key 는 string, 반환 타입은 key 유니온: Promise<'a' | 'b' | undefined>
 const k = await fpEx.findKeyAsync(async (v: number) => v > 1, { a: 1, b: 2 });
 
 // pipeAsync: 각 단계의 resolve 된 타입이 이어집니다
@@ -881,6 +881,7 @@ await toStr([1, 2]); // string[]
 이전 버전에서 올라오는 경우 확인하세요.
 
 - **`reduceAsync`**: 콜백의 `acc`가 이제 **Promise 가 아닌 resolve 된 값**입니다. `await accP`를 하던 코드는 그대로 동작하지만, TypeScript 에서 `acc`를 `Promise<T>`로 선언했다면 `T`로 바꿔야 합니다.
+- **`findAsync` / `findKeyAsync` / `key` 타입**: 일치 항목이 없을 수 있으므로 반환 타입에 `| undefined`가 명시됩니다. TypeScript 에서 결과를 그대로 사용하던 코드는 `undefined` 처리를 추가해야 컴파일됩니다.
 - **`findAsync`**: 이제 **순차 실행 + 첫 일치에서 중단**됩니다. 필터가 던진 에러는 `undefined`로 삼키지 않고 reject 합니다.
 - **`removeByIndex` / `removeLast`**: 깊은 복사 대신 **구조 공유**(새 배열, 요소 공유)로 바뀌었습니다. 원본 배열은 변경되지 않습니다.
 - **`removeLast('abc')`**: 이전에는 문자열이 잘리지 않던 버그가 수정되어 `'ab'`를 반환합니다.
