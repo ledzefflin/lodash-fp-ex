@@ -19,7 +19,6 @@ import {
   entries,
   toNumber,
   map,
-  head,
   reduce,
   find,
   forOwn,
@@ -28,7 +27,6 @@ import {
   isObject,
   includes,
   snakeCase,
-  cloneDeep,
   forEach,
   getOr as _getOr,
   isArrayLike,
@@ -778,11 +776,12 @@ const removeByIndex: TremoveByIndex = curry(
     const num = toNumber(index);
 
     if (isArray(targetArray) && num <= targetArray.length) {
-      // 제거될 요소는 복제하지 않도록, 얕은 복사 + splice 후 deep clone
+      // 구조 공유(structural sharing): 새 배열만 만들고 요소는 원본과 공유한다.
+      // 원본 배열은 변경되지 않는다.
       const remains = targetArray.slice();
       remains.splice(num, 1);
 
-      return cloneDeep(remains);
+      return remains;
     }
     return targetArray;
   },
@@ -802,8 +801,8 @@ function removeLast<T>(target: string | T[]): string | T[] {
     return target.slice(0, -1);
   }
   if (isArray(target)) {
-    // 기존 동작 유지: 요소까지 deep clone 한 새 배열 반환 (immutable)
-    return cloneDeep(target.slice(0, -1));
+    // 새 배열만 만들고 요소는 원본과 공유 (원본 배열은 변경되지 않는다)
+    return target.slice(0, -1);
   }
 
   return target;

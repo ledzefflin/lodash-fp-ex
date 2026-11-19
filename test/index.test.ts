@@ -605,11 +605,23 @@ describe('array helpers', () => {
     expect(f.removeLast('')).toBe('');
   });
 
-  it('removeLast: 요소 객체도 원본과 분리된 복사본', () => {
-    const origin = [{ a: 1 }, { a: 2 }];
-    const result = f.removeLast(origin);
-    expect(result).toEqual([{ a: 1 }]);
-    expect(result[0]).not.toBe(origin[0]);
+  it('removeLast / removeByIndex: 새 배열을 반환하고 원본 배열은 변경하지 않는다 (요소는 공유)', () => {
+    const origin = [{ a: 1 }, { a: 2 }, { a: 3 }];
+    const snapshot = [...origin];
+
+    const last = f.removeLast(origin);
+    const removed = f.removeByIndex(1, origin);
+
+    expect(last).toEqual([{ a: 1 }, { a: 2 }]);
+    expect(removed).toEqual([{ a: 1 }, { a: 3 }]);
+    expect(last).not.toBe(origin);
+    expect(removed).not.toBe(origin);
+    // 원본 배열은 그대로
+    expect(origin).toHaveLength(3);
+    origin.forEach((v, i) => expect(v).toBe(snapshot[i]));
+    // 요소는 구조 공유
+    expect(last[0]).toBe(origin[0]);
+    expect(removed[1]).toBe(origin[2]);
   });
 
   it('removeLast: 빈 배열은 그대로 빈 배열', () => {
