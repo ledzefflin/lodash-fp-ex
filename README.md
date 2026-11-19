@@ -1,5 +1,7 @@
 # lodash-fp-ex
 
+**한국어** | [English](./README.en.md)
+
 `lodash/fp`에 **mixin**해서 쓰는 확장 함수 모음입니다.
 비동기 컬렉션 함수(`mapAsync`, `findAsync`, `pipeAsync` …), Promise를 `pipe`에 끼워 넣는 헬퍼(`andThen`, `otherwise`, `finally`), 자주 쓰는 검사·변환 함수를 제공합니다.
 
