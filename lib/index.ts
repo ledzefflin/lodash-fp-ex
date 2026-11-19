@@ -48,7 +48,6 @@ import type {
   LodashReduce,
   LodashConcat,
 } from 'lodash/fp';
-import { F } from 'ts-toolbelt';
 
 /** 배열이면 요소 타입, 객체면 속성값 타입 추론 */
 type ValueOf<T> = T extends readonly (infer V)[] ? V : T[keyof T];

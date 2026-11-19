@@ -16,7 +16,7 @@ import {
   includes,
   reduce,
 } from 'lodash/fp';
-import lodashFpEx from '../index';
+import lodashFpEx from '../dist/index.cjs';
 
 const fp = mixin(lodashFpEx);
 
