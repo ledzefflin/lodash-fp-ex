@@ -9,23 +9,17 @@ import {
   pipe,
   get,
   isFunction,
-  cond,
-  T,
   isPlainObject,
   isArray,
-  identity,
   curry,
   isEmpty,
   equals,
   upperFirst,
   camelCase,
-  flatMapDeep,
   entries,
   toNumber,
   map,
-  filter,
   head,
-  always,
   reduce,
   find,
   forOwn,
@@ -33,16 +27,14 @@ import {
   set,
   isObject,
   includes,
-  size,
   snakeCase,
-  lte,
   cloneDeep,
   forEach,
-  some,
   getOr as _getOr,
+  isArrayLike,
+  keys,
 } from 'lodash/fp';
 import type {
-  LodashFlatMapDeep,
   LodashMap,
   LodashForEach,
   LodashReduce,
@@ -66,13 +58,8 @@ type Dict<V = any> = Record<string, V>;
  * @param {string} jsonStr 조회 대상 문자열
  * @returns {boolean} json 문자열인지 여부
  */
-const isJson = (jsonStr: string): boolean => {
-  const composer = pipe(attempt, isError);
-  const result: boolean =
-    isString(jsonStr) && !composer(() => JSON.parse(jsonStr));
-
-  return result;
-};
+const isJson = (jsonStr: string): boolean =>
+  isString(jsonStr) && !isError(attempt(() => JSON.parse(jsonStr)));
 
 /**
  * 원시 타입(primitive) 인지 여부 조회
@@ -95,12 +82,7 @@ const isVal = <T>(arg: T): boolean => {
  * @param {any} arg 조회 대상
  * @returns {boolean} 참조 타입(reference) 인지 여부
  */
-const isRef = <T>(arg: T): boolean => {
-  const composer = pipe(isVal, not);
-  const result = composer(arg);
-
-  return result;
-};
+const isRef = <T>(arg: T): boolean => !isVal(arg);
 
 /**
  * 대상 인자가 promise(thenable)인지 여부 조회
@@ -144,14 +126,11 @@ function promisify<A extends any[], R>(
 ): Promise<Awaited<R>>;
 function promisify<R>(a: MaybePromise<R>): Promise<Awaited<R>>;
 function promisify(a: any, ...args: any[]): Promise<any> {
-  const conditional = cond([
-    [isFunction, () => fnPromisify(a, ...args)],
-    [isPromise, (a: Promise<any>): Promise<any> => identity(a)],
-    [T, (a) => Promise.resolve(a)],
-  ]);
-  const result = conditional(a);
+  if (isFunction(a)) {
+    return fnPromisify(a, ...args);
+  }
 
-  return result;
+  return isPromise(a) ? a : Promise.resolve(a);
 }
 
 /**
@@ -248,12 +227,7 @@ const not = <T>(x: T): boolean => !x;
  * @param {any} a 대상
  * @returns {boolean} 비어 있는지 여부
  */
-const isNotEmpty = <T>(a: T): boolean => {
-  const composer = pipe(isEmpty, not);
-  const result = composer(a);
-
-  return result;
-};
+const isNotEmpty = <T>(a: T): boolean => !isEmpty(a);
 
 /**
  * 대상 인자를 boolean 타입으로 변환\
@@ -297,7 +271,7 @@ const ifT: TifT = curry(
     if (isValidEvaluator) {
       // evaluator가 함수인 경우
       if (isFunction(evaluator)) {
-        if (pipe(evaluator, equals(true))(arg)) {
+        if (evaluator(arg) === true) {
           return isFunction(trueHandler) ? trueHandler(arg) : trueHandler;
         } else {
           return arg;
@@ -350,7 +324,7 @@ const ifF: TifF = curry(
     if (isValidEvaluator) {
       // evaluator가 함수인 경우
       if (isFunction(evaluator)) {
-        if (pipe(evaluator, equals(false))(arg)) {
+        if (evaluator(arg) === false) {
           return isFunction(falseHandler) ? falseHandler(arg) : falseHandler;
         } else {
           return arg;
@@ -399,6 +373,38 @@ const pascalCase = (str: string): string => {
   return result;
 };
 
+/**
+ * collection(배열/유사배열/객체)을 [key, value] 목록으로 변환\
+ * 배열(유사배열)의 key는 number, 객체의 key는 string
+ */
+const toEntries = <T extends object>(
+  collection: T,
+): [KeyOf<T>, ValueOf<T>][] => {
+  if (isArray(collection)) {
+    const list: [number, ValueOf<T>][] = new Array(collection.length);
+    for (let i = 0; i < collection.length; i++) {
+      list[i] = [i, collection[i]];
+    }
+    return list as [KeyOf<T>, ValueOf<T>][];
+  }
+
+  const isIndexed = isArrayLike(collection);
+
+  return (entries(collection) as [string, ValueOf<T>][]).map(([k, v]) => [
+    (isIndexed ? toNumber(k) : k) as KeyOf<T>,
+    v,
+  ]);
+};
+
+/** 내부용 mapAsync 구현 (curry 래핑 없이 직접 호출) */
+const mapAsyncImpl = <T extends object, R>(
+  asyncMapper: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<R>,
+  collection: T,
+): Promise<R[]> =>
+  Promise.all(
+    toEntries(collection).map(([k, v]) => promisify(asyncMapper(v, k))),
+  ) as Promise<R[]>;
+
 type TmapAsync = {
   <T extends object, R>(
     asyncMapper: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<R>,
@@ -409,7 +415,6 @@ type TmapAsync = {
   ): (collection: Collection<V>) => Promise<R[]>;
 };
 
-interface IFpFlatMapDeepEx extends LodashFlatMapDeep, LodashConvertible {}
 /**
  * (collection) map의 비동기 함수\
  * mapper 함수로 비동기 함수를 받아서 처리해준다.
@@ -422,16 +427,7 @@ const mapAsync: TmapAsync = curry(
   async <T extends object, R>(
     asyncMapper: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<R>,
     collection: T,
-  ): Promise<R[]> => {
-    const promises: Promise<R>[] = (flatMapDeep as IFpFlatMapDeepEx).convert({
-      cap: false,
-    })((value: ValueOf<T>, key: KeyOf<T>) =>
-      promisify(asyncMapper(value, key)),
-    )(collection);
-    const result = await Promise.all(promises);
-
-    return result;
-  },
+  ): Promise<R[]> => mapAsyncImpl(asyncMapper, collection),
 );
 
 type TforEachAsync = {
@@ -458,15 +454,9 @@ const forEachAsync: TforEachAsync = curry(
     collection: T,
   ): Promise<R[]> => {
     const loopResults: R[] = [];
-    const entryList = entries(collection) as [string, ValueOf<T>][];
 
-    for (const [k, v] of entryList) {
-      loopResults.push(
-        await callbackAsync(
-          v,
-          (isArray(collection) ? toNumber(k) : k) as KeyOf<T>,
-        ),
-      );
+    for (const [k, v] of toEntries(collection)) {
+      loopResults.push(await callbackAsync(v, k));
     }
 
     return loopResults;
@@ -490,20 +480,25 @@ type TfilterAsync = {
  * @param {object|any[]} collection 대상 object 또는 array
  * @returns {Promise<any[]>} 결과 array를 resolve하는 promise
  */
-const filterAsync: TfilterAsync = curry(
-  async <T extends object>(
-    asyncFilter: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<boolean>,
-    collection: T,
-  ): Promise<ValueOf<T>[]> => {
-    const flags = (await mapAsync(asyncFilter, collection)) as boolean[];
-    const values = (isArray(collection)
-      ? collection
-      : Object.values(collection)) as ValueOf<T>[];
-    const result = values.filter((_v, i) => flags[i]);
+const filterAsyncImpl = async <T extends object>(
+  asyncFilter: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<boolean>,
+  collection: T,
+): Promise<ValueOf<T>[]> => {
+  const entryList = toEntries(collection);
+  const flags = await Promise.all(
+    entryList.map(([k, v]) => promisify(asyncFilter(v, k))),
+  );
+  const result = entryList.reduce<ValueOf<T>[]>((acc, [_k, v], i) => {
+    if (flags[i]) {
+      acc.push(v);
+    }
+    return acc;
+  }, []);
 
-    return result;
-  },
-);
+  return result;
+};
+
+const filterAsync: TfilterAsync = curry(filterAsyncImpl);
 
 type TfindAsync = {
   <T extends object>(
@@ -526,10 +521,7 @@ const findAsync: TfindAsync = curry(
     asyncFilter: (value: ValueOf<T>, key: KeyOf<T>) => MaybePromise<boolean>,
     collection: T,
   ): Promise<ValueOf<T>> => {
-    const filtered = (await filterAsync(
-      asyncFilter,
-      collection,
-    )) as ValueOf<T>[];
+    const filtered = await filterAsyncImpl(asyncFilter, collection);
     // 결과 없음 / 실패 시 lodash find와 동일하게 비어있는 값(head([]))을 반환
     const result: ValueOf<T> = head(filtered) as ValueOf<T>;
 
@@ -567,12 +559,8 @@ const reduceAsync: TreduceAsync = curry(
     initAcc: MaybePromise<A>,
     collection: T,
   ): Promise<A> => {
-    const entryList = entries(collection) as [string, ValueOf<T>][];
-    const result: Promise<A> = entryList.reduce(
-      (accP: Promise<A>, [k, v]) =>
-        accP.then((acc) =>
-          asyncFn(acc, v, (isArray(collection) ? toNumber(k) : k) as KeyOf<T>),
-        ),
+    const result: Promise<A> = toEntries(collection).reduce(
+      (accP: Promise<A>, [k, v]) => accP.then((acc) => asyncFn(acc, v, k)),
       Promise.resolve(initAcc),
     );
 
@@ -593,16 +581,8 @@ type Tkey = {
  * @returns {string} 속성명
  */
 const key: Tkey = curry(
-  (obj: Dict, value: any): string => {
-    const composer = pipe(
-      entries,
-      find(([_k, val]: [string, any]) => equals(value, val)),
-      head,
-    );
-    const result: string = composer(obj);
-
-    return result;
-  },
+  (obj: Dict, value: any): string =>
+    find((k: string) => equals(value, obj[k]), keys(obj)) as string,
 );
 
 /**
@@ -612,13 +592,20 @@ const key: Tkey = curry(
  * @returns {object} frozen 처리된 객체
  */
 const deepFreeze = <T extends object>(obj: T): Readonly<T> => {
-  const freezeRecursively = <V>(v: V): V =>
-    isRef(v) && !Object.isFrozen(v) ? (deepFreeze(v as object) as V) : v;
-  const composer = pipe(Object.freeze, forOwn(freezeRecursively));
-  const result = composer(obj) as Readonly<T>;
+  Object.freeze(obj);
+  forOwn((v: any) => {
+    if (isRef(v) && !Object.isFrozen(v)) {
+      deepFreeze(v);
+    }
+  }, obj);
 
-  return result;
+  return obj;
 };
+
+/** lodash path 로 해석될 수 있는 문자 / prototype 오염 방지 대상 */
+const PATH_CHARS = /[.[\]]|^(?:__proto__|constructor|prototype)$/;
+const hasOwn = (o: object, k: string): boolean =>
+  Object.prototype.hasOwnProperty.call(o, k);
 
 type TtransformObjectKey = {
   <T extends object>(
@@ -642,45 +629,38 @@ const transformObjectKey: TtransformObjectKey = curry(
     transformFn: (originStr: string) => string,
     obj: T,
   ): Dict => {
-    const convertRecursively = (
-      obj: Record<string, any>,
-    ): Record<string, any> => {
-      const convertTo = (o: Record<string, any>): Record<string, any> => {
-        const composer = pipe(
-          (reduce as IFpReduceEx).convert({ cap: false })(
-            (acc: Record<string, any>, v: any, k: string) => {
-              const conditional = (
-                arg: Record<string, any> | any[] | any,
-              ): Record<string, any> | any[] | any => {
-                if (isPlainObject(arg)) {
-                  return convertTo(arg);
-                } else if (isArray(arg)) {
-                  return map(conditional, arg);
-                } else {
-                  return identity(arg);
-                }
-              };
-
-              const transformedKey = transformFn(k);
-              if (!has(transformedKey, acc)) {
-                const result = set(transformedKey, conditional(v), acc);
-                return result;
-              } else {
-                throw new Error(
-                  `${transformedKey} already exist. duplicated property name is not supported.`,
-                );
-              }
-            },
-            {},
-          ),
-        );
-        const result = composer(o);
-        return result;
-      };
-      const result = convertTo(obj);
-
-      return result;
+    const convertValue = (arg: any): any => {
+      if (isPlainObject(arg)) {
+        return convertTo(arg);
+      }
+      return isArray(arg) ? arg.map(convertValue) : arg;
     };
+    // 내부 누적 객체는 함수 안에서만 변경되므로 외부에서는 불변(순수)으로 동작한다.
+    // (lodash/fp set 은 호출마다 전체를 복제하여 O(n^2) 이므로 사용하지 않는다)
+    const convertTo = (o: Record<string, any>): Record<string, any> => {
+      let acc: Record<string, any> = {};
+
+      for (const k of Object.keys(o)) {
+        const transformedKey = transformFn(k);
+        const isLiteralKey = !PATH_CHARS.test(transformedKey);
+
+        if (isLiteralKey ? hasOwn(acc, transformedKey) : has(transformedKey, acc)) {
+          throw new Error(
+            `${transformedKey} already exist. duplicated property name is not supported.`,
+          );
+        }
+
+        if (isLiteralKey) {
+          acc[transformedKey] = convertValue(o[k]);
+        } else {
+          // 'a.b', 'a[0]' 처럼 path 로 해석되는 key 는 기존 lodash set 동작 유지
+          acc = set(transformedKey, convertValue(o[k]), acc);
+        }
+      }
+
+      return acc;
+    };
+    const convertRecursively = convertTo;
 
     const result: Dict =
       isObject(obj) || isArray(obj) ? convertRecursively(obj) : obj;
@@ -774,12 +754,9 @@ type TnotEquals = {
  * @param {any} b 비교 인자
  * @returns {boolean} a인자와 b인자가 다른지 여부 (deep equal)
  */
-const notEquals: TnotEquals = curry(<A, B>(a: A, b: B): boolean => {
-  const composer = pipe(equals(a), not);
-  const result = composer(b);
-
-  return result;
-});
+const notEquals: TnotEquals = curry(
+  <A, B>(a: A, b: B): boolean => !equals(a, b),
+);
 
 type TremoveByIndex = {
   <R>(index: number | string, targetArray: R[]): R[];
@@ -793,22 +770,14 @@ type TremoveByIndex = {
  */
 const removeByIndex: TremoveByIndex = curry(
   <TResult>(index: number | string, targetArray: TResult[]): TResult[] => {
-    if (
-      isArray(targetArray) &&
-      pipe(
-        size,
-        curry((index: number | string, sz: number) => {
-          const num = toNumber(index);
-          const isAccesable = isNumber(num) && lte(num, sz);
+    const num = toNumber(index);
 
-          return isAccesable;
-        })(index),
-      )(targetArray)
-    ) {
-      const cloned = cloneDeep(targetArray);
-      cloned.splice(toNumber(index), 1);
+    if (isArray(targetArray) && num <= targetArray.length) {
+      // 제거될 요소는 복제하지 않도록, 얕은 복사 + splice 후 deep clone
+      const remains = targetArray.slice();
+      remains.splice(num, 1);
 
-      return cloned;
+      return cloneDeep(remains);
     }
     return targetArray;
   },
@@ -829,7 +798,7 @@ function removeLast<T>(target: string | T[]): string | T[] {
   }
   if (isArray(target)) {
     // 기존 동작 유지: 요소까지 deep clone 한 새 배열 반환 (immutable)
-    return cloneDeep(target).slice(0, -1);
+    return cloneDeep(target.slice(0, -1));
   }
 
   return target;
@@ -875,6 +844,8 @@ interface LodashConvertible {
 }
 
 interface IFpMapEx extends LodashMap, LodashConvertible {}
+/** convert 는 호출마다 새 함수를 생성하므로 모듈 로드 시 1회만 수행 */
+const mapUncapped = (map as IFpMapEx).convert({ cap: false });
 
 /**
  * key(index)를 포함한 map
@@ -886,7 +857,7 @@ const mapWithKey: TmapWithKey = curry(
   <T extends object, R>(
     iteratee: (value: ValueOf<T>, key: KeyOf<T>) => R,
     collection: T,
-  ): R[] => (map as IFpMapEx).convert({ cap: false })(iteratee, collection),
+  ): R[] => mapUncapped(iteratee, collection),
 );
 
 type TforEachWithKey = {
@@ -899,6 +870,7 @@ type TforEachWithKey = {
   ): <C extends Collection<V>>(collection: C) => C;
 };
 interface IFpForEachEx extends LodashForEach, LodashConvertible {}
+const forEachUncapped = (forEach as IFpForEachEx).convert({ cap: false });
 /**
  * key(index)를 포함한 forEach
  * @param {(v, k) => any} f value, key(또는 index)를 인자로 갖는 callback
@@ -910,7 +882,7 @@ const forEachWithKey: TforEachWithKey = curry(
     iteratee: (value: ValueOf<T>, key: KeyOf<T>) => boolean | void,
     collection: T,
   ): T =>
-    (forEach as IFpForEachEx).convert({ cap: false })(iteratee, collection),
+    forEachUncapped(iteratee, collection),
 );
 
 type TreduceWithKey = {
@@ -926,6 +898,7 @@ type TreduceWithKey = {
 };
 
 interface IFpReduceEx extends LodashReduce, LodashConvertible {}
+const reduceUncapped = (reduce as IFpReduceEx).convert({ cap: false });
 
 /**
  * key(index)를 포함한 reduce
@@ -941,7 +914,7 @@ const reduceWithKey: TreduceWithKey = curry(
     acc: R,
     collection: T,
   ): R =>
-    (reduce as IFpReduceEx).convert({ cap: false })(iteratee, acc, collection),
+    reduceUncapped(iteratee, acc, collection),
 );
 
 /**
@@ -949,9 +922,12 @@ const reduceWithKey: TreduceWithKey = curry(
  * @param {any} arg 조회 대상
  * @returns {boolean} falsy 타입(0, -0, NaN, false, '')인지 여부
  */
-const isFalsy = <T>(arg: T): boolean => {
-  return isNil(arg) || some(equals(arg), [0, -0, NaN, false, '']);
-};
+const isFalsy = <T>(arg: T): boolean =>
+  isNil(arg) ||
+  (arg as unknown) === 0 ||
+  (arg as unknown) === '' ||
+  (arg as unknown) === false ||
+  Number.isNaN(arg);
 
 /**
  * truthy 타입 인지 여부 조회
@@ -974,9 +950,9 @@ const getOr = (({ curry, _getOr }) => {
       path: string,
       target: T,
     ) => {
-      return isNil(target) || isNil(get(path, target))
-        ? defaultValue
-        : get(path, target);
+      const value = isNil(target) ? target : get(path, target);
+
+      return isNil(value) ? defaultValue : value;
     },
   );
   return __getOr as typeof _getOr;

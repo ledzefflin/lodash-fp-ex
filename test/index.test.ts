@@ -497,6 +497,58 @@ describe('object helpers', () => {
   });
 });
 
+describe('성능 개선 후 동작 동일성', () => {
+  it('transformObjectKey: path 로 해석되는 key / prototype key 처리 유지', () => {
+    expect(f.transformObjectKey((k) => `${k}.x`, { a: 1 })).toEqual({ a: { x: 1 } });
+    const polluted = f.transformObjectKey(() => '__proto__', { a: { polluted: true } });
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(Object.keys(polluted)).toEqual([]);
+  });
+
+  it('transformObjectKey: 최상위 배열 / 원시값', () => {
+    expect(f.transformObjectKey(kebabCase, [{ aB: 1 }])).toEqual({ '0': { 'a-b': 1 } });
+    expect(f.transformObjectKey(kebabCase, 1 as never)).toBe(1);
+  });
+
+  it('mapAsync / filterAsync / reduceAsync: 빈 컬렉션과 null', async () => {
+    expect(await f.mapAsync((v: number) => v, [])).toEqual([]);
+    expect(await f.mapAsync((v: number) => v, null as never)).toEqual([]);
+    expect(await f.filterAsync(() => true, {})).toEqual([]);
+    expect(await f.reduceAsync((a: number) => a, 7, [])).toBe(7);
+  });
+
+  it('mapAsync: mapper 가 동기 throw 하면 reject', async () => {
+    await expect(
+      f.mapAsync(() => {
+        throw new Error('sync boom');
+      }, [1]),
+    ).rejects.toThrow('sync boom');
+  });
+
+  it('removeByIndex: 범위 밖/음수/NaN index', () => {
+    const arr = [1, 2, 3];
+    expect(f.removeByIndex(99, arr)).toBe(arr);
+    expect(f.removeByIndex('x', arr)).toBe(arr);
+    expect(f.removeByIndex(-1, arr)).toEqual([1, 2]);
+    expect(f.removeByIndex(3, arr)).toEqual([1, 2, 3]);
+  });
+
+  it('isFalsy: bigint 0n 은 기존과 동일하게 false', () => {
+    expect(f.isFalsy(BigInt(0))).toBe(false);
+  });
+
+  it('key: null / 일치 없음 은 undefined', () => {
+    expect(f.key(null as never, 1 as never)).toBeUndefined();
+  });
+
+  it('deepFreeze: 이미 frozen 인 중첩 객체와 원시값', () => {
+    const inner = Object.freeze({ x: [1] });
+    const frozen = f.deepFreeze({ inner });
+    expect(Object.isFrozen(frozen)).toBe(true);
+    expect(f.deepFreeze(1 as never)).toBe(1);
+  });
+});
+
 describe('ap', () => {
   it('pipe 안에서 인자 순서를 바꿔 적용', () => {
     const includesWithAp = pipe(includes, f.ap('string'));
