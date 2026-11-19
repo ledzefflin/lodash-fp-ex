@@ -18,9 +18,7 @@ var _has2 = _interopRequireDefault(require("lodash/fp/has"));
 var _forOwn2 = _interopRequireDefault(require("lodash/fp/forOwn"));
 var _find2 = _interopRequireDefault(require("lodash/fp/find"));
 var _reduce2 = _interopRequireDefault(require("lodash/fp/reduce"));
-var _always2 = _interopRequireDefault(require("lodash/fp/always"));
 var _head2 = _interopRequireDefault(require("lodash/fp/head"));
-var _filter2 = _interopRequireDefault(require("lodash/fp/filter"));
 var _map2 = _interopRequireDefault(require("lodash/fp/map"));
 var _toNumber2 = _interopRequireDefault(require("lodash/fp/toNumber"));
 var _entries2 = _interopRequireDefault(require("lodash/fp/entries"));
@@ -46,6 +44,16 @@ var _isString2 = _interopRequireDefault(require("lodash/fp/isString"));
 var _isNil2 = _interopRequireDefault(require("lodash/fp/isNil"));
 var _concat2 = _interopRequireDefault(require("lodash/fp/concat"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+/** 배열이면 요소 타입, 객체면 속성값 타입 추론 */
+
+/** 배열이면 number, 객체면 string 키 타입 추론 */
+
+/** 배열 또는 객체 collection */
+
+/** 동기 값 또는 Promise */
+
+/** 일반 객체 */
+
 /**
  * 대상 문자열이 json형식 문자열인지 여부 조회
  *
@@ -115,11 +123,12 @@ const fnPromisify = (fn, ...args) => {
  * @param {any[]} args 대상 인자 a가 함수인 경우, 함수의 인자목록
  * @return {Promise<any>} Promise로 lift된 Promise 객채
  */
-const promisify = (a, ...args) => {
+
+function promisify(a, ...args) {
   const conditional = (0, _cond2.default)([[_isFunction2.default, () => fnPromisify(a, ...args)], [isPromise, a => (0, _identity2.default)(a)], [_T2.default, a => Promise.resolve(a)]]);
   const result = conditional(a);
   return result;
-};
+}
 
 /**
  * promise가 또다른 promise를 resolve하는 경우, promise의 중첩을 제거하기 위한 helper 함수
@@ -273,10 +282,10 @@ const pascalCase = str => {
  * @returns {Promise<any[]>} 결과 array를 resolve 하는 promise
  */
 const mapAsync = (0, _curry2.default)(async (asyncMapper, collection) => {
-  const composer = (0, _pipe2.default)(_flatMapDeep2.default.convert({
+  const promises = _flatMapDeep2.default.convert({
     cap: false
-  })((0, _pipe2.default)(asyncMapper, promisify)), async a => await Promise.all(a));
-  const result = await composer(collection);
+  })((value, key) => promisify(asyncMapper(value, key)))(collection);
+  const result = await Promise.all(promises);
   return result;
 });
 /**
@@ -291,8 +300,8 @@ const mapAsync = (0, _curry2.default)(async (asyncMapper, collection) => {
 const forEachAsync = (0, _curry2.default)(async (callbackAsync, collection) => {
   const loopResults = [];
   const entryList = (0, _entries2.default)(collection);
-  for (const entry of entryList) {
-    loopResults.push(await callbackAsync(entry[1], (0, _isArray2.default)(collection) ? (0, _toNumber2.default)(entry[0]) : entry[0]));
+  for (const [k, v] of entryList) {
+    loopResults.push(await callbackAsync(v, (0, _isArray2.default)(collection) ? (0, _toNumber2.default)(k) : k));
   }
   return loopResults;
 });
@@ -305,8 +314,9 @@ const forEachAsync = (0, _curry2.default)(async (callbackAsync, collection) => {
  * @returns {Promise<any[]>} 결과 array를 resolve하는 promise
  */
 const filterAsync = (0, _curry2.default)(async (asyncFilter, collection) => {
-  const composer = (0, _pipe2.default)(mapAsync(async (item, key) => (await asyncFilter(item, key)) ? item : false), andThen(response => (0, _filter2.default)((0, _pipe2.default)((0, _equals2.default)(false), not))(response)));
-  const result = await composer(collection);
+  const flags = await mapAsync(asyncFilter, collection);
+  const values = (0, _isArray2.default)(collection) ? collection : Object.values(collection);
+  const result = values.filter((_v, i) => flags[i]);
   return result;
 });
 /**
@@ -316,8 +326,9 @@ const filterAsync = (0, _curry2.default)(async (asyncFilter, collection) => {
  * @returns {Promise<any>} 필터된 단일 결과를 resolve하는 promise
  */
 const findAsync = (0, _curry2.default)(async (asyncFilter, collection) => {
-  const composer = (0, _pipe2.default)(filterAsync(asyncFilter), andThen(response => (0, _isEmpty2.default)(response) ? undefined : (0, _head2.default)(response)), otherwise((0, _always2.default)(undefined)));
-  const result = await composer(collection);
+  const filtered = await filterAsync(asyncFilter, collection);
+  // 결과 없음 / 실패 시 lodash find와 동일하게 비어있는 값(head([]))을 반환
+  const result = (0, _head2.default)(filtered);
   return result;
 });
 /**
@@ -332,7 +343,7 @@ const findAsync = (0, _curry2.default)(async (asyncFilter, collection) => {
  * @returns {Promise<any>} 결과 Promise
  */
 const reduceAsync = (0, _curry2.default)(async (asyncFn, initAcc, collection) => {
-  const initAccPromise = await (0, _pipe2.default)(promisify, accP => Promise.resolve(accP))(initAcc);
+  const initAccPromise = Promise.resolve(initAcc);
   const result = _reduce2.default.convert({
     cap: false
   })(asyncFn, initAccPromise, collection);
@@ -346,7 +357,7 @@ const reduceAsync = (0, _curry2.default)(async (asyncFn, initAcc, collection) =>
  * @returns {string} 속성명
  */
 const key = (0, _curry2.default)((obj, value) => {
-  const composer = (0, _pipe2.default)(_entries2.default, (0, _find2.default)(([k, val]) => (0, _equals2.default)(value, val)), _head2.default);
+  const composer = (0, _pipe2.default)(_entries2.default, (0, _find2.default)(([_k, val]) => (0, _equals2.default)(value, val)), _head2.default);
   const result = composer(obj);
   return result;
 });
@@ -456,8 +467,8 @@ const isNotNil = (0, _pipe2.default)(_isNil2.default, not);
  * @param {any[] | Record<string, any> | string} arr 대상 배열
  * @returns {boolean} arr 배열에 a인자가 포함되지 않았는지 여부
  */
-const notIncludes = (0, _curry2.default)((arg, targetArray) => {
-  const result = !(0, _includes2.default)(arg, targetArray);
+const notIncludes = (0, _curry2.default)((arg, target) => {
+  const result = !(0, _includes2.default)(arg, target);
   return result;
 });
 /**
