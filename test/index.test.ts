@@ -431,6 +431,158 @@ describe('async collection helpers', () => {
   });
 });
 
+describe('someAsync / everyAsync', () => {
+  it('someAsync: 하나라도 만족하면 true, 없으면 false, 빈 collection 은 false', async () => {
+    expect(await f.someAsync((v: number) => later(v > 4), nums)).toBe(true);
+    expect(await f.someAsync((v: number) => later(v > 5), nums)).toBe(false);
+    expect(await f.someAsync(() => true, [])).toBe(false);
+    expect(await f.someAsync((v: number) => later(v === 2), { a: 1, b: 2 })).toBe(true);
+  });
+
+  it('someAsync: 순차 실행, 첫 true 에서 중단', async () => {
+    const called: number[] = [];
+    const result = await f.someAsync(async (v: number) => {
+      called.push(v);
+      await later(null, 1);
+      return v === 2;
+    }, nums);
+    expect(result).toBe(true);
+    expect(called).toEqual([1, 2]);
+  });
+
+  it('everyAsync: 모두 만족하면 true, 하나라도 아니면 false, 빈 collection 은 true', async () => {
+    expect(await f.everyAsync((v: number) => later(v > 0), nums)).toBe(true);
+    expect(await f.everyAsync((v: number) => later(v < 5), nums)).toBe(false);
+    expect(await f.everyAsync(() => false, [])).toBe(true);
+  });
+
+  it('everyAsync: 순차 실행, 첫 false 에서 중단', async () => {
+    const called: number[] = [];
+    const result = await f.everyAsync(async (v: number) => {
+      called.push(v);
+      await later(null, 1);
+      return v < 3;
+    }, nums);
+    expect(result).toBe(false);
+    expect(called).toEqual([1, 2, 3]);
+  });
+
+  it('부분 적용 (curry) 과 에러 전파', async () => {
+    const hasEven = f.someAsync((v: number) => later(v % 2 === 0));
+    const allPositive = f.everyAsync((v: number) => later(v > 0));
+    expect(await hasEven(nums)).toBe(true);
+    expect(await allPositive(nums)).toBe(true);
+    await expect(
+      f.someAsync(async () => {
+        throw new Error('boom');
+      }, nums),
+    ).rejects.toThrow('boom');
+  });
+});
+
+describe('findIndexAsync / findKeyAsync', () => {
+  it('findIndexAsync: 첫 일치 요소의 index, 없으면 -1', async () => {
+    expect(await f.findIndexAsync((v: number) => later(v === 3), nums)).toBe(2);
+    expect(await f.findIndexAsync((v: number) => later(v > 100), nums)).toBe(-1);
+    expect(await f.findIndexAsync(() => true, [])).toBe(-1);
+  });
+
+  it('findIndexAsync: 순차 실행, 첫 일치에서 중단 / index 전달 / 부분 적용', async () => {
+    const called: number[] = [];
+    const idx = await f.findIndexAsync(async (v: number, i: number) => {
+      called.push(i);
+      return v === 3;
+    }, nums);
+    expect(idx).toBe(2);
+    expect(called).toEqual([0, 1, 2]);
+    expect(await f.findIndexAsync((v: string) => later(v === 'b'))(['a', 'b'])).toBe(1);
+  });
+
+  it('findKeyAsync: 첫 일치 요소의 key, 없으면 undefined', async () => {
+    const obj = { a: 1, b: 2, c: 3 };
+    expect(await f.findKeyAsync((v: number) => later(v === 2), obj)).toBe('b');
+    expect(await f.findKeyAsync((v: number) => later(v > 100), obj)).toBeUndefined();
+  });
+
+  it('findKeyAsync: 순차 실행, 첫 일치에서 중단 / 부분 적용', async () => {
+    const called: string[] = [];
+    const k = await f.findKeyAsync(async (v: number, key: string) => {
+      called.push(key);
+      return v === 2;
+    }, { a: 1, b: 2, c: 3 });
+    expect(k).toBe('b');
+    expect(called).toEqual(['a', 'b']);
+    expect(await f.findKeyAsync((v: number) => later(v === 1))({ x: 1 })).toBe('x');
+  });
+});
+
+describe('pipeAsync', () => {
+  const add = (a: number, b: number) => a + b;
+  const double = (a: number) => later(a * 2);
+  const toStr = (a: number) => `v${a}`;
+
+  it('동기/비동기 함수를 순서대로 연결하고 Promise 를 반환', async () => {
+    const run = f.pipeAsync(add, double, toStr);
+    const result = run(1, 2);
+    expect(result).toBeInstanceOf(Promise);
+    expect(await result).toBe('v6');
+  });
+
+  it('함수가 하나여도 Promise 로 반환', async () => {
+    expect(await f.pipeAsync(add)(1, 2)).toBe(3);
+    expect(await f.pipeAsync(double)(2)).toBe(4);
+  });
+
+  it('이전 단계가 끝나야 다음 단계 실행 (순차)', async () => {
+    const order: string[] = [];
+    await f.pipeAsync(
+      async (a: number) => (await later(null, 5), order.push('a'), a),
+      async (a: number) => (order.push('b'), a),
+    )(1);
+    expect(order).toEqual(['a', 'b']);
+  });
+
+  it('에러가 나면 이후 단계는 실행되지 않고 reject', async () => {
+    let reached = false;
+    const run = f.pipeAsync(
+      (a: number) => {
+        if (a > 0) throw new Error('sync boom');
+        return a;
+      },
+      (a: number) => {
+        reached = true;
+        return a;
+      },
+    );
+    await expect(run(1)).rejects.toThrow('sync boom');
+    expect(reached).toBe(false);
+
+    await expect(
+      f.pipeAsync(double, async () => Promise.reject(new Error('async boom')))(1),
+    ).rejects.toThrow('async boom');
+  });
+
+  it('otherwise / finally 와 함께 사용', async () => {
+    const run = f.pipeAsync(
+      async (a: number) => {
+        if (a < 0) throw new Error('negative');
+        return a;
+      },
+      double,
+    );
+    expect(await f.otherwise((e: Error) => e.message, run(-1))).toBe('negative');
+    expect(await f.otherwise((e: Error) => e.message, run(2))).toBe(4);
+  });
+
+  it('mixin 된 fp.pipeAsync 와 lodash/fp 함수를 함께 사용', async () => {
+    const run = fp.pipeAsync(
+      (v: number[]) => map(double, v),
+      (ps: Promise<number>[]) => Promise.all(ps),
+    );
+    expect(await run([1, 2])).toEqual([2, 4]);
+  });
+});
+
 describe('object helpers', () => {
   it('key / keyByVal: 값으로 key 조회 (deep equal)', () => {
     expect(f.key({ a: 1 }, 1)).toBe('a');

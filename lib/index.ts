@@ -211,6 +211,83 @@ const _finally: Tfinally = curry(
   ): Promise<T> => promisify(thenable).finally(flatPromise(callback)),
 );
 
+type AsyncStep<A, B> = (arg: A) => MaybePromise<B>;
+
+type TpipeAsync = {
+  <A extends any[], B>(f1: (...args: A) => MaybePromise<B>): (
+    ...args: A
+  ) => Promise<B>;
+  <A extends any[], B, C>(
+    f1: (...args: A) => MaybePromise<B>,
+    f2: AsyncStep<B, C>,
+  ): (...args: A) => Promise<C>;
+  <A extends any[], B, C, D>(
+    f1: (...args: A) => MaybePromise<B>,
+    f2: AsyncStep<B, C>,
+    f3: AsyncStep<C, D>,
+  ): (...args: A) => Promise<D>;
+  <A extends any[], B, C, D, E>(
+    f1: (...args: A) => MaybePromise<B>,
+    f2: AsyncStep<B, C>,
+    f3: AsyncStep<C, D>,
+    f4: AsyncStep<D, E>,
+  ): (...args: A) => Promise<E>;
+  <A extends any[], B, C, D, E, F>(
+    f1: (...args: A) => MaybePromise<B>,
+    f2: AsyncStep<B, C>,
+    f3: AsyncStep<C, D>,
+    f4: AsyncStep<D, E>,
+    f5: AsyncStep<E, F>,
+  ): (...args: A) => Promise<F>;
+  <A extends any[], B, C, D, E, F, G>(
+    f1: (...args: A) => MaybePromise<B>,
+    f2: AsyncStep<B, C>,
+    f3: AsyncStep<C, D>,
+    f4: AsyncStep<D, E>,
+    f5: AsyncStep<E, F>,
+    f6: AsyncStep<F, G>,
+  ): (...args: A) => Promise<G>;
+  <A extends any[], B, C, D, E, F, G, H>(
+    f1: (...args: A) => MaybePromise<B>,
+    f2: AsyncStep<B, C>,
+    f3: AsyncStep<C, D>,
+    f4: AsyncStep<D, E>,
+    f5: AsyncStep<E, F>,
+    f6: AsyncStep<F, G>,
+    f7: AsyncStep<G, H>,
+  ): (...args: A) => Promise<H>;
+  <A extends any[], B, C, D, E, F, G, H, I>(
+    f1: (...args: A) => MaybePromise<B>,
+    f2: AsyncStep<B, C>,
+    f3: AsyncStep<C, D>,
+    f4: AsyncStep<D, E>,
+    f5: AsyncStep<E, F>,
+    f6: AsyncStep<F, G>,
+    f7: AsyncStep<G, H>,
+    f8: AsyncStep<H, I>,
+  ): (...args: A) => Promise<I>;
+};
+
+/**
+ * lodash pipe의 비동기 버전\
+ * 각 함수는 동기/비동기 모두 가능하며, 이전 함수가 반환한 값(Promise는 resolve된 값)을 다음 함수의 인자로 전달한다.\
+ * 첫 번째 함수만 여러 개의 인자를 받을 수 있고, 반환값은 항상 Promise 이다.\
+ * 중간에 에러가 발생하면 이후 함수는 실행되지 않고 reject 된다.
+ *
+ * @param {...Function} fns 순차 실행될 함수 목록
+ * @returns {(...args) => Promise<any>} 합성된 비동기 함수
+ */
+const pipeAsync: TpipeAsync = (
+  first: (...args: any[]) => any,
+  ...rest: ((arg: any) => any)[]
+) => {
+  return (...args: any[]): Promise<any> =>
+    rest.reduce(
+      (accP: Promise<any>, fn) => accP.then(fn),
+      fnPromisify(first, ...args),
+    );
+};
+
 /**
  * invert boolean
  * @param {any} x 대상
@@ -529,6 +606,160 @@ const findAsync: TfindAsync = curry(
     }
 
     return undefined as ValueOf<T>;
+  },
+);
+
+type TsomeAsync = {
+  <T extends object>(
+    asyncPredicate: (
+      value: ValueOf<T>,
+      key: KeyOf<T>,
+    ) => MaybePromise<boolean>,
+    collection: T,
+  ): Promise<boolean>;
+  <V, K extends string | number>(
+    asyncPredicate: (value: V, key: K) => MaybePromise<boolean>,
+  ): (collection: Collection<V>) => Promise<boolean>;
+};
+
+/**
+ * (collection) some의 비동기 함수\
+ * 순차적으로 실행되며, 처음으로 true를 반환한 요소에서 즉시 중단(true)한다.\
+ * 빈 collection 은 false 를 반환한다.
+ *
+ * @param {(value, key) => Promise<bool>|bool} asyncPredicate 비동기 조건 함수
+ * @param {object|any[]} collection 대상 object 또는 array
+ * @returns {Promise<boolean>} 하나라도 조건을 만족하는지 여부
+ */
+const someAsync: TsomeAsync = curry(
+  async <T extends object>(
+    asyncPredicate: (
+      value: ValueOf<T>,
+      key: KeyOf<T>,
+    ) => MaybePromise<boolean>,
+    collection: T,
+  ): Promise<boolean> => {
+    for (const [k, v] of toEntries(collection)) {
+      if (await asyncPredicate(v, k)) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+);
+
+type TeveryAsync = {
+  <T extends object>(
+    asyncPredicate: (
+      value: ValueOf<T>,
+      key: KeyOf<T>,
+    ) => MaybePromise<boolean>,
+    collection: T,
+  ): Promise<boolean>;
+  <V, K extends string | number>(
+    asyncPredicate: (value: V, key: K) => MaybePromise<boolean>,
+  ): (collection: Collection<V>) => Promise<boolean>;
+};
+
+/**
+ * (collection) every의 비동기 함수\
+ * 순차적으로 실행되며, 처음으로 false를 반환한 요소에서 즉시 중단(false)한다.\
+ * 빈 collection 은 true 를 반환한다.
+ *
+ * @param {(value, key) => Promise<bool>|bool} asyncPredicate 비동기 조건 함수
+ * @param {object|any[]} collection 대상 object 또는 array
+ * @returns {Promise<boolean>} 모든 요소가 조건을 만족하는지 여부
+ */
+const everyAsync: TeveryAsync = curry(
+  async <T extends object>(
+    asyncPredicate: (
+      value: ValueOf<T>,
+      key: KeyOf<T>,
+    ) => MaybePromise<boolean>,
+    collection: T,
+  ): Promise<boolean> => {
+    for (const [k, v] of toEntries(collection)) {
+      if (!(await asyncPredicate(v, k))) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+);
+
+type TfindIndexAsync = {
+  <V>(
+    asyncPredicate: (value: V, index: number) => MaybePromise<boolean>,
+    array: readonly V[],
+  ): Promise<number>;
+  <V>(
+    asyncPredicate: (value: V, index: number) => MaybePromise<boolean>,
+  ): (array: readonly V[]) => Promise<number>;
+};
+
+/**
+ * (array) findIndex의 비동기 함수\
+ * 순차적으로 실행되며, 처음으로 true를 반환한 요소의 index 에서 즉시 중단한다.\
+ * 일치하는 요소가 없으면 lodash findIndex 와 동일하게 -1 을 반환한다.
+ *
+ * @param {(value, index) => Promise<bool>|bool} asyncPredicate 비동기 조건 함수
+ * @param {any[]} array 대상 배열
+ * @returns {Promise<number>} 일치하는 첫 요소의 index (없으면 -1)
+ */
+const findIndexAsync: TfindIndexAsync = curry(
+  async <V>(
+    asyncPredicate: (value: V, index: number) => MaybePromise<boolean>,
+    array: readonly V[],
+  ): Promise<number> => {
+    for (const [i, v] of toEntries(array)) {
+      if (await asyncPredicate(v as V, i as number)) {
+        return i as number;
+      }
+    }
+
+    return -1;
+  },
+);
+
+type TfindKeyAsync = {
+  <T extends object>(
+    asyncPredicate: (
+      value: ValueOf<T>,
+      key: KeyOf<T>,
+    ) => MaybePromise<boolean>,
+    object: T,
+  ): Promise<KeyOf<T>>;
+  <V, K extends string>(
+    asyncPredicate: (value: V, key: K) => MaybePromise<boolean>,
+  ): (object: { readonly [key: string]: V }) => Promise<K>;
+};
+
+/**
+ * (object) findKey의 비동기 함수\
+ * 순차적으로 실행되며, 처음으로 true를 반환한 요소의 key 에서 즉시 중단한다.\
+ * 일치하는 요소가 없으면 lodash findKey 와 동일하게 undefined 를 반환한다.
+ *
+ * @param {(value, key) => Promise<bool>|bool} asyncPredicate 비동기 조건 함수
+ * @param {object} object 대상 객체
+ * @returns {Promise<string>} 일치하는 첫 요소의 key (없으면 undefined)
+ */
+const findKeyAsync: TfindKeyAsync = curry(
+  async <T extends object>(
+    asyncPredicate: (
+      value: ValueOf<T>,
+      key: KeyOf<T>,
+    ) => MaybePromise<boolean>,
+    object: T,
+  ): Promise<KeyOf<T>> => {
+    for (const [k, v] of toEntries(object)) {
+      if (await asyncPredicate(v, k)) {
+        return k;
+      }
+    }
+
+    return undefined as any;
   },
 );
 
@@ -981,7 +1212,12 @@ export default {
   filterAsync,
   reduceAsync,
   findAsync,
+  findIndexAsync,
+  findKeyAsync,
+  someAsync,
+  everyAsync,
   forEachAsync,
+  pipeAsync,
   promisify,
   andThen,
   otherwise,

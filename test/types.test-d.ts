@@ -64,4 +64,34 @@ describe('타입 추론', () => {
       number[]
     >();
   });
+
+  it('someAsync / everyAsync: boolean', () => {
+    expectTypeOf(fp.someAsync(async (v: number) => v > 1, [1, 2])).toEqualTypeOf<
+      Promise<boolean>
+    >();
+    expectTypeOf(fp.everyAsync((v: string) => v === 'a', { a: 'a' })).toEqualTypeOf<
+      Promise<boolean>
+    >();
+  });
+
+  it('findIndexAsync: number / findKeyAsync: key 유니온', () => {
+    expectTypeOf(fp.findIndexAsync(async (v: number) => v > 1, [1, 2])).toEqualTypeOf<
+      Promise<number>
+    >();
+    expectTypeOf(fp.findKeyAsync(async (v: number) => v > 1, { a: 1, b: 2 })).toEqualTypeOf<
+      Promise<'a' | 'b'>
+    >();
+  });
+
+  it('pipeAsync: 각 단계의 resolve 된 값이 다음 함수 인자로, 결과는 마지막 반환 타입', () => {
+    const run = fp.pipeAsync(
+      (a: number, b: number) => a + b,
+      async (n: number) => String(n),
+      (s: string) => s.length,
+    );
+    expectTypeOf(run).toEqualTypeOf<(a: number, b: number) => Promise<number>>();
+    expectTypeOf(fp.pipeAsync(async (a: string) => a)).toEqualTypeOf<
+      (a: string) => Promise<string>
+    >();
+  });
 });
