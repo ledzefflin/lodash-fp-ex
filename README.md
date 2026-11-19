@@ -7,7 +7,7 @@ functions to add in lodash.mixin
 ## Install
 
 ```bash
-$npm i lodash lodash-fp-ex
+pnpm add lodash lodash-fp-ex
 ```
 
 ## Usage
