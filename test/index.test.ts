@@ -11,15 +11,19 @@ import {
   kebabCase,
   keys,
   map,
-  mixin,
   pipe,
   reduce,
   snakeCase,
 } from 'lodash/fp';
+import * as lodashFp from 'lodash/fp';
 import lodashFpEx from '../lib/index';
 
 /** lodash/fp 에 mixin 해서 사용하는 실제 사용 방식 그대로 테스트 */
-const fp = mixin(lodashFpEx) as typeof lodashFpEx & Record<string, never>;
+type MixinFp = typeof lodashFp & {
+  mixin: (source: typeof lodashFpEx) => Record<string, Function>;
+};
+const { mixin } = lodashFp as MixinFp;
+const fp = mixin(lodashFpEx);
 const f = lodashFpEx;
 
 const nums = [1, 2, 3, 4, 5];
@@ -33,13 +37,13 @@ describe('mixin', () => {
     const names = Object.keys(lodashFpEx);
     expect(names.length).toBeGreaterThan(0);
     names.forEach((name) =>
-      expect(typeof (fp as Record<string, unknown>)[name]).toBe('function'),
+      expect(typeof fp[name]).toBe('function'),
     );
   });
 });
 
 describe('not / toBool / isFalsy / isTruthy', () => {
-  it.each([
+  it.each<[input: object | string | number | boolean | null | undefined, expected: boolean]>([
     [true, false],
     ['str', false],
     [{}, false],
@@ -51,7 +55,7 @@ describe('not / toBool / isFalsy / isTruthy', () => {
     expect(f.not(input)).toBe(expected);
   });
 
-  it.each([
+  it.each<[input: number | null | undefined, expected: boolean]>([
     [1, true],
     [0, false],
     [null, false],
@@ -217,7 +221,7 @@ describe('promise helpers', () => {
     it('reject 되면 에러를 handler 로 전달', async () => {
       const result = await composed(2);
       expect(result).toBeInstanceOf(Error);
-      expect((result as Error).message).toBe('wrong');
+      expect(get('message', result)).toBe('wrong');
     });
 
     it('resolve 되면 값을 그대로 전달', async () => {
@@ -408,7 +412,15 @@ describe('object helpers', () => {
     });
   });
 
-  it.each([
+  type KeyCase = [
+    name: string,
+    convert: (o: object) => object,
+    input: object,
+    expectedKeys: string[],
+    duplicated: object,
+    transform: (s: string) => string,
+  ];
+  it.each<KeyCase>([
     ['toCamelKey / toCamelcase', f.toCamelKey, { obj_key: 1 }, ['objKey'], { 'obj-key': 1, obj_key: 2 }, camelCase],
     ['toSnakeKey / toSnakecase', f.toSnakeKey, { objKey: 1 }, ['obj_key'], { objKey: 1, 'obj key': 2 }, snakeCase],
   ])('%s', (_name, convert, input, expectedKeys, duplicated, transform) => {
