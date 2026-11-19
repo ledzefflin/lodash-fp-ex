@@ -821,13 +821,12 @@ function removeLast<T>(target: T[]): T[];
  * @returns 마지막 요소 제거된 인자
  */
 function removeLast<T>(target: string | T[]): string | T[] {
-  if (isArray(target) || isString(target)) {
-    const result = cloneDeep(target);
-    isArray(target)
-      ? (result as T[]).pop()
-      : (result as string).substring(0, size(target) - 1);
-
-    return result;
+  if (isString(target)) {
+    return target.slice(0, -1);
+  }
+  if (isArray(target)) {
+    // 기존 동작 유지: 요소까지 deep clone 한 새 배열 반환 (immutable)
+    return cloneDeep(target).slice(0, -1);
   }
 
   return target;

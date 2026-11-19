@@ -476,7 +476,22 @@ describe('array helpers', () => {
     expect(arr).toEqual([1, 2, 3]);
   });
 
-  it.todo('removeLast: 문자열의 마지막 글자 제거 (현재 substring 결과를 버려서 원본 반환)');
+  it('removeLast: 문자열의 마지막 글자 제거', () => {
+    expect(f.removeLast('abc')).toBe('ab');
+    expect(f.removeLast('a')).toBe('');
+    expect(f.removeLast('')).toBe('');
+  });
+
+  it('removeLast: 요소 객체도 원본과 분리된 복사본', () => {
+    const origin = [{ a: 1 }, { a: 2 }];
+    const result = f.removeLast(origin);
+    expect(result).toEqual([{ a: 1 }]);
+    expect(result[0]).not.toBe(origin[0]);
+  });
+
+  it('removeLast: 빈 배열은 그대로 빈 배열', () => {
+    expect(f.removeLast([])).toEqual([]);
+  });
 
   it('append: 불변, 요소/배열 모두 추가', () => {
     const arr = [1];
